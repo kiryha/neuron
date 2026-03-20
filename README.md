@@ -8,6 +8,20 @@ In a traditional pipeline, scenes are composed of discrete assets and lights wit
 
 Instead of manual sculpting and shading, artists use prompt-directed entities. By leveraging semantic-local latent spaces, Neuron allows for non-destructive, iterative refinement. A prompt change such as adding "rain" or "wear and tear" modifies the high-frequency details of the neural field without destabilizing the underlying spatial structure or camera orientation.
 
+The ultimate architectural goal of Neuron is to move beyond monolithic scene generation toward a modular, production-ready Digital Content Creation (DCC) ecosystem:
+
+### Modular Neural Assets
+Assets such as characters, environments, and props are treated as independent "Latent Fragments." These are stored as discrete neural weight files (.neuron) rather than static meshes. This allows for a referencing system similar to USD, where assets can be loaded, versioned, and updated across multiple shots without redundant data overhead.
+
+### Compositional Neural Scene Graphs (CNSG)
+Neuron implements a Compositional Neural Scene Graph to manage complex shots. By placing "Neural Proxies" in the viewport, the engine performs real-time coordinate transformations. When a camera ray intersects a proxy, the system transforms the ray into the asset's local latent space, allowing multiple independent neural fields to coexist and interact within a single global environment.
+
+### Neural Deformation and Animation
+Animation in Neuron shifts from vertex-based rigging to learned "Deformation Fields." Characters are defined in a canonical neural state, and animation is achieved by warping the coordinate space based on pose-vectors (e.g., joint rotations). This allows for complex secondary effects like muscle bulge and skin sliding to emerge naturally from the neural representation rather than being manually simulated.
+
+### Production Pipeline Integration
+While Neuron functions as a standalone generative engine, it is designed to bridge into established VFX workflows. The final goal includes modules for "baking" these dynamic latent scenes into 3D Gaussian Splatting (3DGS) stages or high-density USD assets, ensuring that the creative flexibility of AI is backed by the reliability of industry-standard delivery formats.
+
 ## Architecture
 
 Neuron is designed as a web-based application hosted on Hugging Face Spaces, utilizing a client-server model to separate 3D manipulation from neural inference.
@@ -50,3 +64,16 @@ To run the application locally or on a private Hugging Face Space:
 2. Install Python dependencies: pip install -r requirements.txt.
 3. Launch the server: python app.py.
 4. Access the web interface via the provided local or cloud URL.
+
+## Hugging Face
+Clone the Repo:
+```
+git lfs install
+git clone https://huggingface.co/spaces/YourUsername/Neuron
+```
+
+Setup Local Dev:
+```
+pip install -r requirements.txt
+npm install # for the frontend
+```
