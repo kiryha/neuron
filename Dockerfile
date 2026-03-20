@@ -19,7 +19,7 @@ COPY --chown=user requirements.txt .
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 # Copy backend code and the built frontend
-COPY --chown=user app.py .
+COPY --chown=user neuron.py .
 COPY --chown=user --from=build-stage /frontend/dist ./dist
 
 # Port 7860 is the Hugging Face default
