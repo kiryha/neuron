@@ -10,8 +10,6 @@ pinned: false
 
 # Neuron: Latent Scene Engine
 
-# Neuron: Latent Scene Engine
-
 Neuron is an experimental 3D application architecture designed to bridge the gap between traditional VFX pipelines and generative world models. It replaces explicit geometric data (vertices, normals, textures) with a Neural Voxel Field (NVF) and Implicit Neural Representations (INR), allowing for high-fidelity scene generation that remains spatially consistent and artistically controllable.
 
 ## Project Concept
