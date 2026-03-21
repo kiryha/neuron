@@ -1,7 +1,11 @@
 # PROMPT: Implementation of "Neuron" - Latent Scene Engine
 
 ## Context & Vision
-I am a 3D artist and pipeline developer building "Neuron," a next-generation VFX ecosystem. We are moving away from traditional Cartesian scene composition toward a coordinate-aligned latent space. Our first milestone is the "Material Hero"—a prompt-directed Implicit Neural Representation (INR) that can be iteratively refined and eventually animated via temporal models like Veo 3.1.
+I am a 3D artist and pipeline developer building "Neuron," a next-generation VFX ecosystem. We are moving away from traditional Cartesian scene composition toward a coordinate-aligned latent space. Our first milestone is the "Material Hero"—a prompt-directed Implicit Neural Representation (INR) that can be iteratively refined and eventually animated via temporal models like Veo 3.1. Check README.md for more details.
+
+## Coding Style
+Keep amount of code at absolute minimum, do not over-complicate. Use descriptive variable and function names. 
+Add high level comments that descrybe more WHY we doing this, instead of WHAT, (what we do can be grasped from code), be smart with comments, they should add to the code, not duplicate.
 
 ## High-Level Tech Stack
 - **Backend**: FastAPI (Python 3.10), PyTorch, CLIP (for text conditioning).
