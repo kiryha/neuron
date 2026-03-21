@@ -14,17 +14,20 @@ Add high level comments that descrybe more WHY we doing this, instead of WHAT, (
 - **Data Source**: Synthetic renders and `transforms.json` exported from SideFX Houdini.
 
 ## Project Structure (The "Neuron" Package)
-You must implement the following modular structure:
-neuron_project/
-├── neuron.py                # Entry point (FastAPI)
-├── Dockerfile               # Multi-stage build (Node + Python)
-├── neuron/                  # Logic Package
-│   ├── api/routes.py        # /render and /status endpoints
-│   ├── data/loader.py       # Houdini transforms.json parser
-│   ├── models/inr.py        # MLP architecture for Material Hero
-│   ├── rendering/raymarcher.py # Ray-marching & sampling logic
-│   └── scene/graph.py       # Compositional Scene Graph logic (Phase 4)
-└── src/                     # React/Three.js Frontend
+
+You should organize the repo as follows:
+
+- **neuron.py** &nbsp;&nbsp;&nbsp;&nbsp;→ Entry point (FastAPI backend)
+- **Dockerfile** &nbsp;&nbsp;&nbsp;&nbsp;→ Multi-stage build (Node + Python)
+- **neuron/** &nbsp;&nbsp;&nbsp;&nbsp;→ Main backend logic package  
+    - **api/routes.py** &nbsp;&nbsp;&nbsp;&nbsp;→ Implements `/render` and `/status` endpoints  
+    - **data/loader.py** &nbsp;&nbsp;&nbsp;&nbsp;→ Houdini `transforms.json` parser  
+    - **models/inr.py** &nbsp;&nbsp;&nbsp;&nbsp;→ MLP architecture for the "Material Hero"  
+    - **rendering/raymarcher.py** &nbsp;&nbsp;&nbsp;&nbsp;→ Ray-marching and sampling logic  
+    - **scene/graph.py** &nbsp;&nbsp;&nbsp;&nbsp;→ Compositional Scene Graph (for modular assets, Phase 4)
+- **src/** &nbsp;&nbsp;&nbsp;&nbsp;→ React/Three.js frontend
+
+(Use plain bullets/indentation for compatibility with GitHub markdown. Add code comments in each file describing its high-level purpose.)
 
 ## Implementation Plan (Step-by-Step)
 
