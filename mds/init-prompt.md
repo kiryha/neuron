@@ -59,6 +59,13 @@ You should organize the repo as follows:
     - During camera movement: Show a lightweight wireframe proxy at 60fps.
     - On movement stop: Trigger the backend `/render` call to "resolve" the neural pixels.
 
+### Step 6: Training Utility (`train/train_hero.py`)
+- Create a standalone training script using PyTorch.
+- **Memory Management**: Implement "Gradient Accumulation" and "Mixed Precision" to support training on a 6GB VRAM GPU.
+- **Masking**: Include logic to ignore the bottom-right corner of training images (Houdini Apprentice watermark).
+- **Checkpointing**: Automatically save the model state (`.pth` file) to `train/outputs/` every 500 iterations.
+- **Validation**: Every 1000 steps, render a single low-res test view to track visual progress.
+
 ## Development Phases (For Reference)
 1. Houdini Synthetic Data -> 2. Material Hero (INR) -> 3. Voxel Baking -> 4. Compositional Scene Graph -> 5. Production UI -> 6. Temporal Synthesis (Veo/LTX).
 
