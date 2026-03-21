@@ -63,10 +63,29 @@ Neuron utilizes a hybrid approach to ensure production-grade stability:
 
 ## Development Roadmap
 
-- Phase 1: Implementation of a hardcoded "Hello World" scene (Cornell Box) with interactive camera controls.
-- Phase 2: Integration of multi-resolution hash grids for increased rendering performance on home-grade hardware.
-- Phase 3: Development of the "Material Library" logic, allowing prompt-based swapping of surfaces on fixed geometry.
-- Phase 4: Implementation of USD and 3D Gaussian Splat export modules for integration with Maya and Houdini.
+#### Phase 1: Synthetic Data Generation (Houdini)
+* Objective: Generate the "Ground Truth" dataset for neural training.
+* Task: Utilize SideFX Houdini to create a procedural Shader Ball and export multi-view renders alongside a `transforms.json` file containing precise camera matrices.
+
+#### Phase 2: Material Hero (INR Training)
+* Objective: Develop the "Neural Shader" core using your expertise as a 3D artist and pipeline developer.
+* Task: Train a coordinate-based Implicit Neural Representation (INR) to map spatial coordinates and text prompts to RGB and density values, establishing a functional "Neuro-Material Library".
+
+#### Phase 3: Hybrid Acceleration (Voxel Baking)
+* Objective: Achieve real-time performance for the web viewport.
+* Task: "Bake" the trained INR weights into a Sparse Voxel Grid or Neural Voxel Field (NVF) to transition the application from slow inference to interactive 60+ FPS navigation.
+
+#### Phase 4: Compositional Scene Graph (Modular Assets)
+* Objective: Enable modular world-building consistent with your interests in Universal Scene Description (USD).
+* Task: Implement a Compositional Neural Scene Graph (CNSG) to load separate `.neuron` files for characters, props, and environments, allowing them to be referenced and transformed as modular assets.
+
+#### Phase 5: Production Management (DCC UI)
+* Objective: Finalize the Digital Content Creation (DCC) interface.
+* Task: Build the project/shot management system, floating glassmorphism UI widgets, and camera animation paths to prepare "Anchor Frames" for cinematic export.
+
+#### Phase 6: Temporal Synthesis (Veo/LTX)
+* Objective: Achieve final cinematic animation with physical realism.
+* Task: Integrate video diffusion models, such as Veo 3.1, to animate shots. Neuron will provide spatial and structural consistency (Frame 0 and camera paths), while the video model generates realistic physics and fluid motion.
 
 ## Usage
 
@@ -78,14 +97,6 @@ To run the application locally or on a private Hugging Face Space:
 4. Access the web interface via the provided local or cloud URL.
 
 ## Hugging Face
-Clone the Repo:
 ```
-git lfs install
-git clone https://huggingface.co/spaces/YourUsername/Neuron
-```
-
-Setup Local Dev:
-```
-pip install -r requirements.txt
-npm install # for the frontend
+git push hf main
 ```
