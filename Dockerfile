@@ -23,4 +23,4 @@ COPY --chown=user neuron.py .
 COPY --chown=user --from=build-stage /frontend/dist ./dist
 
 # Port 7860 is the Hugging Face default
-CMD ["uvicorn", "neuron:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
