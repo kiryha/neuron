@@ -1,9 +1,16 @@
+"""
+Material Generator for Houdini
+
+Run in Cursor Terminal
+python -m datagen.materials
+"""
+
 import json
 import hashlib
 from pathlib import Path
 from itertools import product
 
-from config import LIBRARY_JSON
+from .config import LIBRARY_JSON
 
 class MaterialGenerator:
     def __init__(self):
