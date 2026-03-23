@@ -15,6 +15,20 @@ class MaterialGenerator:
             "translucent": {"metalness": 0.0, "has_k": False, "refraction": 1.0, "clearcoat": 0.0, "clearcoat_rough": 0.0}
         }
 
+        # Color palette for materials where color is not a defining physical property
+        self.COLOR_PALETTE = {
+            "red": [0.8, 0.05, 0.05],
+            "blue": [0.05, 0.15, 0.8],
+            "green": [0.05, 0.6, 0.1],
+            "yellow": [0.9, 0.8, 0.1],
+            "orange": [0.9, 0.4, 0.05],
+            "white": [0.9, 0.9, 0.9],
+            "black": [0.02, 0.02, 0.02],
+            "grey": [0.4, 0.4, 0.4],
+            "teal": [0.1, 0.6, 0.6],
+            "purple": [0.4, 0.05, 0.6],
+        }
+
         # 2. BASES (The Nouns)
         self.BASES = {
             # --- METALS (Conductors: High K, 0% Diffuse) ---
@@ -47,14 +61,22 @@ class MaterialGenerator:
             "basalt": {"cat": "dielectric", "color": [0.1, 0.1, 0.1], "ior": 1.7, "k": 0.0},
 
             # --- PLASTICS & SYNTHETICS ---
-            "plastic_abs": {"cat": "dielectric", "color": [0.1, 0.1, 0.1], "ior": 1.54, "k": 0.0},
-            "plastic_pvc": {"cat": "dielectric", "color": [0.8, 0.8, 0.8], "ior": 1.52, "k": 0.0},
-            "rubber": {"cat": "dielectric", "color": [0.05, 0.05, 0.05], "ior": 1.51, "k": 0.0},
-            "carbon_fiber": {"cat": "dielectric", "color": [0.05, 0.05, 0.05], "ior": 1.6, "k": 0.0, "clearcoat": 1.0},
+            "plastic_abs": {"cat": "dielectric", "color": [0.1, 0.1, 0.1], "ior": 1.54, "k": 0.0, "colorable": True},
+            "plastic_pvc": {"cat": "dielectric", "color": [0.8, 0.8, 0.8], "ior": 1.52, "k": 0.0, "colorable": True},
+            "rubber": {"cat": "dielectric", "color": [0.05, 0.05, 0.05], "ior": 1.51, "k": 0.0, "colorable": True},
+            "carbon_fiber": {"cat": "dielectric", "color": [0.02, 0.02, 0.02], "ior": 1.6, "k": 0.0, "anisotropy": 0.5, "clearcoat": 1.0},
             "bakelite": {"cat": "dielectric", "color": [0.2, 0.1, 0.05], "ior": 1.6, "k": 0.0},
-            "silicone": {"cat": "dielectric", "color": [0.7, 0.7, 0.7], "ior": 1.43, "k": 0.0, "sss": 0.4},
+            "silicone": {"cat": "dielectric", "color": [0.7, 0.7, 0.7], "ior": 1.43, "k": 0.0, "sss": 0.4, "colorable": True},
             "epoxy_resin": {"cat": "dielectric", "color": [0.8, 0.7, 0.5], "ior": 1.55, "k": 0.0, "sss": 0.3},
-            "car_paint": {"cat": "dielectric", "color": [0.5, 0.0, 0.0], "ior": 1.5, "k": 0.0, "clearcoat": 1.0},
+            "car_paint": {"cat": "dielectric", "color": [0.5, 0.0, 0.0], "ior": 1.5, "k": 0.0, "clearcoat": 1.0, "metallic_flake": 0.6, "colorable": True},
+
+            # --- FABRICS (Anisotropic/Microfiber logic) ---
+            "silk": {"cat": "dielectric", "color": [0.8, 0.2, 0.5], "ior": 1.5, "k": 0.0, "anisotropy": 0.9, "colorable": True, "hint": "shimmering fabric with directional sheen"},
+            "cotton": {"cat": "dielectric", "color": [0.9, 0.9, 0.9], "ior": 1.3, "k": 0.0, "rough": 0.95, "colorable": True, "hint": "soft, matte fibrous weave"},
+            "velvet": {"cat": "dielectric", "color": [0.1, 0.02, 0.05], "ior": 1.5, "k": 0.0, "sheen": 1.0, "colorable": True, "hint": "deep pile fabric with edge highlights"},
+
+            # --- MISC ---
+            "asphalt": {"cat": "dielectric", "color": [0.05, 0.05, 0.05], "ior": 1.55, "k": 0.0, "rough": 0.9, "bump_type": "cracked"},
 
             # --- ORGANICS (High SSS) ---
             "oak_wood": {"cat": "organic", "color": [0.35, 0.25, 0.15], "ior": 1.5, "k": 0.0},
@@ -66,6 +88,7 @@ class MaterialGenerator:
             "cardboard": {"cat": "organic", "color": [0.5, 0.4, 0.3], "ior": 1.5, "k": 0.0},
             "cork": {"cat": "organic", "color": [0.6, 0.4, 0.3], "ior": 1.2, "k": 0.0},
             "clay": {"cat": "organic", "color": [0.5, 0.35, 0.3], "ior": 1.6, "k": 0.0, "sss": 0.15},
+            "skin_human": {"cat": "organic", "color": [0.8, 0.6, 0.5], "ior": 1.4, "k": 0.0, "sss": 0.8, "sss_color": [1.0, 0.2, 0.1], "hint": "human skin with deep red subsurface scattering"},
 
             # --- TRANSLUCENTS (Refraction & Jewels) ---
             "glass": {"cat": "translucent", "color": [1.0, 1.0, 1.0], "ior": 1.52, "k": 0.0},
@@ -95,35 +118,61 @@ class MaterialGenerator:
             "scratched": {"dirt": 0.1, "wear": 0.9, "hint": "showing heavy surface abrasions"}
         }
 
+    def _build_entity(self, tech_id, b_name, f_name, c_name, base, category, finish, cond, color_override=None):
+        params = {**self.CATEGORIES[category], **base, **finish, **cond}
+
+        if color_override:
+            params["color"] = color_override
+
+        # Layered shader logic: promote clearcoat flag into render-ready params
+        if params.get("clearcoat", 0.0) > 0:
+            params["clearcoat_weight"] = 1.0
+            params["clearcoat_rough"] = params.get("clearcoat_rough", 0.03)
+            params.setdefault("metallic_flake", 0.0)
+        else:
+            params["clearcoat_weight"] = 0.0
+            params["metallic_flake"] = 0.0
+
+        for key in ("cat", "colorable", "only_for"):
+            params.pop(key, None)
+
+        params["variation_seed"] = int(hashlib.md5(tech_id.encode()).hexdigest()[:8], 16)
+
+        return {
+            "id": tech_id,
+            "metadata": {"base": b_name, "category": category, "finish": f_name, "condition": c_name},
+            "parameters": params,
+            "semantic_hints": [base.get("hint", b_name), finish["hint"], cond["hint"]]
+        }
+
     def generate(self):
         library = {}
-        
-        # Cartesian Product: Base x Finish x Condition
+
         for b_name, f_name, c_name in product(self.BASES, self.FINISHES, self.CONDITIONS):
-            
             base = self.BASES[b_name]
             category = base["cat"]
             cond = self.CONDITIONS[c_name]
-            
-            # --- COMPATIBILITY FILTER ---
-            # Skip if condition is category-specific and doesn't match
+
             if "only_for" in cond and category not in cond["only_for"]:
                 continue
 
-            tech_id = f"{b_name}_{f_name}_{c_name}"
             finish = self.FINISHES[f_name]
 
-            # Build the flat parameter set for Houdini
-            params = {**self.CATEGORIES[category], **base, **finish, **cond}
-            params["variation_seed"] = int(hashlib.md5(tech_id.encode()).hexdigest()[:8], 16)
+            # For colorable materials, generate one variant per palette color
+            if base.get("colorable"):
+                for color_name, color_val in self.COLOR_PALETTE.items():
+                    tech_id = f"{b_name}_{color_name}_{f_name}_{c_name}"
+                    library[tech_id] = self._build_entity(
+                        tech_id, b_name, f_name, c_name,
+                        base, category, finish, cond, color_override=color_val
+                    )
+            else:
+                tech_id = f"{b_name}_{f_name}_{c_name}"
+                library[tech_id] = self._build_entity(
+                    tech_id, b_name, f_name, c_name,
+                    base, category, finish, cond
+                )
 
-            library[tech_id] = {
-                "id": tech_id,
-                "metadata": {"base": b_name, "category": category, "finish": f_name, "condition": c_name},
-                "parameters": params,
-                "semantic_hints": [base.get("hint", b_name), finish["hint"], cond["hint"]]
-            }
-            
         return library
 
     def export(self, filepath=None):
@@ -134,16 +183,24 @@ class MaterialGenerator:
             json.dump(data, f, indent=4)
         return data
 
-    def display(self, limit=None):
+    def display(self, columns=None, limit=None):
         library = self.generate()
-        print(f"{'NAME':<35} | {'CATEGORY':<12} | {'COLOR'}")
-        print("-" * 70)
-        for i, (tid, entry) in enumerate(library.items()):
-            if limit and i >= limit:
-                break
-            color = entry["parameters"]["color"]
-            cat = entry["metadata"]["category"]
-            print(f"{tid:<35} | {cat:<12} | {color}")
+        items = list(library.items())
+        if limit:
+            items = items[:limit]
+        if columns is None:
+            columns = ["color", "ior", "rough", "clearcoat_weight"]
+
+        col_w = {c: max(len(c), 8) for c in columns}
+        id_w = max(len(tid) for tid, _ in items)
+
+        header = f"{'TECH ID':<{id_w}} | " + " | ".join(f"{c:<{col_w[c]}}" for c in columns)
+        print(header)
+        print("-" * len(header))
+        for tid, entry in items:
+            vals = entry["parameters"]
+            row = f"{tid:<{id_w}} | " + " | ".join(f"{str(vals.get(c, '')):<{col_w[c]}}" for c in columns)
+            print(row)
         print(f"\nTotal: {len(library)} materials")
 
 
