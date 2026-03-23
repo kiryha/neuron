@@ -1,0 +1,884 @@
+{
+    "gold_polished_clean": {
+        "metadata": {
+            "base": "gold",
+            "category": "metal",
+            "finish": "polished",
+            "condition": "polished"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                1.0,
+                0.85,
+                0.5
+            ],
+            "ior": 0.47,
+            "k": 2.83,
+            "roughness": 0.02,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.0,
+            "scratch_density": 0.0
+        }
+    },
+    "gold_polished_dirty": {
+        "metadata": {
+            "base": "gold",
+            "category": "metal",
+            "finish": "polished",
+            "condition": "polished"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                1.0,
+                0.85,
+                0.5
+            ],
+            "ior": 0.47,
+            "k": 2.83,
+            "roughness": 0.02,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.8,
+            "scratch_density": 0.2
+        }
+    },
+    "gold_polished_worn": {
+        "metadata": {
+            "base": "gold",
+            "category": "metal",
+            "finish": "polished",
+            "condition": "polished"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                1.0,
+                0.85,
+                0.5
+            ],
+            "ior": 0.47,
+            "k": 2.83,
+            "roughness": 0.02,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.4,
+            "scratch_density": 0.9
+        }
+    },
+    "gold_brushed_clean": {
+        "metadata": {
+            "base": "gold",
+            "category": "metal",
+            "finish": "brushed",
+            "condition": "brushed"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                1.0,
+                0.85,
+                0.5
+            ],
+            "ior": 0.47,
+            "k": 2.83,
+            "roughness": 0.35,
+            "anisotropy": 0.8,
+            "dirt_mult": 0.0,
+            "scratch_density": 0.0
+        }
+    },
+    "gold_brushed_dirty": {
+        "metadata": {
+            "base": "gold",
+            "category": "metal",
+            "finish": "brushed",
+            "condition": "brushed"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                1.0,
+                0.85,
+                0.5
+            ],
+            "ior": 0.47,
+            "k": 2.83,
+            "roughness": 0.35,
+            "anisotropy": 0.8,
+            "dirt_mult": 0.8,
+            "scratch_density": 0.2
+        }
+    },
+    "gold_brushed_worn": {
+        "metadata": {
+            "base": "gold",
+            "category": "metal",
+            "finish": "brushed",
+            "condition": "brushed"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                1.0,
+                0.85,
+                0.5
+            ],
+            "ior": 0.47,
+            "k": 2.83,
+            "roughness": 0.35,
+            "anisotropy": 0.8,
+            "dirt_mult": 0.4,
+            "scratch_density": 0.9
+        }
+    },
+    "gold_matte_clean": {
+        "metadata": {
+            "base": "gold",
+            "category": "metal",
+            "finish": "matte",
+            "condition": "matte"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                1.0,
+                0.85,
+                0.5
+            ],
+            "ior": 0.47,
+            "k": 2.83,
+            "roughness": 0.9,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.0,
+            "scratch_density": 0.0
+        }
+    },
+    "gold_matte_dirty": {
+        "metadata": {
+            "base": "gold",
+            "category": "metal",
+            "finish": "matte",
+            "condition": "matte"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                1.0,
+                0.85,
+                0.5
+            ],
+            "ior": 0.47,
+            "k": 2.83,
+            "roughness": 0.9,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.8,
+            "scratch_density": 0.2
+        }
+    },
+    "gold_matte_worn": {
+        "metadata": {
+            "base": "gold",
+            "category": "metal",
+            "finish": "matte",
+            "condition": "matte"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                1.0,
+                0.85,
+                0.5
+            ],
+            "ior": 0.47,
+            "k": 2.83,
+            "roughness": 0.9,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.4,
+            "scratch_density": 0.9
+        }
+    },
+    "iron_polished_clean": {
+        "metadata": {
+            "base": "iron",
+            "category": "metal",
+            "finish": "polished",
+            "condition": "polished"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                0.56,
+                0.57,
+                0.58
+            ],
+            "ior": 2.9,
+            "k": 3.0,
+            "roughness": 0.02,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.0,
+            "scratch_density": 0.0
+        }
+    },
+    "iron_polished_dirty": {
+        "metadata": {
+            "base": "iron",
+            "category": "metal",
+            "finish": "polished",
+            "condition": "polished"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                0.56,
+                0.57,
+                0.58
+            ],
+            "ior": 2.9,
+            "k": 3.0,
+            "roughness": 0.02,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.8,
+            "scratch_density": 0.2
+        }
+    },
+    "iron_polished_worn": {
+        "metadata": {
+            "base": "iron",
+            "category": "metal",
+            "finish": "polished",
+            "condition": "polished"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                0.56,
+                0.57,
+                0.58
+            ],
+            "ior": 2.9,
+            "k": 3.0,
+            "roughness": 0.02,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.4,
+            "scratch_density": 0.9
+        }
+    },
+    "iron_brushed_clean": {
+        "metadata": {
+            "base": "iron",
+            "category": "metal",
+            "finish": "brushed",
+            "condition": "brushed"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                0.56,
+                0.57,
+                0.58
+            ],
+            "ior": 2.9,
+            "k": 3.0,
+            "roughness": 0.35,
+            "anisotropy": 0.8,
+            "dirt_mult": 0.0,
+            "scratch_density": 0.0
+        }
+    },
+    "iron_brushed_dirty": {
+        "metadata": {
+            "base": "iron",
+            "category": "metal",
+            "finish": "brushed",
+            "condition": "brushed"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                0.56,
+                0.57,
+                0.58
+            ],
+            "ior": 2.9,
+            "k": 3.0,
+            "roughness": 0.35,
+            "anisotropy": 0.8,
+            "dirt_mult": 0.8,
+            "scratch_density": 0.2
+        }
+    },
+    "iron_brushed_worn": {
+        "metadata": {
+            "base": "iron",
+            "category": "metal",
+            "finish": "brushed",
+            "condition": "brushed"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                0.56,
+                0.57,
+                0.58
+            ],
+            "ior": 2.9,
+            "k": 3.0,
+            "roughness": 0.35,
+            "anisotropy": 0.8,
+            "dirt_mult": 0.4,
+            "scratch_density": 0.9
+        }
+    },
+    "iron_matte_clean": {
+        "metadata": {
+            "base": "iron",
+            "category": "metal",
+            "finish": "matte",
+            "condition": "matte"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                0.56,
+                0.57,
+                0.58
+            ],
+            "ior": 2.9,
+            "k": 3.0,
+            "roughness": 0.9,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.0,
+            "scratch_density": 0.0
+        }
+    },
+    "iron_matte_dirty": {
+        "metadata": {
+            "base": "iron",
+            "category": "metal",
+            "finish": "matte",
+            "condition": "matte"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                0.56,
+                0.57,
+                0.58
+            ],
+            "ior": 2.9,
+            "k": 3.0,
+            "roughness": 0.9,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.8,
+            "scratch_density": 0.2
+        }
+    },
+    "iron_matte_worn": {
+        "metadata": {
+            "base": "iron",
+            "category": "metal",
+            "finish": "matte",
+            "condition": "matte"
+        },
+        "parameters": {
+            "metalness": 1.0,
+            "specular_model": "physically_correct_dielectric",
+            "has_k": true,
+            "cat": "metal",
+            "color": [
+                0.56,
+                0.57,
+                0.58
+            ],
+            "ior": 2.9,
+            "k": 3.0,
+            "roughness": 0.9,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.4,
+            "scratch_density": 0.9
+        }
+    },
+    "plastic_polished_clean": {
+        "metadata": {
+            "base": "plastic",
+            "category": "dielectric",
+            "finish": "polished",
+            "condition": "polished"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "specular_model": "ggx",
+            "has_k": false,
+            "cat": "dielectric",
+            "color": [
+                0.1,
+                0.1,
+                0.1
+            ],
+            "ior": 1.5,
+            "roughness": 0.02,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.0,
+            "scratch_density": 0.0
+        }
+    },
+    "plastic_polished_dirty": {
+        "metadata": {
+            "base": "plastic",
+            "category": "dielectric",
+            "finish": "polished",
+            "condition": "polished"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "specular_model": "ggx",
+            "has_k": false,
+            "cat": "dielectric",
+            "color": [
+                0.1,
+                0.1,
+                0.1
+            ],
+            "ior": 1.5,
+            "roughness": 0.02,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.8,
+            "scratch_density": 0.2
+        }
+    },
+    "plastic_polished_worn": {
+        "metadata": {
+            "base": "plastic",
+            "category": "dielectric",
+            "finish": "polished",
+            "condition": "polished"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "specular_model": "ggx",
+            "has_k": false,
+            "cat": "dielectric",
+            "color": [
+                0.1,
+                0.1,
+                0.1
+            ],
+            "ior": 1.5,
+            "roughness": 0.02,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.4,
+            "scratch_density": 0.9
+        }
+    },
+    "plastic_brushed_clean": {
+        "metadata": {
+            "base": "plastic",
+            "category": "dielectric",
+            "finish": "brushed",
+            "condition": "brushed"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "specular_model": "ggx",
+            "has_k": false,
+            "cat": "dielectric",
+            "color": [
+                0.1,
+                0.1,
+                0.1
+            ],
+            "ior": 1.5,
+            "roughness": 0.35,
+            "anisotropy": 0.8,
+            "dirt_mult": 0.0,
+            "scratch_density": 0.0
+        }
+    },
+    "plastic_brushed_dirty": {
+        "metadata": {
+            "base": "plastic",
+            "category": "dielectric",
+            "finish": "brushed",
+            "condition": "brushed"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "specular_model": "ggx",
+            "has_k": false,
+            "cat": "dielectric",
+            "color": [
+                0.1,
+                0.1,
+                0.1
+            ],
+            "ior": 1.5,
+            "roughness": 0.35,
+            "anisotropy": 0.8,
+            "dirt_mult": 0.8,
+            "scratch_density": 0.2
+        }
+    },
+    "plastic_brushed_worn": {
+        "metadata": {
+            "base": "plastic",
+            "category": "dielectric",
+            "finish": "brushed",
+            "condition": "brushed"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "specular_model": "ggx",
+            "has_k": false,
+            "cat": "dielectric",
+            "color": [
+                0.1,
+                0.1,
+                0.1
+            ],
+            "ior": 1.5,
+            "roughness": 0.35,
+            "anisotropy": 0.8,
+            "dirt_mult": 0.4,
+            "scratch_density": 0.9
+        }
+    },
+    "plastic_matte_clean": {
+        "metadata": {
+            "base": "plastic",
+            "category": "dielectric",
+            "finish": "matte",
+            "condition": "matte"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "specular_model": "ggx",
+            "has_k": false,
+            "cat": "dielectric",
+            "color": [
+                0.1,
+                0.1,
+                0.1
+            ],
+            "ior": 1.5,
+            "roughness": 0.9,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.0,
+            "scratch_density": 0.0
+        }
+    },
+    "plastic_matte_dirty": {
+        "metadata": {
+            "base": "plastic",
+            "category": "dielectric",
+            "finish": "matte",
+            "condition": "matte"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "specular_model": "ggx",
+            "has_k": false,
+            "cat": "dielectric",
+            "color": [
+                0.1,
+                0.1,
+                0.1
+            ],
+            "ior": 1.5,
+            "roughness": 0.9,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.8,
+            "scratch_density": 0.2
+        }
+    },
+    "plastic_matte_worn": {
+        "metadata": {
+            "base": "plastic",
+            "category": "dielectric",
+            "finish": "matte",
+            "condition": "matte"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "specular_model": "ggx",
+            "has_k": false,
+            "cat": "dielectric",
+            "color": [
+                0.1,
+                0.1,
+                0.1
+            ],
+            "ior": 1.5,
+            "roughness": 0.9,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.4,
+            "scratch_density": 0.9
+        }
+    },
+    "glass_polished_clean": {
+        "metadata": {
+            "base": "glass",
+            "category": "translucent",
+            "finish": "polished",
+            "condition": "polished"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "enable_sss": true,
+            "has_k": false,
+            "cat": "translucent",
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "ior": 1.52,
+            "roughness": 0.02,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.0,
+            "scratch_density": 0.0
+        }
+    },
+    "glass_polished_dirty": {
+        "metadata": {
+            "base": "glass",
+            "category": "translucent",
+            "finish": "polished",
+            "condition": "polished"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "enable_sss": true,
+            "has_k": false,
+            "cat": "translucent",
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "ior": 1.52,
+            "roughness": 0.02,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.8,
+            "scratch_density": 0.2
+        }
+    },
+    "glass_polished_worn": {
+        "metadata": {
+            "base": "glass",
+            "category": "translucent",
+            "finish": "polished",
+            "condition": "polished"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "enable_sss": true,
+            "has_k": false,
+            "cat": "translucent",
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "ior": 1.52,
+            "roughness": 0.02,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.4,
+            "scratch_density": 0.9
+        }
+    },
+    "glass_brushed_clean": {
+        "metadata": {
+            "base": "glass",
+            "category": "translucent",
+            "finish": "brushed",
+            "condition": "brushed"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "enable_sss": true,
+            "has_k": false,
+            "cat": "translucent",
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "ior": 1.52,
+            "roughness": 0.35,
+            "anisotropy": 0.8,
+            "dirt_mult": 0.0,
+            "scratch_density": 0.0
+        }
+    },
+    "glass_brushed_dirty": {
+        "metadata": {
+            "base": "glass",
+            "category": "translucent",
+            "finish": "brushed",
+            "condition": "brushed"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "enable_sss": true,
+            "has_k": false,
+            "cat": "translucent",
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "ior": 1.52,
+            "roughness": 0.35,
+            "anisotropy": 0.8,
+            "dirt_mult": 0.8,
+            "scratch_density": 0.2
+        }
+    },
+    "glass_brushed_worn": {
+        "metadata": {
+            "base": "glass",
+            "category": "translucent",
+            "finish": "brushed",
+            "condition": "brushed"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "enable_sss": true,
+            "has_k": false,
+            "cat": "translucent",
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "ior": 1.52,
+            "roughness": 0.35,
+            "anisotropy": 0.8,
+            "dirt_mult": 0.4,
+            "scratch_density": 0.9
+        }
+    },
+    "glass_matte_clean": {
+        "metadata": {
+            "base": "glass",
+            "category": "translucent",
+            "finish": "matte",
+            "condition": "matte"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "enable_sss": true,
+            "has_k": false,
+            "cat": "translucent",
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "ior": 1.52,
+            "roughness": 0.9,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.0,
+            "scratch_density": 0.0
+        }
+    },
+    "glass_matte_dirty": {
+        "metadata": {
+            "base": "glass",
+            "category": "translucent",
+            "finish": "matte",
+            "condition": "matte"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "enable_sss": true,
+            "has_k": false,
+            "cat": "translucent",
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "ior": 1.52,
+            "roughness": 0.9,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.8,
+            "scratch_density": 0.2
+        }
+    },
+    "glass_matte_worn": {
+        "metadata": {
+            "base": "glass",
+            "category": "translucent",
+            "finish": "matte",
+            "condition": "matte"
+        },
+        "parameters": {
+            "metalness": 0.0,
+            "enable_sss": true,
+            "has_k": false,
+            "cat": "translucent",
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "ior": 1.52,
+            "roughness": 0.9,
+            "anisotropy": 0.0,
+            "dirt_mult": 0.4,
+            "scratch_density": 0.9
+        }
+    }
+}
