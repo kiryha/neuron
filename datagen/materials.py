@@ -249,6 +249,7 @@ class CreateMaterials:
         builder.createNode("subinput", "inputs")
 
         surface = builder.createNode("mtlxstandard_surface", "mtlxstandard_surface")
+        surface.setGenericFlag(self.hou.nodeFlag.VopShowCompressedParams, True)
         surface_out = builder.createNode("subnetconnector", "surface_output")
         surface_out.parm("connectorkind").set("output")
         surface_out.parm("parmname").set("surface")
@@ -299,4 +300,4 @@ class CreateMaterials:
             self.build_material(matlib, mat_id, entry)
 
         matlib.layoutChildren()
-        print(f"Library complete — {len(entries)} materials built")
+        print(f">> Library complete: {len(entries)} materials built")
