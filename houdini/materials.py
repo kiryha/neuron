@@ -17,14 +17,65 @@ class MaterialGenerator:
 
         # 2. BASES (The Nouns)
         self.BASES = {
+            # --- METALS (Conductors: High K, 0% Diffuse) ---
             "gold": {"cat": "metal", "color": [1.0, 0.85, 0.5], "ior": 0.47, "k": 2.83},
+            "silver": {"cat": "metal", "color": [0.97, 0.96, 0.91], "ior": 0.18, "k": 3.42},
             "copper": {"cat": "metal", "color": [0.95, 0.64, 0.54], "ior": 1.1, "k": 2.5},
             "iron": {"cat": "metal", "color": [0.56, 0.57, 0.58], "ior": 2.9, "k": 3.0},
-            "plastic": {"cat": "dielectric", "color": [0.1, 0.1, 0.1], "ior": 1.5},
-            "concrete": {"cat": "dielectric", "color": [0.5, 0.5, 0.5], "ior": 1.6},
-            "marble": {"cat": "dielectric", "color": [0.9, 0.9, 0.9], "ior": 1.48},
-            "oak_wood": {"cat": "organic", "color": [0.3, 0.2, 0.1], "ior": 1.5},
-            "glass": {"cat": "translucent", "color": [1.0, 1.0, 1.0], "ior": 1.52}
+            "aluminum": {"cat": "metal", "color": [0.91, 0.92, 0.92], "ior": 1.2, "k": 7.0},
+            "titanium": {"cat": "metal", "color": [0.54, 0.51, 0.47], "ior": 2.16, "k": 3.58},
+            "steel": {"cat": "metal", "color": [0.42, 0.43, 0.45], "ior": 2.4, "k": 3.2},
+            "brass": {"cat": "metal", "color": [0.88, 0.72, 0.4], "ior": 0.44, "k": 2.4},
+            "chrome": {"cat": "metal", "color": [0.55, 0.55, 0.57], "ior": 3.1, "k": 3.3},
+            "platinum": {"cat": "metal", "color": [0.68, 0.66, 0.62], "ior": 2.3, "k": 4.1},
+            "lead": {"cat": "metal", "color": [0.3, 0.3, 0.32], "ior": 2.0, "k": 3.5},
+            "tin": {"cat": "metal", "color": [0.75, 0.75, 0.76], "ior": 1.5, "k": 4.5},
+            "nickel": {"cat": "metal", "color": [0.66, 0.6, 0.54], "ior": 2.3, "k": 3.4},
+            "cobalt": {"cat": "metal", "color": [0.67, 0.68, 0.69], "ior": 2.2, "k": 4.0},
+            "bronze": {"cat": "metal", "color": [0.7, 0.5, 0.3], "ior": 0.5, "k": 3.5},
+
+            # --- STONES & CERAMICS (Dielectrics: High IOR) ---
+            "marble": {"cat": "dielectric", "color": [0.9, 0.9, 0.9], "ior": 1.48, "k": 0.0, "sss": 0.1},
+            "granite": {"cat": "dielectric", "color": [0.4, 0.4, 0.4], "ior": 1.6, "k": 0.0},
+            "concrete": {"cat": "dielectric", "color": [0.5, 0.5, 0.5], "ior": 1.6, "k": 0.0},
+            "brick": {"cat": "dielectric", "color": [0.5, 0.2, 0.15], "ior": 1.5, "k": 0.0},
+            "porcelain": {"cat": "dielectric", "color": [0.95, 0.95, 0.95], "ior": 1.5, "k": 0.0, "sss": 0.2},
+            "terracotta": {"cat": "dielectric", "color": [0.6, 0.3, 0.2], "ior": 1.6, "k": 0.0},
+            "slate": {"cat": "dielectric", "color": [0.2, 0.22, 0.25], "ior": 1.55, "k": 0.0},
+            "sandstone": {"cat": "dielectric", "color": [0.7, 0.6, 0.45], "ior": 1.5, "k": 0.0},
+            "obsidian": {"cat": "dielectric", "color": [0.02, 0.02, 0.03], "ior": 1.48, "k": 0.0},
+            "basalt": {"cat": "dielectric", "color": [0.1, 0.1, 0.1], "ior": 1.7, "k": 0.0},
+
+            # --- PLASTICS & SYNTHETICS ---
+            "plastic_abs": {"cat": "dielectric", "color": [0.1, 0.1, 0.1], "ior": 1.54, "k": 0.0},
+            "plastic_pvc": {"cat": "dielectric", "color": [0.8, 0.8, 0.8], "ior": 1.52, "k": 0.0},
+            "rubber": {"cat": "dielectric", "color": [0.05, 0.05, 0.05], "ior": 1.51, "k": 0.0},
+            "carbon_fiber": {"cat": "dielectric", "color": [0.05, 0.05, 0.05], "ior": 1.6, "k": 0.0, "clearcoat": 1.0},
+            "bakelite": {"cat": "dielectric", "color": [0.2, 0.1, 0.05], "ior": 1.6, "k": 0.0},
+            "silicone": {"cat": "dielectric", "color": [0.7, 0.7, 0.7], "ior": 1.43, "k": 0.0, "sss": 0.4},
+            "epoxy_resin": {"cat": "dielectric", "color": [0.8, 0.7, 0.5], "ior": 1.55, "k": 0.0, "sss": 0.3},
+            "car_paint": {"cat": "dielectric", "color": [0.5, 0.0, 0.0], "ior": 1.5, "k": 0.0, "clearcoat": 1.0},
+
+            # --- ORGANICS (High SSS) ---
+            "oak_wood": {"cat": "organic", "color": [0.35, 0.25, 0.15], "ior": 1.5, "k": 0.0},
+            "pine_wood": {"cat": "organic", "color": [0.7, 0.5, 0.3], "ior": 1.5, "k": 0.0},
+            "mahogany": {"cat": "organic", "color": [0.2, 0.05, 0.02], "ior": 1.5, "k": 0.0},
+            "leather_tan": {"cat": "organic", "color": [0.4, 0.2, 0.1], "ior": 1.48, "k": 0.0},
+            "leather_black": {"cat": "organic", "color": [0.05, 0.05, 0.05], "ior": 1.5, "k": 0.0},
+            "paper": {"cat": "organic", "color": [0.9, 0.9, 0.85], "ior": 1.5, "k": 0.0, "sss": 0.1},
+            "cardboard": {"cat": "organic", "color": [0.5, 0.4, 0.3], "ior": 1.5, "k": 0.0},
+            "cork": {"cat": "organic", "color": [0.6, 0.4, 0.3], "ior": 1.2, "k": 0.0},
+            "clay": {"cat": "organic", "color": [0.5, 0.35, 0.3], "ior": 1.6, "k": 0.0, "sss": 0.15},
+
+            # --- TRANSLUCENTS (Refraction & Jewels) ---
+            "glass": {"cat": "translucent", "color": [1.0, 1.0, 1.0], "ior": 1.52, "k": 0.0},
+            "water": {"cat": "translucent", "color": [0.9, 1.0, 1.0], "ior": 1.33, "k": 0.0},
+            "ice": {"cat": "translucent", "color": [0.8, 0.9, 1.0], "ior": 1.31, "k": 0.0},
+            "diamond": {"cat": "translucent", "color": [1.0, 1.0, 1.0], "ior": 2.42, "k": 0.0},
+            "emerald": {"cat": "translucent", "color": [0.1, 0.8, 0.2], "ior": 1.57, "k": 0.0},
+            "ruby": {"cat": "translucent", "color": [0.9, 0.0, 0.1], "ior": 1.76, "k": 0.0},
+            "amber": {"cat": "translucent", "color": [1.0, 0.6, 0.1], "ior": 1.54, "k": 0.0, "sss": 0.5},
+            "honey": {"cat": "translucent", "color": [0.8, 0.5, 0.1], "ior": 1.5, "k": 0.0, "sss": 0.8},
         }
 
         # 3. FINISHES (Physical Surface State)
