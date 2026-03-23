@@ -74,3 +74,4 @@ You should organize the repo as follows:
 2. Build the `neuron/` folder structure as defined above.
 3. Replace the "cyan sphere" in `App.jsx` with a dynamic viewport that pings the backend.
 4. Provide a detailed summary of the code changes and any new dependencies needed in `requirements.txt`.
+
