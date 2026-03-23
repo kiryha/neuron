@@ -213,8 +213,6 @@ class BuildMaterialsData:
             print(row)
         print(f"\nTotal: {len(library)} materials")
 
-
-
 class CreateMaterials:
     """Builds a USD MaterialX library inside Houdini Solaris from
     neuron_library.json produced by BuildMaterialsData."""
