@@ -209,9 +209,3 @@ class MaterialGenerator:
             row = f"{tid:<{id_w}} | " + " | ".join(f"{str(vals.get(c, '')):<{col_w[c]}}" for c in columns)
             print(row)
         print(f"\nTotal: {len(library)} materials")
-
-
-if __name__ == "__main__":
-    generator = MaterialGenerator()
-    generator.export()
-    generator.display()
