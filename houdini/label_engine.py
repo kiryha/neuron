@@ -1,1 +1,3 @@
-"""Label Engine — converts technical material IDs into semantic descriptions for CLIP training."""
+"""
+Label Engine — converts technical material IDs into semantic descriptions for CLIP training
+"""

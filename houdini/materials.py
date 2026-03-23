@@ -1,4 +1,5 @@
 import json
+import hashlib
 from pathlib import Path
 from itertools import product
 
@@ -8,10 +9,10 @@ class MaterialGenerator:
     def __init__(self):
         # 1. PHYSICAL CATEGORIES (Shader Models)
         self.CATEGORIES = {
-            "metal": {"metalness": 1.0, "has_k": True, "sss": 0.0},
-            "dielectric": {"metalness": 0.0, "has_k": False, "sss": 0.0},
-            "organic": {"metalness": 0.0, "has_k": False, "sss": 0.2},
-            "translucent": {"metalness": 0.0, "has_k": False, "refraction": 1.0}
+            "metal": {"metalness": 1.0, "has_k": True, "sss": 0.0, "clearcoat": 0.0, "clearcoat_rough": 0.0},
+            "dielectric": {"metalness": 0.0, "has_k": False, "sss": 0.0, "clearcoat": 0.0, "clearcoat_rough": 0.0},
+            "organic": {"metalness": 0.0, "has_k": False, "sss": 0.2, "clearcoat": 0.0, "clearcoat_rough": 0.0},
+            "translucent": {"metalness": 0.0, "has_k": False, "refraction": 1.0, "clearcoat": 0.0, "clearcoat_rough": 0.0}
         }
 
         # 2. BASES (The Nouns)
@@ -28,11 +29,11 @@ class MaterialGenerator:
 
         # 3. FINISHES (Physical Surface State)
         self.FINISHES = {
-            "polished": {"rough": 0.02, "anisotropy": 0.0, "hint": "mirror-like and smooth"},
-            "matte": {"rough": 0.9, "anisotropy": 0.0, "hint": "dull and non-reflective"},
-            "satin": {"rough": 0.25, "anisotropy": 0.1, "hint": "soft semi-gloss sheen"},
-            "brushed": {"rough": 0.35, "anisotropy": 0.8, "hint": "directional micro-scratches"},
-            "hammered": {"rough": 0.15, "bump_type": "cellular", "hint": "indented with small craters"}
+            "polished": {"rough": 0.02, "anisotropy": 0.0, "bump_scale": 0.0, "noise_scale": 1.0, "hint": "mirror-like and smooth"},
+            "matte": {"rough": 0.9, "anisotropy": 0.0, "bump_scale": 0.0, "noise_scale": 1.0, "hint": "dull and non-reflective"},
+            "satin": {"rough": 0.25, "anisotropy": 0.1, "bump_scale": 0.02, "noise_scale": 1.0, "hint": "soft semi-gloss sheen"},
+            "brushed": {"rough": 0.35, "anisotropy": 0.8, "bump_scale": 0.1, "noise_scale": 0.5, "bump_type": "directional", "hint": "directional micro-scratches"},
+            "hammered": {"rough": 0.15, "bump_scale": 0.5, "noise_scale": 2.0, "bump_type": "cellular", "hint": "indented with small craters"}
         }
 
         # 4. CONDITIONS (Environmental Wear)
@@ -63,7 +64,8 @@ class MaterialGenerator:
 
             # Build the flat parameter set for Houdini
             params = {**self.CATEGORIES[category], **base, **finish, **cond}
-            
+            params["variation_seed"] = int(hashlib.md5(tech_id.encode()).hexdigest()[:8], 16)
+
             library[tech_id] = {
                 "id": tech_id,
                 "metadata": {"base": b_name, "category": category, "finish": f_name, "condition": c_name},
@@ -83,7 +85,7 @@ class MaterialGenerator:
 
     def display(self, limit=None):
         library = self.generate()
-        print(f"{'TECH ID':<35} | {'CATEGORY':<12} | {'COLOR'}")
+        print(f"{'NAME':<35} | {'CATEGORY':<12} | {'COLOR'}")
         print("-" * 70)
         for i, (tid, entry) in enumerate(library.items()):
             if limit and i >= limit:
