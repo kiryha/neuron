@@ -1,5 +1,8 @@
 import json
+from pathlib import Path
 from itertools import product
+
+from config import LIBRARY_JSON
 
 class MaterialGenerator:
     def __init__(self):
@@ -70,20 +73,28 @@ class MaterialGenerator:
             
         return library
 
-    def export(self, filename="neuron_library.json"):
+    def export(self, filepath=None):
+        filepath = Path(filepath) if filepath else LIBRARY_JSON
+        filepath.parent.mkdir(parents=True, exist_ok=True)
         data = self.generate()
-        with open(filename, "w") as f:
+        with open(filepath, "w") as f:
             json.dump(data, f, indent=4)
         return data
 
-# --- RUN GENERATOR ---
-generator = MaterialGenerator()
-final_list = generator.generate()
+    def display(self, limit=None):
+        library = self.generate()
+        print(f"{'TECH ID':<35} | {'CATEGORY':<12} | {'COLOR'}")
+        print("-" * 70)
+        for i, (tid, entry) in enumerate(library.items()):
+            if limit and i >= limit:
+                break
+            color = entry["parameters"]["color"]
+            cat = entry["metadata"]["category"]
+            print(f"{tid:<35} | {cat:<12} | {color}")
+        print(f"\nTotal: {len(library)} materials")
 
-# Print the top 15 entries as a sample
-print(f"{'EXPANDED TECH ID':<35} | {'CATEGORY':<12} | {'COLOR'}")
-print("-" * 70)
-for i, (tid, content) in enumerate(final_list.items()):
-    color = content['parameters']['color']
-    cat = content['metadata']['category']
-    print(f"{tid:<35} | {cat:<12} | {color}")
+
+if __name__ == "__main__":
+    generator = MaterialGenerator()
+    generator.export()
+    generator.display()
