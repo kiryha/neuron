@@ -216,19 +216,13 @@ class BuildMaterialsData:
 
 
 class CreateMaterials:
-    """Batch-builds a USD MaterialX library inside Houdini Solaris from the
-    neuron_library.json manifest produced by BuildMaterialsData.
+    """Builds a USD MaterialX library inside Houdini Solaris from
+    neuron_library.json produced by BuildMaterialsData."""
 
-    Idempotent: re-running will skip materials whose nodes already exist.
-    """
-
-    MATLIB_PATH = "/stage/materials"
-    SURFACE_NODE = "standard_surface1"
     PARAM_MAP = {
         "color":      "base_color",
         "metalness":  "metalness",
-        "ior":        "specular_ior",
-        "k":          "specular_extinction",
+        "ior":        "specular_IOR",
         "rough":      "specular_roughness",
         "anisotropy": "specular_anisotropy",
     }
@@ -241,7 +235,6 @@ class CreateMaterials:
         self.materials_data = self.load_materials_data()
 
     def load_materials_data(self):
-
         if not self.json_path.exists():
             raise FileNotFoundError(
                 f"Material library not found: {self.json_path}  "
@@ -250,50 +243,62 @@ class CreateMaterials:
         with open(self.json_path, "r") as f:
             return json.load(f)
 
-    def build_material_nodes(self, mtlx_builder):
+    def _create_builder(self, matlib, mat_id):
+        """Create a material subnet with the standard MaterialX node chain."""
+        builder = matlib.createNode("subnet", mat_id, run_init_scripts=False)
+        builder.setMaterialFlag(True)
 
-        # Input node
-        surface_input = mtlx_builder.createNode("subinput", "inputs")
+        builder.createNode("subinput", "inputs")
 
-        # Surface chain
-        surface_shader = mtlx_builder.createNode("mtlxstandard_surface", "mtlxstandard_surface")
-        surface_output = mtlx_builder.createNode("subnetconnector", "surface_output")
-        surface_output.parm("connectorkind").set("output")
-        surface_output.parm("parmname").set("surface")
-        surface_output.parm("parmlabel").set("surface")
-        surface_output.parm("parmtype").set("surface")
-        surface_output.setInput(0, surface_shader, 0)
+        surface = builder.createNode("mtlxstandard_surface", "mtlxstandard_surface")
+        surface_out = builder.createNode("subnetconnector", "surface_output")
+        surface_out.parm("connectorkind").set("output")
+        surface_out.parm("parmname").set("surface")
+        surface_out.parm("parmlabel").set("surface")
+        surface_out.parm("parmtype").set("surface")
+        surface_out.setInput(0, surface, 0)
 
-        # Displacement chain
-        displacement = mtlx_builder.createNode("mtlxdisplacement", "mtlxdisplacement")
-        displacement_output = mtlx_builder.createNode("subnetconnector", "displacement_output")
-        displacement_output.parm("connectorkind").set("output")
-        displacement_output.parm("parmname").set("displacement")
-        displacement_output.parm("parmlabel").set("displacement")
-        displacement_output.parm("parmtype").set("displacement")
-        displacement_output.setInput(0, displacement, 0)
+        disp = builder.createNode("mtlxdisplacement", "mtlxdisplacement")
+        disp_out = builder.createNode("subnetconnector", "displacement_output")
+        disp_out.parm("connectorkind").set("output")
+        disp_out.parm("parmname").set("displacement")
+        disp_out.parm("parmlabel").set("displacement")
+        disp_out.parm("parmtype").set("displacement")
+        disp_out.setInput(0, disp, 0)
 
-        mtlx_builder.layoutChildren()
+        builder.layoutChildren()
+        return surface
+
+    def _apply_params(self, surface, params):
+        """Map JSON parameters onto the mtlxstandard_surface parms."""
+        for json_key, mtlx_parm in self.PARAM_MAP.items():
+            value = params.get(json_key)
+            if value is None:
+                continue
+            if json_key == "color":
+                surface.parmTuple(mtlx_parm).set(value)
+            else:
+                surface.parm(mtlx_parm).set(float(value))
+
 
     def build_material(self, matlib, mat_id, entry):
-
-        mtlx_builder = matlib.createNode("subnet", mat_id,  run_init_scripts=False)
-        mtlx_builder.setMaterialFlag(True)
-
-        self.build_material_nodes(mtlx_builder)
-
-        print(f"Built material: {mat_id}")
+        surface = self._create_builder(matlib, mat_id)
+        self._apply_params(surface, entry.get("parameters", {}))
 
     def build_library(self):
-
-        list_to_create = ["gold_polished_clean"]
+        list_to_create = ["gold_polished_clean", "rubber_grey_satin_scratched"]
 
         stage = self.hou.node("/stage")
         matlib = stage.createNode("materiallibrary", "neuron_materials")
         matlib.moveToGoodPosition()
 
-        for mat_id, entry in self.materials_data.items():
-            if mat_id in list_to_create:
-                self.build_material(matlib, mat_id, entry)
+        if list_to_create:
+            entries = {k: self.materials_data[k] for k in list_to_create}
+        else:
+            entries = self.materials_data
+
+        for mat_id, entry in entries.items():
+            self.build_material(matlib, mat_id, entry)
 
         matlib.layoutChildren()
+        print(f"Library complete — {len(entries)} materials built")
