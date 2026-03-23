@@ -6,7 +6,11 @@ import hou
 from PySide6 import QtCore, QtWidgets
 from datagen.ui import ui_datagen
 
-from datagen.materials import BuildMaterialsData, CreateMaterials
+from importlib import reload
+from datagen import materials
+reload(materials)
+# reload(BuildMaterialsData)
+# reload(CreateMaterials)
    
 
 class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
@@ -25,7 +29,7 @@ class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
         # materials_data.display()
 
         # Create Materials in Houdini
-        create_materials = CreateMaterials()
+        create_materials = materials.CreateMaterials()
         create_materials.build_library()
 
 def run_datagen():

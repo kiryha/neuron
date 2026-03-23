@@ -224,8 +224,6 @@ class CreateMaterials:
 
     MATLIB_PATH = "/stage/materials"
     SURFACE_NODE = "standard_surface1"
-
-    # JSON key -> mtlxstandard_surface parm name
     PARAM_MAP = {
         "color":      "base_color",
         "metalness":  "metalness",
@@ -237,163 +235,65 @@ class CreateMaterials:
 
     def __init__(self, json_path=None):
         import hou
-        self._hou = hou
+        self.hou = hou
 
-        self._json_path = Path(json_path) if json_path else LIBRARY_JSON
-        self._library = self._load_library()
+        self.json_path = Path(json_path) if json_path else LIBRARY_JSON
+        self.materials_data = self.load_materials_data()
 
-    def _load_library(self):
-        if not self._json_path.exists():
+    def load_materials_data(self):
+
+        if not self.json_path.exists():
             raise FileNotFoundError(
-                f"Material library not found: {self._json_path}  "
-                f"(run BuildMaterialsData.export() first)"
+                f"Material library not found: {self.json_path}  "
+                f"Create Materials data first!"
             )
-        with open(self._json_path, "r") as f:
+        with open(self.json_path, "r") as f:
             return json.load(f)
 
-    def _ensure_matlib(self):
-        """Return the /stage/materials materiallibrary LOP, creating it if needed."""
-        hou = self._hou
-        node = hou.node(self.MATLIB_PATH)
-        if node is not None:
-            return node
+    def build_material_nodes(self, mtlx_builder):
 
-        stage = hou.node("/stage")
-        if stage is None:
-            raise RuntimeError("No /stage context found — open a Solaris/LOPs desktop first")
+        # Input node
+        surface_input = mtlx_builder.createNode("subinput", "inputs")
 
-        node = stage.createNode("materiallibrary", "materials")
-        node.moveToGoodPosition()
-        logger.info("Created %s", self.MATLIB_PATH)
-        return node
+        # Surface chain
+        surface_shader = mtlx_builder.createNode("mtlxstandard_surface", "mtlxstandard_surface")
+        surface_output = mtlx_builder.createNode("subnetconnector", "surface_output")
+        surface_output.parm("connectorkind").set("output")
+        surface_output.parm("parmname").set("surface")
+        surface_output.parm("parmlabel").set("surface")
+        surface_output.parm("parmtype").set("surface")
+        surface_output.setInput(0, surface_shader, 0)
 
-    def _apply_params(self, surface_node, params):
-        """Map JSON parameters onto the mtlxstandard_surface node."""
-        for json_key, mtlx_parm in self.PARAM_MAP.items():
-            value = params.get(json_key)
-            if value is None:
-                continue
+        # Displacement chain
+        displacement = mtlx_builder.createNode("mtlxdisplacement", "mtlxdisplacement")
+        displacement_output = mtlx_builder.createNode("subnetconnector", "displacement_output")
+        displacement_output.parm("connectorkind").set("output")
+        displacement_output.parm("parmname").set("displacement")
+        displacement_output.parm("parmlabel").set("displacement")
+        displacement_output.parm("parmtype").set("displacement")
+        displacement_output.setInput(0, displacement, 0)
 
-            parm = surface_node.parm(mtlx_parm)
-            parm_tuple = surface_node.parmTuple(mtlx_parm)
+        mtlx_builder.layoutChildren()
 
-            if json_key == "color" and parm_tuple is not None:
-                parm_tuple.set(value)
-            elif parm is not None:
-                parm.set(float(value))
-            else:
-                logger.warning(
-                    "Parm '%s' not found on %s — skipping",
-                    mtlx_parm, surface_node.path(),
-                )
+    def build_material(self, matlib, mat_id, entry):
 
-        if params.get("has_k"):
-            fresnel_parm = surface_node.parm("specular_fresnel_mode")
-            if fresnel_parm is not None:
-                fresnel_parm.set(1)
-            else:
-                logger.debug(
-                    "No specular_fresnel_mode parm on %s — MaterialX version "
-                    "may not support complex IOR toggle",
-                    surface_node.path(),
-                )
+        mtlx_builder = matlib.createNode("subnet", mat_id,  run_init_scripts=False)
+        mtlx_builder.setMaterialFlag(True)
 
-    def _build_material(self, matlib, mat_id, entry):
-        """Add a material slot to the materiallibrary and configure its shader.
+        self.build_material_nodes(mtlx_builder)
 
-        The materiallibrary's children live in a VOP context, so we add
-        entries via the multiparm and then work with the auto-created
-        VOP subnet that Houdini populates with default MaterialX nodes.
-        """
-        params = entry.get("parameters", {})
-
-        if matlib.node(mat_id) is not None:
-            logger.debug("Skipping existing material: %s", mat_id)
-            return
-
-        # Add a new multiparm slot — this triggers child-subnet creation
-        num_parm = matlib.parm("num_materials")
-        idx = num_parm.eval() + 1
-        num_parm.set(idx)
-
-        # Point the slot at the right USD prim path
-        self._set_parm(matlib, f"matpathprefix{idx}", "/materials/")
-        self._set_parm(matlib, f"matpath{idx}", mat_id)
-
-        # Locate the auto-created child builder (name stored in matnode parm)
-        node_parm = matlib.parm(f"matnode{idx}")
-        auto_name = node_parm.eval() if node_parm else None
-        builder = matlib.node(auto_name) if auto_name else None
-
-        if builder is None:
-            # Fallback: create a VOP subnet and wire up a default MaterialX chain
-            builder = matlib.createNode("subnet", mat_id)
-            self._create_mtlx_network(builder)
-        else:
-            builder.setName(mat_id, unique_name=True)
-
-        if node_parm:
-            node_parm.set(builder.name())
-
-        # The auto-created builder should already contain standard_surface1
-        surface = builder.node(self.SURFACE_NODE)
-        if surface is None:
-            surface = self._create_mtlx_network(builder)
-
-        self._apply_params(surface, params)
-        builder.layoutChildren()
-        logger.info("Built material: %s", mat_id)
-
-    @staticmethod
-    def _set_parm(node, name, value):
-        parm = node.parm(name)
-        if parm is not None:
-            parm.set(value)
-        else:
-            logger.warning("Parm '%s' not found on %s", name, node.path())
-
-    def _create_mtlx_network(self, builder):
-        """Build a minimal MaterialX VOP chain inside a builder subnet."""
-        surface = builder.createNode("mtlxstandard_surface", self.SURFACE_NODE)
-        surfmat = builder.createNode("mtlxsurfacematerial", "surfacematerial1")
-        surfmat.setInput(0, surface, 0)
-
-        output = builder.node("suboutput1")
-        if output:
-            output.setInput(0, surfmat, 0)
-
-        return surface
+        print(f"Built material: {mat_id}")
 
     def build_library(self):
-        """Main entry point — iterate the manifest and build every material."""
 
         list_to_create = ["gold_polished_clean"]
 
-        matlib = self._ensure_matlib()
-        built, skipped, errors = 0, 0, 0
+        stage = self.hou.node("/stage")
+        matlib = stage.createNode("materiallibrary", "neuron_materials")
+        matlib.moveToGoodPosition()
 
-        if list_to_create:
-            entries = {k: self._library[k] for k in list_to_create if k in self._library}
-            missing = set(list_to_create) - set(entries)
-            if missing:
-                logger.warning("IDs not found in manifest: %s", missing)
-        else:
-            entries = self._library
-
-        for mat_id, entry in entries.items():
-            try:
-                if matlib.node(mat_id) is not None:
-                    skipped += 1
-                    continue
-                self._build_material(matlib, mat_id, entry)
-                built += 1
-            except Exception:
-                errors += 1
-                logger.exception("Failed to build material '%s'", mat_id)
+        for mat_id, entry in self.materials_data.items():
+            if mat_id in list_to_create:
+                self.build_material(matlib, mat_id, entry)
 
         matlib.layoutChildren()
-        logger.info(
-            "Library complete — %d built, %d skipped, %d errors (total manifest: %d)",
-            built, skipped, errors, len(entries),
-        )
-        return {"built": built, "skipped": skipped, "errors": errors}
