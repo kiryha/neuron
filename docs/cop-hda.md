@@ -1,5 +1,7 @@
 # Copernicus HDA: The Texture Engine Blueprint
 
+![Neuron HDA](../images/neuron_hda.jpeg)
+
 The goal of your manual look-dev is to build a **Master Copernicus HDA** (Houdini Digital Asset). Instead of creating thousands of unique textures, you are creating a single, intelligent "Texture Engine" that generates different results based on the JSON parameters you feed it.
 
 Here is the blueprint for the outputs you need to define and how they integrate into your `BuildMaterials` class.
