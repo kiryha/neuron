@@ -9,6 +9,7 @@ from datagen.ui import ui_datagen
 from importlib import reload
 from datagen import materials
 reload(materials)
+reload(ui_datagen)
    
 
 class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
@@ -17,24 +18,27 @@ class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
         self.setupUi(self)
         self.setParent(hou.ui.mainQtWindow(), QtCore.Qt.Window)
 
-        self.btnRun.clicked.connect(self.run)
+        self.btnBuildData.clicked.connect(self.build_materials_data)
+        self.btnBuildPrompts.clicked.connect(self.build_prompts)
+        self.btnBuildMaterials.clicked.connect(self.build_materials)
 
-    def run(self):
+    def build_materials_data(self):
 
-        # # Generate Expanded Material List
-        # materials_data = BuildMaterialsData()
-        # materials_data.export()
-        # materials_data.display()
+        # Generate Expanded Material List
+        materials_data = materials.BuildMaterialsData()
+        materials_data.generate()
 
+    def build_prompts(self):
 
         # Generate Labels 
         labels = materials.BuildPrompts()
         labels.generate()
-        # labels.display()
 
-        # # Create Materials in Houdini
-        # build_materials = materials.BuildMaterials()
-        # build_materials.build_library()
+    def build_materials(self):
+
+        # Create Materials in Houdini
+        build_materials = materials.BuildMaterials()
+        build_materials.build_library()
 
 def run_datagen():
     datagen = Datagen()

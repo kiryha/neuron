@@ -148,7 +148,10 @@ class BuildMaterialsData:
         for key in ("cat", "colorable", "only_for"):
             params.pop(key, None)
 
-        params["variation_seed"] = int(hashlib.md5(tech_id.encode()).hexdigest()[:8], 16)
+        # Create a high-entropy hash
+        hash_obj = hashlib.md5(tech_id.encode())
+        seed_float = int(hash_obj.hexdigest()[:8], 16) / float(0xFFFFFFFF)
+        params["variation_seed"] = round(seed_float, 6)
 
         return {
             "id": tech_id,
@@ -158,6 +161,9 @@ class BuildMaterialsData:
         }
 
     def generate(self):
+
+        print(">> Building materials data...")
+
         library = {}
 
         for b_name, f_name, c_name in product(self.BASES, self.FINISHES, self.CONDITIONS):
@@ -185,35 +191,13 @@ class BuildMaterialsData:
                     base, category, finish, cond
                 )
 
+        # Save to JSON
+        with open(LIBRARY_JSON, "w") as f:
+            json.dump(library, f, indent=4)
+
+        print(">> Materials data built")
+        
         return library
-
-    def export(self, filepath=None):
-        filepath = Path(filepath) if filepath else LIBRARY_JSON
-        filepath.parent.mkdir(parents=True, exist_ok=True)
-        data = self.generate()
-        with open(filepath, "w") as f:
-            json.dump(data, f, indent=4)
-        return data
-
-    def display(self, columns=None, limit=None):
-        library = self.generate()
-        items = list(library.items())
-        if limit:
-            items = items[:limit]
-        if columns is None:
-            columns = ["color", "ior", "rough", "clearcoat_weight"]
-
-        col_w = {c: max(len(c), 8) for c in columns}
-        id_w = max(len(tid) for tid, _ in items)
-
-        header = f"{'TECH ID':<{id_w}} | " + " | ".join(f"{c:<{col_w[c]}}" for c in columns)
-        print(header)
-        print("-" * len(header))
-        for tid, entry in items:
-            vals = entry["parameters"]
-            row = f"{tid:<{id_w}} | " + " | ".join(f"{str(vals.get(c, '')):<{col_w[c]}}" for c in columns)
-            print(row)
-        print(f"\nTotal: {len(library)} materials")
 
 
 class BuildPrompts:
@@ -375,6 +359,9 @@ class BuildPrompts:
 
     def generate(self) -> dict:
         """Process every entry in *neuron_library.json*, write back, return the dict."""
+
+        print(">> Building prompts...")
+
         if not self.json_path.exists():
             raise FileNotFoundError(
                 f"Material library not found: {self.json_path}\n"
@@ -399,31 +386,10 @@ class BuildPrompts:
             json.dump(library, f, indent=4)
 
         logger.info("Label generation complete: %d generated, %d skipped", generated, skipped)
+
+        print(">> Prompts built")
+
         return library
-
-    def display(self, limit=None):
-        """Print a table of material IDs, their semantic hints, and generated labels."""
-        if not self.json_path.exists():
-            raise FileNotFoundError(f"Material library not found: {self.json_path}")
-
-        with open(self.json_path, "r") as f:
-            library = json.load(f)
-
-        items = list(library.items())
-        if limit:
-            items = items[:limit]
-
-        id_w = max(len(tid) for tid, _ in items)
-        hints_w = max(len(", ".join(e["semantic_hints"])) for _, e in items)
-
-        header = f"{'TECH ID':<{id_w}} | {'SEMANTIC HINTS':<{hints_w}} | LABEL"
-        print(header)
-        print("-" * len(header))
-        for tid, entry in items:
-            hints = ", ".join(entry["semantic_hints"])
-            label = entry.get("semantic_label", "N/A")
-            print(f"{tid:<{id_w}} | {hints:<{hints_w}} | {label}")
-        print(f"\nTotal: {len(library)} materials")
 
 
 class BuildMaterials:
@@ -497,6 +463,9 @@ class BuildMaterials:
         self._apply_params(surface, entry.get("parameters", {}))
 
     def build_library(self):
+
+        print(">> Building library...")
+
         list_to_create = ["gold_polished_clean", "rubber_grey_satin_scratched"]
 
         stage = self.hou.node("/stage")
@@ -512,4 +481,5 @@ class BuildMaterials:
             self.build_material(matlib, mat_id, entry)
 
         matlib.layoutChildren()
-        print(f">> Library complete: {len(entries)} materials built")
+
+        print(f">> Library built: {len(entries)} materials")
