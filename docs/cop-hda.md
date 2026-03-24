@@ -152,3 +152,140 @@ vector offset = set(seed * 127.13, seed * 761.47, seed * 907.01);
 
 // Apply this offset to your noise sampling
 float noise_val = unifiednoise(pos + offset);
+
+---
+
+# The Neuron HDA: Pipeline & Data Flow
+
+Inside each material you add one instance of the **Neuron HDA**. Inside that HDA is a switch. If the JSON says `bump_type: directional`, the HDA internal logic flips to the **Linear branch**. Regardless of the branch, it always spits out the same "Big Four" maps.
+
+Here is the visualization of how the JSON data flows through the HDA and into the MaterialX Surface.
+
+---
+
+## 1. The Neuron Material Pipeline (Mind Map)
+
+### The Flow of Data
+*   **JSON (The Driver):** Tells the Python script the "DNA" of the material.
+*   **Master HDA (The Engine):** Receives the JSON values.
+*   **The Switch:** Uses `bump_type` to choose a **Flavor** (Linear, Cellular, or Stochastic).
+*   **The Processing:** Generates 3D noise based on the `variation_seed`.
+*   **The Big Four (The Signal):** The HDA outputs four specific grayscale masks.
+*   **MtlX Surface (The Receiver):** These masks are "mixed" into the standard surface parameters.
+
+---
+
+## 2. The Logic Table: HDA Outputs to MtlX Params
+
+This is the exact mapping you need to build into your `BuildMaterials` logic. We use **Mix nodes** to ensure the procedural masks actually "do" something to the base JSON values.
+
+| HDA Output Mask | MaterialX Target | Logic (How it's used) |
+| :--- | :--- | :--- |
+| **Variation Mask** | `base_color` | **Subtle Shift:** Mixes the JSON Color with a slightly darker/lighter version so it's not a flat hex code. |
+| **Dirt Mask** | `base_color` & `rough` | **Accumulation:** Where this mask is 1, the color becomes "Dust Grey" and the roughness jumps to 1.0. |
+| **Wear Mask** | `specular_roughness` | **Micro-Detail:** Multiplies the JSON `rough` value. High values in the mask (scratches) make the metal look rougher. |
+| **Micro-Bump** | `normal` | **Physicality:** Plugged into an `mtlx_normalmap` node. It uses the JSON `bump_scale` to set the height. |
+
+---
+
+## 3. The 3 Flavors vs. The 4 Outputs
+
+The "Flavors" are just different ways of generating the **Micro-Bump** and **Wear**.
+
+*   **Linear Flavor:** The Micro-Bump looks like long brushed lines. The Wear looks like long, thin longitudinal scratches.
+*   **Cellular Flavor:** The Micro-Bump looks like hammered pits (Voronoi). The Wear looks like small, circular dings or pockmarks.
+*   **Stochastic Flavor:** The Micro-Bump is just fine grain (Matte). The Wear looks like random organic scuffs or fingerprints.
+
+> **Crucial Point:** No matter which flavor is active, the HDA always has 4 output plugs. This allows your Python script to be "blind"—it just connects Output[0] to the Color Mix, Output[1] to the Roughness Mix, etc., regardless of the material type.
+
+---
+
+## 4. Full Parameter Mapping List
+
+Here is the exhaustive list of what goes where in your `BuildMaterials` automation:
+
+### JSON $\to$ HDA (Inputs)
+*   `variation_seed` $\to$ **Seed** (Offsets the noise).
+*   `noise_scale` $\to$ **Frequency** (Size of scratches/pits).
+*   `bump_type` $\to$ **Switch** (Chooses the Flavor).
+*   `dirt (0-1)` $\to$ **Dirt Intensity** (Brightness of the Dirt Mask).
+*   `wear (0-1)` $\to$ **Wear Intensity** (Brightness of the Wear Mask).
+
+### JSON $\to$ MtlX Surface (Base Values)
+*   `metalness` $\to$ `metalness`
+*   `color` $\to$ `base_color` (Input A of the Mix node).
+*   `ior / k` $\to$ `ior / k` (Complex IOR).
+*   `rough` $\to$ `specular_roughness` (The base floor for roughness).
+*   `clearcoat` $\to$ `coat_weight`
+
+---
+
+## Why this is "Neural Hero" Grade
+
+By keeping the outputs consistent (**The Big Four**), you are creating a **Standardized Feature Set**. When your Phase 2 Coordinate-MLP looks at the data, it will start to realize that "High values in Output 3 (Wear) always correspond to wider specular highlights."
+
+Because the logic is consistent across all 3 flavors, the AI learns the general rule of surface wear, rather than memorizing a specific "gold" texture.
+
+---
+
+# Project Neuron: HDA Interface & Implementation Logic
+
+In software terms, your **Master HDA** is like an **Interface** in programming. The **Bump Type** is the **Implementation**. No matter which implementation you choose, the interface always provides the same 4 "methods" (outputs) to the rest of the pipeline.
+
+---
+
+## 1. The "Switch" Logic: 3 Flavors, 1 Interface
+
+The **Bump Type** acts as a high-level router inside your Copernicus HDA. It tells the engine: *"Use this specific mathematical logic to generate the textures."*
+
+### How the choice affects the "Big Four"
+
+| Flavor | Physical Context | Micro-Bump Style | Wear Mask Style |
+| :--- | :--- | :--- | :--- |
+| **Linear** | Manufactured/Machined | Long, anisotropic parallel grooves. | Scratches follow the grain of the metal. |
+| **Cellular** | Forged/Organic | Discrete pits, craters, or "hammered" facets. | Dings and chips localized in the "cells." |
+| **Stochastic** | Natural/Cast | Uniform high-frequency grain (Matte/Satin). | Random scuffs, smears, and fingerprints. |
+
+> **Note:** Regardless of the choice, your **Variation Mask** and **Dirt Mask** usually stay "Flavor-Agnostic" (they use standard organic noises because dust and color shifts don't care if the metal is brushed or hammered).
+
+---
+
+## 2. The Universal Wiring Diagram
+
+This is the **"Neural Hero"** grade mapping. By keeping these connections identical for every single material in your library, you allow the Coordinate-MLP to learn the fundamental relationship between **"Texture Signal"** and **"Light Reflectance."**
+
+### The Standard Connection Map
+
+* **HDA Output: Variation $\rightarrow$ MtlX Mix (Color):**
+    Takes the JSON color and jitters it. It prevents the AI from thinking real-world materials are perfectly flat hex codes.
+* **HDA Output: Dirt $\rightarrow$ MtlX Mix (Base & Rough):**
+    This is a "Global Override." High dirt = Higher Roughness + Darker/Dustier Color.
+* **HDA Output: Wear $\rightarrow$ MtlX Multiply (Roughness):**
+    Takes the JSON rough and adds "spikes." This creates the physical micro-scratches that "catch" the light.
+* **HDA Output: Micro-Bump $\rightarrow$ MtlX Normal Map:**
+    The primary driver for surface orientation. This defines the "shape" of the highlight.
+
+---
+
+## 3. Why this setup is critical for Project Neuron
+
+Since you are building an **Implicit Neural Representation (INR)**, the network is trying to solve a continuous function:
+
+$$F(x, y, z, \theta, \phi, w) = RGB\sigma$$
+
+If you changed the wiring for every material, the **"Latent Vector"** ($w$) would have to work too hard to figure out what's going on. By keeping the outputs standardized, the AI only has to learn:
+
+1.  **Linear:** "Highlights stretch along the $Y$ axis."
+2.  **Cellular:** "Highlights break into small circular points."
+3.  **Stochastic:** "Highlights are broad and soft."
+
+It focuses on the **physics of the flavor** rather than the **logic of the node graph**.
+
+---
+
+## Summary of the "Mental Model"
+
+* **The JSON** defines the **Identity** (Gold, Iron, Plastic).
+* **The Bump Type** defines the **Personality** (Brushed, Hammered, Matte).
+* **The HDA Outputs** are the **Senses** (How it looks, feels, and where it's dirty).
+* **The MaterialX** is the **Rendering** (How light interacts with those senses).
