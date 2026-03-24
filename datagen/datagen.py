@@ -9,8 +9,6 @@ from datagen.ui import ui_datagen
 from importlib import reload
 from datagen import materials
 reload(materials)
-# reload(BuildMaterialsData)
-# reload(CreateMaterials)
    
 
 class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
@@ -23,14 +21,20 @@ class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
 
     def run(self):
 
-        # Generate Expanded Material List
+        # # Generate Expanded Material List
         # materials_data = BuildMaterialsData()
         # materials_data.export()
         # materials_data.display()
 
-        # Create Materials in Houdini
-        create_materials = materials.CreateMaterials()
-        create_materials.build_library()
+
+        # Generate Labels 
+        labels = materials.BuildPrompts()
+        labels.generate()
+        # labels.display()
+
+        # # Create Materials in Houdini
+        # build_materials = materials.BuildMaterials()
+        # build_materials.build_library()
 
 def run_datagen():
     datagen = Datagen()

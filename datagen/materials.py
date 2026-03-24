@@ -8,6 +8,8 @@ python -m datagen.materials
 import json
 import hashlib
 import logging
+import random
+import re
 from pathlib import Path
 from itertools import product
 
@@ -213,7 +215,218 @@ class BuildMaterialsData:
             print(row)
         print(f"\nTotal: {len(library)} materials")
 
-class CreateMaterials:
+
+class BuildPrompts:
+    """Generates natural-language labels for every material in neuron_library.json.
+
+    Three-step pipeline per entry:
+        A. Token Mapping   – expands brief semantic hints into richer noun phrases.
+        B. Template Select – randomly picks from sentence structures (seeded RNG).
+        C. Assembly        – injects expanded tokens, validates grammar artefacts.
+    """
+
+    DEFAULT_SEED = 42
+
+    # ── Step A: Token Mapping ───────────────────────────────────
+    # Expands brief semantic_hints into richer descriptions.  Entries that are
+    # already multi-word (e.g. "human skin with deep red subsurface scattering")
+    # pass through unchanged because they won't match any key here.
+
+    TOKEN_MAP = {
+        # --- Metals ---
+        "gold":      "precious 24k gold metal",
+        "silver":    "refined sterling silver metal",
+        "copper":    "warm reddish copper metal",
+        "iron":      "raw industrial iron",
+        "aluminum":  "lightweight aluminum metal",
+        "titanium":  "aerospace-grade titanium metal",
+        "steel":     "structural carbon steel",
+        "brass":     "warm golden brass alloy",
+        "chrome":    "highly reflective chrome metal",
+        "platinum":  "rare platinum metal",
+        "lead":      "dense heavy lead metal",
+        "tin":       "malleable tin metal",
+        "nickel":    "hardened nickel metal",
+        "cobalt":    "deep blue-grey cobalt metal",
+        "bronze":    "aged copper-tin bronze alloy",
+
+        # --- Stones & Ceramics ---
+        "marble":     "veined natural marble stone",
+        "granite":    "speckled granite stone",
+        "concrete":   "industrial poured concrete",
+        "brick":      "kiln-fired clay brick",
+        "porcelain":  "fine white porcelain ceramic",
+        "terracotta": "earthy terracotta clay",
+        "slate":      "layered dark slate stone",
+        "sandstone":  "natural sedimentary sandstone",
+        "obsidian":   "volcanic obsidian glass",
+        "basalt":     "dark volcanic basalt rock",
+
+        # --- Plastics & Synthetics ---
+        "plastic_abs":  "ABS plastic polymer",
+        "plastic_pvc":  "PVC plastic polymer",
+        "rubber":       "vulcanized rubber",
+        "carbon_fiber": "woven carbon fiber composite",
+        "bakelite":     "vintage bakelite resin",
+        "silicone":     "flexible silicone polymer",
+        "epoxy_resin":  "cast epoxy resin",
+        "car_paint":    "automotive car paint",
+
+        # --- Organics ---
+        "oak_wood":      "natural oak hardwood",
+        "pine_wood":     "light-grained pine wood",
+        "mahogany":      "rich dark mahogany wood",
+        "leather_tan":   "tan leather hide",
+        "leather_black": "black leather hide",
+        "paper":         "thin cellulose paper",
+        "cardboard":     "corrugated cardboard",
+        "cork":          "natural cork bark",
+        "clay":          "moldable wet clay",
+
+        # --- Translucents ---
+        "glass":   "transparent optical glass",
+        "water":   "clear liquid water",
+        "ice":     "frozen crystalline ice",
+        "diamond": "brilliant-cut diamond gemstone",
+        "emerald": "deep green emerald gemstone",
+        "ruby":    "vivid red ruby gemstone",
+        "amber":   "fossilized amber resin",
+        "honey":   "viscous golden honey",
+
+        # --- Misc ---
+        "asphalt": "weathered road asphalt",
+
+        # --- Condition normalisation (makes "pristine condition" predicate-safe) ---
+        "pristine condition": "in pristine condition",
+    }
+
+    # ── Step B: Sentence Templates ──────────────────────────────
+    # Base (the noun) is placed early in every template so generative models
+    # prioritise the core material over modifiers.
+
+    TEMPLATES = [
+        # Direct
+        "A close-up view of {base} with a {finish} surface, {condition}.",
+        # Descriptive
+        "Detailed 3D render showing a {base} material with {finish} texture, {condition}.",
+        # Cinematic
+        "Macro photography of {base}. The surface displays {finish} and is {condition}.",
+        # Technical
+        "High-fidelity PBR material study: {base} exhibiting {finish} properties, {condition}.",
+        # Studio
+        "{base} under controlled studio lighting, {finish} surface detail, {condition}.",
+        # Photorealistic
+        "Photorealistic rendering of {base} with {finish} qualities, {condition}.",
+    ]
+
+    def __init__(self, json_path=None, seed=None, overwrite=False):
+        self.json_path = Path(json_path) if json_path else LIBRARY_JSON
+        self.seed = seed if seed is not None else self.DEFAULT_SEED
+        self.overwrite = overwrite
+
+    # ── hint processing ─────────────────────────────────────────
+
+    def _expand(self, token: str) -> str:
+        """Look up *token* in the expansion map; return it unchanged if absent."""
+        return self.TOKEN_MAP.get(token, token)
+
+    def _extract_color(self, tech_id: str, metadata: dict) -> str | None:
+        """Detect an embedded palette colour in colorable-material IDs.
+
+        Non-colorable ID layout:  {base}_{finish}_{condition}
+        Colorable ID layout:      {base}_{color}_{finish}_{condition}
+        """
+        prefix = metadata["base"] + "_"
+        suffix = "_" + metadata["finish"] + "_" + metadata["condition"]
+        if tech_id.startswith(prefix) and tech_id.endswith(suffix):
+            middle = tech_id[len(prefix):-len(suffix)]
+            if middle:
+                return middle.replace("_", " ")
+        return None
+
+    def _validate(self, text: str) -> str:
+        """Remove double spaces, stray commas, and ensure capitalisation."""
+        text = re.sub(r" {2,}", " ", text)
+        text = re.sub(r",\s*\.", ".", text)
+        text = re.sub(r",\s*$", "", text)
+        text = text.strip()
+        if text:
+            text = text[0].upper() + text[1:]
+        return text
+
+    # ── Step C: label construction ──────────────────────────────
+
+    def _build_label(self, entry: dict, rng: random.Random) -> str:
+        hints = entry["semantic_hints"]
+        metadata = entry["metadata"]
+        tech_id = entry["id"]
+
+        base = self._expand(hints[0])
+        finish = self._expand(hints[1])
+        condition = self._expand(hints[2])
+
+        color = self._extract_color(tech_id, metadata)
+        if color:
+            base = f"{color} {base}"
+
+        template = rng.choice(self.TEMPLATES)
+        label = template.format(base=base, finish=finish, condition=condition)
+        return self._validate(label)
+
+    def generate(self) -> dict:
+        """Process every entry in *neuron_library.json*, write back, return the dict."""
+        if not self.json_path.exists():
+            raise FileNotFoundError(
+                f"Material library not found: {self.json_path}\n"
+                "Run  python -m datagen.materials  first to generate it."
+            )
+
+        with open(self.json_path, "r") as f:
+            library = json.load(f)
+
+        rng = random.Random(self.seed)
+        generated, skipped = 0, 0
+
+        for tech_id, entry in library.items():
+            if entry.get("semantic_label") and not self.overwrite:
+                skipped += 1
+                rng.choice(self.TEMPLATES)      # advance RNG to keep determinism
+                continue
+            entry["semantic_label"] = self._build_label(entry, rng)
+            generated += 1
+
+        with open(self.json_path, "w") as f:
+            json.dump(library, f, indent=4)
+
+        logger.info("Label generation complete: %d generated, %d skipped", generated, skipped)
+        return library
+
+    def display(self, limit=None):
+        """Print a table of material IDs, their semantic hints, and generated labels."""
+        if not self.json_path.exists():
+            raise FileNotFoundError(f"Material library not found: {self.json_path}")
+
+        with open(self.json_path, "r") as f:
+            library = json.load(f)
+
+        items = list(library.items())
+        if limit:
+            items = items[:limit]
+
+        id_w = max(len(tid) for tid, _ in items)
+        hints_w = max(len(", ".join(e["semantic_hints"])) for _, e in items)
+
+        header = f"{'TECH ID':<{id_w}} | {'SEMANTIC HINTS':<{hints_w}} | LABEL"
+        print(header)
+        print("-" * len(header))
+        for tid, entry in items:
+            hints = ", ".join(entry["semantic_hints"])
+            label = entry.get("semantic_label", "N/A")
+            print(f"{tid:<{id_w}} | {hints:<{hints_w}} | {label}")
+        print(f"\nTotal: {len(library)} materials")
+
+
+class BuildMaterials:
     """Builds a USD MaterialX library inside Houdini Solaris from
     neuron_library.json produced by BuildMaterialsData."""
 
@@ -249,7 +462,7 @@ class CreateMaterials:
         builder.createNode("subinput", "inputs")
 
         surface = builder.createNode("mtlxstandard_surface", "mtlxstandard_surface")
-        surface.setGenericFlag(self.hou.nodeFlag.VopShowCompressedParams, True)
+
         surface_out = builder.createNode("subnetconnector", "surface_output")
         surface_out.parm("connectorkind").set("output")
         surface_out.parm("parmname").set("surface")
@@ -278,7 +491,6 @@ class CreateMaterials:
                 surface.parmTuple(mtlx_parm).set(value)
             else:
                 surface.parm(mtlx_parm).set(float(value))
-
 
     def build_material(self, matlib, mat_id, entry):
         surface = self._create_builder(matlib, mat_id)
