@@ -16,6 +16,9 @@ from itertools import product
 from .config import LIBRARY_JSON
 
 logger = logging.getLogger(__name__)
+LIST_TO_CREATE = ["gold_polished_clean", "car_paint_red_matte_dusty", "iron_brushed_scratched", 
+                  "glass_matte_clean", "honey_satin_dusty", "concrete_hammered_clean", "rubber_black_polished_scratched"]
+
 
 class BuildMaterialsData:
     def __init__(self):
@@ -176,16 +179,19 @@ class BuildMaterialsData:
 
             finish = self.FINISHES[f_name]
 
-            # For colorable materials, generate one variant per palette color
             if base.get("colorable"):
                 for color_name, color_val in self.COLOR_PALETTE.items():
                     tech_id = f"{b_name}_{color_name}_{f_name}_{c_name}"
+                    if LIST_TO_CREATE and tech_id not in LIST_TO_CREATE:
+                        continue
                     library[tech_id] = self._build_entity(
                         tech_id, b_name, f_name, c_name,
                         base, category, finish, cond, color_override=color_val
                     )
             else:
                 tech_id = f"{b_name}_{f_name}_{c_name}"
+                if LIST_TO_CREATE and tech_id not in LIST_TO_CREATE:
+                    continue
                 library[tech_id] = self._build_entity(
                     tech_id, b_name, f_name, c_name,
                     base, category, finish, cond
@@ -466,14 +472,12 @@ class BuildMaterials:
 
         print(">> Building library...")
 
-        list_to_create = ["gold_polished_clean", "rubber_grey_satin_scratched"]
-
         stage = self.hou.node("/stage")
         matlib = stage.createNode("materiallibrary", "neuron_materials")
         matlib.moveToGoodPosition()
 
-        if list_to_create:
-            entries = {k: self.materials_data[k] for k in list_to_create}
+        if LIST_TO_CREATE:
+            entries = {k: self.materials_data[k] for k in LIST_TO_CREATE}
         else:
             entries = self.materials_data
 

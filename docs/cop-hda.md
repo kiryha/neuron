@@ -291,3 +291,42 @@ It focuses on the **physics of the flavor** rather than the **logic of the node 
 * **The Bump Type** defines the **Personality** (Brushed, Hammered, Matte).
 * **The HDA Outputs** are the **Senses** (How it looks, feels, and where it's dirty).
 * **The MaterialX** is the **Rendering** (How light interacts with those senses).
+
+# The "Neuron" Stress Test List: Material Logic Coverage
+
+Here are the 7 materials that provide 100% coverage of your current architectural logic:
+
+---
+
+### 1. `gold_polished_clean`
+* **Logic Tested:** Category: **Metal**, Complex IOR ($k$), Finish: **Polished**.
+* **Goal:** Verifies the yellow-tinted "Physical" Fresnel and ensures the "Clean" condition correctly bypasses the dirt/wear masks.
+
+### 2. `car_paint_red_matte_dusty`
+* **Logic Tested:** Category: **Dielectric**, Colorable Palette, **Clearcoat Layering**, Condition: **Dusty**.
+* **Goal:** This is the most complex path. It tests if the clearcoat is applied, if the red color from the palette is mapped, and if the "Stochastic" dust mask is working over a layered shader.
+
+### 3. `iron_brushed_scratched`
+* **Logic Tested:** Category: **Metal**, Finish: **Brushed (Linear)**, **Anisotropy**, Condition: **Scratched**.
+* **Goal:** Tests the "Linear" procedural engine. It verifies if the scratches and the brushed bump align with the anisotropic highlights.
+
+### 4. `glass_matte_clean`
+* **Logic Tested:** Category: **Translucent**, **Refraction**, Roughness.
+* **Goal:** Ensures the shader switches to a refractive model. "Matte" glass is a great test for how your Copernicus roughness masks handle transparency.
+
+### 5. `honey_satin_dusty`
+* **Logic Tested:** Category: **Translucent**, **SSS (Subsurface Scattering)**, Condition: **Dusty**.
+* **Goal:** Tests the internal light scattering logic. The "Dusty" condition on a translucent surface is a high-fidelity look-dev challenge.
+
+### 6. `concrete_hammered_clean`
+* **Logic Tested:** Category: **Dielectric**, Finish: **Hammered (Cellular)**.
+* **Goal:** Tests the "Cellular" procedural engine. This verifies that the `bump_scale` and `noise_scale` are correctly creating physical "pits" in the surface.
+
+### 7. `rubber_black_polished_scratched`
+* **Logic Tested:** Category: **Dielectric**, **Low IOR**, Condition: **Scratched**.
+* **Goal:** A "Dark" material test. Scratches on black rubber are very visible in the roughness channel but invisible in the albedo; this tests if your Copernicus masks are wired to the right shader inputs.
+
+---
+
+> ### Summary for the Developer
+> Using this subset of materials for your initial training runs ensures that every branch of your HDA—from complex metal IOR to translucent SSS—is being exercised and validated before you scale to a full 10,000+ material generation.
