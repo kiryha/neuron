@@ -13,7 +13,7 @@ import re
 from pathlib import Path
 from itertools import product
 
-from .config import LIBRARY_JSON
+from .config import LIBRARY_JSON, MATLIB_NODE
 
 logger = logging.getLogger(__name__)
 LIST_TO_CREATE = ["gold_polished_clean", "car_paint_red_matte_dusty", "iron_brushed_scratched", 
@@ -465,6 +465,12 @@ class BuildMaterials:
                 surface.parm(mtlx_parm).set(float(value))
 
     def build_material(self, matlib, mat_id, entry):
+        existing = matlib.node(mat_id)
+        if existing:
+            surface = existing.node("mtlxstandard_surface")
+            if surface:
+                self._apply_params(surface, entry.get("parameters", {}))
+                return
         surface = self._create_builder(matlib, mat_id)
         self._apply_params(surface, entry.get("parameters", {}))
 
@@ -473,17 +479,25 @@ class BuildMaterials:
         print(">> Building library...")
 
         stage = self.hou.node("/stage")
-        matlib = stage.createNode("materiallibrary", "neuron_materials")
-        matlib.moveToGoodPosition()
+        matlib = stage.node(MATLIB_NODE)
+        if matlib is None:
+            matlib = stage.createNode("materiallibrary", MATLIB_NODE)
+            matlib.moveToGoodPosition()
 
         if LIST_TO_CREATE:
             entries = {k: self.materials_data[k] for k in LIST_TO_CREATE}
         else:
             entries = self.materials_data
 
+        created, updated = 0, 0
         for mat_id, entry in entries.items():
+            is_update = matlib.node(mat_id) is not None
             self.build_material(matlib, mat_id, entry)
+            if is_update:
+                updated += 1
+            else:
+                created += 1
 
         matlib.layoutChildren()
 
-        print(f">> Library built: {len(entries)} materials")
+        print(f">> Library built: {created} created, {updated} updated")
