@@ -204,9 +204,9 @@ class BuildPrompts:
     """Generates natural-language labels for every material in neuron_library.json.
 
     Three-step pipeline per entry:
-        A. Token Mapping   – expands brief semantic hints into richer noun phrases.
-        B. Template Select – randomly picks from sentence structures (seeded RNG).
-        C. Assembly        – injects expanded tokens, validates grammar artefacts.
+        A. Token Mapping    - expands brief semantic hints into richer noun phrases.
+        B. Template Select  - randomly picks from sentence structures (seeded RNG).
+        C. Assembly         - injects expanded tokens, validates grammar artefacts.
     """
 
     DEFAULT_SEED = 42
