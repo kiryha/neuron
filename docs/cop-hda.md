@@ -333,18 +333,12 @@ Here are the 7 materials that provide 100% coverage of your current architectura
 
 ---
 
-### Primary Training AOVs (The Essentials)
-* **Beauty (Combined):** The final target image with all lighting and materials.
-* **Alpha (A):** Binary mask of the object. Vital for calculating "Density" ($\sigma$) and removing the background.
-* **Depth (Pz):** Linear distance from the camera. This helps the AI learn spatial occupancy.
-* **World Normals (N):** The direction the surface is facing in 3D space. Critical for the AI to learn how light should bounce off the material.
+### REQUIRED AOVs FOR NEURON TRAINING (REVISED)
 
-### Material Decomposition AOVs (For the "Material Hero")
-* **Albedo / BaseColor:** The raw color without any light or shadows. This helps the AI separate "Material Color" from "Lighting."
-* **Roughness:** The spatial map of the surface finish.
-* **Metallic:** A mask (0 or 1) indicating where the complex IOR (has_k) logic is active.
-* **Specular Reflection:** Only the reflected light. Helps the AI learn the Fresnel curve.
-
-### Neural-Specific AOVs
-* **World Position (P):** The actual (x, y, z) coordinates for every pixel. This provides a "cheat sheet" for the MLP during early training stages.
-* **Motion Vectors:** (Only if you move to Phase 6) For temporal consistency between frames.
+1. **Beauty (C):** The final target image with all lighting and materials.
+2. **Alpha (A):** Binary mask of the object. Vital for calculating "Density" ($\sigma$) and removing the background.
+3. **Depth (Pz):** Linear distance from the camera. This helps the AI learn spatial occupancy.
+4. **BaseColor:** The RAW color input (Must NOT be black for metals).
+5. **Roughness:** The raw roughness map.
+6. **Normals (N):** World space orientation.  
+7. **World Position (P):** The actual (x, y, z) coordinates for every pixel. This provides a "cheat sheet" for the MLP during early training stages.
