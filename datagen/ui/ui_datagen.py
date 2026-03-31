@@ -15,14 +15,14 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QPushButton, QSizePolicy, QSpacerItem,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QListWidget, QListWidgetItem, QPushButton,
+    QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
 
 class Ui_Datagen(object):
     def setupUi(self, Datagen):
         if not Datagen.objectName():
             Datagen.setObjectName(u"Datagen")
-        Datagen.resize(381, 209)
+        Datagen.resize(402, 396)
         self.verticalLayout = QVBoxLayout(Datagen)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.btnBuildData = QPushButton(Datagen)
@@ -37,11 +37,16 @@ class Ui_Datagen(object):
 
         self.verticalLayout.addWidget(self.btnBuildPrompts)
 
-        self.btnBuildMaterials = QPushButton(Datagen)
-        self.btnBuildMaterials.setObjectName(u"btnBuildMaterials")
-        self.btnBuildMaterials.setMinimumSize(QSize(0, 50))
+        self.listMaterials = QListWidget(Datagen)
+        self.listMaterials.setObjectName(u"listMaterials")
 
-        self.verticalLayout.addWidget(self.btnBuildMaterials)
+        self.verticalLayout.addWidget(self.listMaterials)
+
+        self.btnApplyMaterial = QPushButton(Datagen)
+        self.btnApplyMaterial.setObjectName(u"btnApplyMaterial")
+        self.btnApplyMaterial.setMinimumSize(QSize(0, 50))
+
+        self.verticalLayout.addWidget(self.btnApplyMaterial)
 
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
@@ -57,6 +62,6 @@ class Ui_Datagen(object):
         Datagen.setWindowTitle(QCoreApplication.translate("Datagen", u"D A T A G E N", None))
         self.btnBuildData.setText(QCoreApplication.translate("Datagen", u"Build Materials Data", None))
         self.btnBuildPrompts.setText(QCoreApplication.translate("Datagen", u"Build Material Prompts", None))
-        self.btnBuildMaterials.setText(QCoreApplication.translate("Datagen", u"Build Material Library in Stage", None))
+        self.btnApplyMaterial.setText(QCoreApplication.translate("Datagen", u"Apply Material Properties", None))
     # retranslateUi
 

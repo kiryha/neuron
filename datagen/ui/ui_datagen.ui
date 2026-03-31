@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>381</width>
-    <height>209</height>
+    <width>402</width>
+    <height>396</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,7 +41,10 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="btnBuildMaterials">
+    <widget class="QListWidget" name="listMaterials"/>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btnApplyMaterial">
      <property name="minimumSize">
       <size>
        <width>0</width>
@@ -49,7 +52,7 @@
       </size>
      </property>
      <property name="text">
-      <string>Build Material Library in Stage</string>
+      <string>Apply Material Properties</string>
      </property>
     </widget>
    </item>

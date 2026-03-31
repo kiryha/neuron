@@ -3,6 +3,7 @@ UI for Houdini Data Generation
 """
 
 import hou
+import json
 from PySide6 import QtCore, QtWidgets
 from datagen.ui import ui_datagen
 
@@ -18,9 +19,24 @@ class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
         self.setupUi(self)
         self.setParent(hou.ui.mainQtWindow(), QtCore.Qt.Window)
 
+        self.materials_data = None
+        self.load_materials_data()
+
         self.btnBuildData.clicked.connect(self.build_materials_data)
         self.btnBuildPrompts.clicked.connect(self.build_prompts)
-        self.btnBuildMaterials.clicked.connect(self.build_materials)
+        self.btnApplyMaterial.clicked.connect(self.apply_material)
+
+    def load_materials_data(self):
+        """
+        Load the materials data from the JSON file
+        """
+        with open(materials.LIBRARY_JSON, "r") as f:
+            self.materials_data = json.load(f)
+
+        self.materials_list = list(self.materials_data.keys())
+
+        for material in self.materials_list:
+            self.listMaterials.addItem(material)
 
     def build_materials_data(self):
 
@@ -34,11 +50,10 @@ class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
         labels = materials.BuildPrompts()
         labels.generate()
 
-    def build_materials(self):
+    def apply_material(self):
 
-        # Create Materials in Houdini
-        build_materials = materials.BuildMaterials()
-        build_materials.build_library()
+        pass
+
 
 def run_datagen():
     datagen = Datagen()
