@@ -87,11 +87,11 @@ class BuildMaterialsData:
 
             # --- FABRICS (Anisotropic/Microfiber logic) ---
             "silk": {"cat": "dielectric", "color": [0.8, 0.2, 0.5], "ior": 1.5, "k": 0.0, "anisotropy": 0.9, "colorable": True, "hint": "shimmering fabric with directional sheen"},
-            "cotton": {"cat": "dielectric", "color": [0.9, 0.9, 0.9], "ior": 1.3, "k": 0.0, "rough": 0.95, "colorable": True, "hint": "soft, matte fibrous weave"},
+            "cotton": {"cat": "dielectric", "color": [0.9, 0.9, 0.9], "ior": 1.3, "k": 0.0, "specular_roughness": 0.95, "colorable": True, "hint": "soft, matte fibrous weave"},
             "velvet": {"cat": "dielectric", "color": [0.1, 0.02, 0.05], "ior": 1.5, "k": 0.0, "sheen": 1.0, "colorable": True, "hint": "deep pile fabric with edge highlights"},
 
             # --- MISC ---
-            "asphalt": {"cat": "dielectric", "color": [0.05, 0.05, 0.05], "ior": 1.55, "k": 0.0, "rough": 0.9, "bump_type": "cracked"},
+            "asphalt": {"cat": "dielectric", "color": [0.05, 0.05, 0.05], "ior": 1.55, "k": 0.0, "specular_roughness": 0.9, "bump_type": "cracked"},
 
             # --- ORGANICS (High SSS) ---
             "oak_wood": {"cat": "organic", "color": [0.35, 0.25, 0.15], "ior": 1.5, "k": 0.0},
@@ -118,11 +118,11 @@ class BuildMaterialsData:
 
         # 3. FINISHES (Physical Surface State)
         self.FINISHES = {
-            "polished": {"rough": 0.02, "anisotropy": 0.0, "bump_scale": 0.0, "noise_scale": 1.0, "hint": "mirror-like and smooth"},
-            "matte": {"rough": 0.9, "anisotropy": 0.0, "bump_scale": 0.0, "noise_scale": 1.0, "hint": "dull and non-reflective"},
-            "satin": {"rough": 0.25, "anisotropy": 0.1, "bump_scale": 0.02, "noise_scale": 1.0, "hint": "soft semi-gloss sheen"},
-            "brushed": {"rough": 0.35, "anisotropy": 0.8, "bump_scale": 0.1, "noise_scale": 0.5, "bump_type": "directional", "hint": "directional micro-scratches"},
-            "hammered": {"rough": 0.15, "bump_scale": 0.5, "noise_scale": 2.0, "bump_type": "cellular", "hint": "indented with small craters"}
+            "polished": {"specular_roughness": 0.02, "anisotropy": 0.0, "bump_scale": 0.0, "noise_scale": 1.0, "hint": "mirror-like and smooth"},
+            "matte": {"specular_roughness": 0.9, "anisotropy": 0.0, "bump_scale": 0.0, "noise_scale": 1.0, "hint": "dull and non-reflective"},
+            "satin": {"specular_roughness": 0.25, "anisotropy": 0.1, "bump_scale": 0.02, "noise_scale": 1.0, "hint": "soft semi-gloss sheen"},
+            "brushed": {"specular_roughness": 0.35, "anisotropy": 0.8, "bump_scale": 0.1, "noise_scale": 0.5, "bump_type": "directional", "hint": "directional micro-scratches"},
+            "hammered": {"specular_roughness": 0.15, "bump_scale": 0.5, "noise_scale": 2.0, "bump_type": "cellular", "hint": "indented with small craters"}
         }
 
         # 4. CONDITIONS (Environmental Wear)
@@ -406,7 +406,7 @@ class BuildMaterials:
         "color":      "base_color",
         "metalness":  "metalness",
         "ior":        "specular_IOR",
-        "rough":      "specular_roughness",
+        "specular_roughness":      "specular_roughness",
         "anisotropy": "specular_anisotropy",
     }
 
