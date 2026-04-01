@@ -18,6 +18,8 @@ def apply_material(material_id):
     material_data = library.get(material_id)
 
     # Set HDA properties
+    hada_node.parm("material_id").set(material_data.get("id")) 
+    hada_node.parm("metalness").set(material_data.get("parameters", {}).get("metalness"))
     hada_node.parmTuple("base_color").set(material_data.get("parameters", {}).get("base_color"))
     hada_node.parm("variation_seed").set(float(material_data.get("parameters", {}).get("variation_seed")))
     hada_node.parm("specular_ior").set(material_data.get("parameters", {}).get("specular_ior"))
@@ -25,4 +27,5 @@ def apply_material(material_id):
     hada_node.parm("coat").set(material_data.get("parameters", {}).get("coat"))
     hada_node.parm("coat_roughness").set(material_data.get("parameters", {}).get("coat_roughness"))
     hada_node.parm("specular_anisotropy").set(material_data.get("parameters", {}).get("specular_anisotropy"))
+    hada_node.parm("specular_roughness").set(material_data.get("parameters", {}).get("specular_roughness"))
     hada_node.parm("bump_scale").set(material_data.get("parameters", {}).get("bump_scale"))
