@@ -24,10 +24,10 @@ class BuildMaterialsData:
     def __init__(self):
         # 1. PHYSICAL CATEGORIES (Shader Models)
         self.CATEGORIES = {
-            "metal": {"metalness": 1.0, "has_k": True, "sss": 0.0, "clearcoat": 0.0, "clearcoat_rough": 0.0},
-            "dielectric": {"metalness": 0.0, "has_k": False, "sss": 0.0, "clearcoat": 0.0, "clearcoat_rough": 0.0},
-            "organic": {"metalness": 0.0, "has_k": False, "sss": 0.2, "clearcoat": 0.0, "clearcoat_rough": 0.0},
-            "translucent": {"metalness": 0.0, "has_k": False, "refraction": 1.0, "clearcoat": 0.0, "clearcoat_rough": 0.0}
+            "metal": {"metalness": 1.0, "has_k": True, "subsurface": 0.0, "coat": 0.0, "coat_roughness": 0.0},
+            "dielectric": {"metalness": 0.0, "has_k": False, "subsurface": 0.0, "coat": 0.0, "coat_roughness": 0.0},
+            "organic": {"metalness": 0.0, "has_k": False, "subsurface": 0.2, "coat": 0.0, "coat_roughness": 0.0},
+            "translucent": {"metalness": 0.0, "has_k": False, "refraction": 1.0, "coat": 0.0, "coat_roughness": 0.0}
         }
 
         # Color palette for materials where color is not a defining physical property
@@ -47,81 +47,81 @@ class BuildMaterialsData:
         # 2. BASES (The Nouns)
         self.BASES = {
             # --- METALS (Conductors: High K, 0% Diffuse) ---
-            "gold": {"cat": "metal", "color": [1.0, 0.85, 0.5], "ior": 0.47, "k": 2.83},
-            "silver": {"cat": "metal", "color": [0.97, 0.96, 0.91], "ior": 0.18, "k": 3.42},
-            "copper": {"cat": "metal", "color": [0.95, 0.64, 0.54], "ior": 1.1, "k": 2.5},
-            "iron": {"cat": "metal", "color": [0.56, 0.57, 0.58], "ior": 2.9, "k": 3.0},
-            "aluminum": {"cat": "metal", "color": [0.91, 0.92, 0.92], "ior": 1.2, "k": 7.0},
-            "titanium": {"cat": "metal", "color": [0.54, 0.51, 0.47], "ior": 2.16, "k": 3.58},
-            "steel": {"cat": "metal", "color": [0.42, 0.43, 0.45], "ior": 2.4, "k": 3.2},
-            "brass": {"cat": "metal", "color": [0.88, 0.72, 0.4], "ior": 0.44, "k": 2.4},
-            "chrome": {"cat": "metal", "color": [0.55, 0.55, 0.57], "ior": 3.1, "k": 3.3},
-            "platinum": {"cat": "metal", "color": [0.68, 0.66, 0.62], "ior": 2.3, "k": 4.1},
-            "lead": {"cat": "metal", "color": [0.3, 0.3, 0.32], "ior": 2.0, "k": 3.5},
-            "tin": {"cat": "metal", "color": [0.75, 0.75, 0.76], "ior": 1.5, "k": 4.5},
-            "nickel": {"cat": "metal", "color": [0.66, 0.6, 0.54], "ior": 2.3, "k": 3.4},
-            "cobalt": {"cat": "metal", "color": [0.67, 0.68, 0.69], "ior": 2.2, "k": 4.0},
-            "bronze": {"cat": "metal", "color": [0.7, 0.5, 0.3], "ior": 0.5, "k": 3.5},
+            "gold": {"cat": "metal", "base_color": [1.0, 0.85, 0.5], "specular_ior": 0.47, "k": 2.83},
+            "silver": {"cat": "metal", "base_color": [0.97, 0.96, 0.91], "specular_ior": 0.18, "k": 3.42},
+            "copper": {"cat": "metal", "base_color": [0.95, 0.64, 0.54], "specular_ior": 1.1, "k": 2.5},
+            "iron": {"cat": "metal", "base_color": [0.56, 0.57, 0.58], "specular_ior": 2.9, "k": 3.0},
+            "aluminum": {"cat": "metal", "base_color": [0.91, 0.92, 0.92], "specular_ior": 1.2, "k": 7.0},
+            "titanium": {"cat": "metal", "base_color": [0.54, 0.51, 0.47], "specular_ior": 2.16, "k": 3.58},
+            "steel": {"cat": "metal", "base_color": [0.42, 0.43, 0.45], "specular_ior": 2.4, "k": 3.2},
+            "brass": {"cat": "metal", "base_color": [0.88, 0.72, 0.4], "specular_ior": 0.44, "k": 2.4},
+            "chrome": {"cat": "metal", "base_color": [0.55, 0.55, 0.57], "specular_ior": 3.1, "k": 3.3},
+            "platinum": {"cat": "metal", "base_color": [0.68, 0.66, 0.62], "specular_ior": 2.3, "k": 4.1},
+            "lead": {"cat": "metal", "base_color": [0.3, 0.3, 0.32], "specular_ior": 2.0, "k": 3.5},
+            "tin": {"cat": "metal", "base_color": [0.75, 0.75, 0.76], "specular_ior": 1.5, "k": 4.5},
+            "nickel": {"cat": "metal", "base_color": [0.66, 0.6, 0.54], "specular_ior": 2.3, "k": 3.4},
+            "cobalt": {"cat": "metal", "base_color": [0.67, 0.68, 0.69], "specular_ior": 2.2, "k": 4.0},
+            "bronze": {"cat": "metal", "base_color": [0.7, 0.5, 0.3], "specular_ior": 0.5, "k": 3.5},
 
             # --- STONES & CERAMICS (Dielectrics: High IOR) ---
-            "marble": {"cat": "dielectric", "color": [0.9, 0.9, 0.9], "ior": 1.48, "k": 0.0, "sss": 0.1},
-            "granite": {"cat": "dielectric", "color": [0.4, 0.4, 0.4], "ior": 1.6, "k": 0.0},
-            "concrete": {"cat": "dielectric", "color": [0.5, 0.5, 0.5], "ior": 1.6, "k": 0.0},
-            "brick": {"cat": "dielectric", "color": [0.5, 0.2, 0.15], "ior": 1.5, "k": 0.0},
-            "porcelain": {"cat": "dielectric", "color": [0.95, 0.95, 0.95], "ior": 1.5, "k": 0.0, "sss": 0.2},
-            "terracotta": {"cat": "dielectric", "color": [0.6, 0.3, 0.2], "ior": 1.6, "k": 0.0},
-            "slate": {"cat": "dielectric", "color": [0.2, 0.22, 0.25], "ior": 1.55, "k": 0.0},
-            "sandstone": {"cat": "dielectric", "color": [0.7, 0.6, 0.45], "ior": 1.5, "k": 0.0},
-            "obsidian": {"cat": "dielectric", "color": [0.02, 0.02, 0.03], "ior": 1.48, "k": 0.0},
-            "basalt": {"cat": "dielectric", "color": [0.1, 0.1, 0.1], "ior": 1.7, "k": 0.0},
+            "marble": {"cat": "dielectric", "base_color": [0.9, 0.9, 0.9], "specular_ior": 1.48, "k": 0.0, "subsurface": 0.1},
+            "granite": {"cat": "dielectric", "base_color": [0.4, 0.4, 0.4], "specular_ior": 1.6, "k": 0.0},
+            "concrete": {"cat": "dielectric", "base_color": [0.5, 0.5, 0.5], "specular_ior": 1.6, "k": 0.0},
+            "brick": {"cat": "dielectric", "base_color": [0.5, 0.2, 0.15], "specular_ior": 1.5, "k": 0.0},
+            "porcelain": {"cat": "dielectric", "base_color": [0.95, 0.95, 0.95], "specular_ior": 1.5, "k": 0.0, "subsurface": 0.2},
+            "terracotta": {"cat": "dielectric", "base_color": [0.6, 0.3, 0.2], "specular_ior": 1.6, "k": 0.0},
+            "slate": {"cat": "dielectric", "base_color": [0.2, 0.22, 0.25], "specular_ior": 1.55, "k": 0.0},
+            "sandstone": {"cat": "dielectric", "base_color": [0.7, 0.6, 0.45], "specular_ior": 1.5, "k": 0.0},
+            "obsidian": {"cat": "dielectric", "base_color": [0.02, 0.02, 0.03], "specular_ior": 1.48, "k": 0.0},
+            "basalt": {"cat": "dielectric", "base_color": [0.1, 0.1, 0.1], "specular_ior": 1.7, "k": 0.0},
 
             # --- PLASTICS & SYNTHETICS ---
-            "plastic_abs": {"cat": "dielectric", "color": [0.1, 0.1, 0.1], "ior": 1.54, "k": 0.0, "colorable": True},
-            "plastic_pvc": {"cat": "dielectric", "color": [0.8, 0.8, 0.8], "ior": 1.52, "k": 0.0, "colorable": True},
-            "rubber": {"cat": "dielectric", "color": [0.05, 0.05, 0.05], "ior": 1.51, "k": 0.0, "colorable": True},
-            "carbon_fiber": {"cat": "dielectric", "color": [0.02, 0.02, 0.02], "ior": 1.6, "k": 0.0, "anisotropy": 0.5, "clearcoat": 1.0},
-            "bakelite": {"cat": "dielectric", "color": [0.2, 0.1, 0.05], "ior": 1.6, "k": 0.0},
-            "silicone": {"cat": "dielectric", "color": [0.7, 0.7, 0.7], "ior": 1.43, "k": 0.0, "sss": 0.4, "colorable": True},
-            "epoxy_resin": {"cat": "dielectric", "color": [0.8, 0.7, 0.5], "ior": 1.55, "k": 0.0, "sss": 0.3},
-            "car_paint": {"cat": "dielectric", "color": [0.5, 0.0, 0.0], "ior": 1.5, "k": 0.0, "clearcoat": 1.0, "metallic_flake": 0.6, "colorable": True},
+            "plastic_abs": {"cat": "dielectric", "base_color": [0.1, 0.1, 0.1], "specular_ior": 1.54, "k": 0.0, "colorable": True},
+            "plastic_pvc": {"cat": "dielectric", "base_color": [0.8, 0.8, 0.8], "specular_ior": 1.52, "k": 0.0, "colorable": True},
+            "rubber": {"cat": "dielectric", "base_color": [0.05, 0.05, 0.05], "specular_ior": 1.51, "k": 0.0, "colorable": True},
+            "carbon_fiber": {"cat": "dielectric", "base_color": [0.02, 0.02, 0.02], "specular_ior": 1.6, "k": 0.0, "specular_anisotropy": 0.5, "coat": 1.0},
+            "bakelite": {"cat": "dielectric", "base_color": [0.2, 0.1, 0.05], "specular_ior": 1.6, "k": 0.0},
+            "silicone": {"cat": "dielectric", "base_color": [0.7, 0.7, 0.7], "specular_ior": 1.43, "k": 0.0, "subsurface": 0.4, "colorable": True},
+            "epoxy_resin": {"cat": "dielectric", "base_color": [0.8, 0.7, 0.5], "specular_ior": 1.55, "k": 0.0, "subsurface": 0.3},
+            "car_paint": {"cat": "dielectric", "base_color": [0.5, 0.0, 0.0], "specular_ior": 1.5, "k": 0.0, "coat": 1.0, "metallic_flake": 0.6, "colorable": True},
 
             # --- FABRICS (Anisotropic/Microfiber logic) ---
-            "silk": {"cat": "dielectric", "color": [0.8, 0.2, 0.5], "ior": 1.5, "k": 0.0, "anisotropy": 0.9, "colorable": True, "hint": "shimmering fabric with directional sheen"},
-            "cotton": {"cat": "dielectric", "color": [0.9, 0.9, 0.9], "ior": 1.3, "k": 0.0, "specular_roughness": 0.95, "colorable": True, "hint": "soft, matte fibrous weave"},
-            "velvet": {"cat": "dielectric", "color": [0.1, 0.02, 0.05], "ior": 1.5, "k": 0.0, "sheen": 1.0, "colorable": True, "hint": "deep pile fabric with edge highlights"},
+            "silk": {"cat": "dielectric", "base_color": [0.8, 0.2, 0.5], "specular_ior": 1.5, "k": 0.0, "specular_anisotropy": 0.9, "colorable": True, "hint": "shimmering fabric with directional sheen"},
+            "cotton": {"cat": "dielectric", "base_color": [0.9, 0.9, 0.9], "specular_ior": 1.3, "k": 0.0, "specular_roughness": 0.95, "colorable": True, "hint": "soft, matte fibrous weave"},
+            "velvet": {"cat": "dielectric", "base_color": [0.1, 0.02, 0.05], "specular_ior": 1.5, "k": 0.0, "sheen": 1.0, "colorable": True, "hint": "deep pile fabric with edge highlights"},
 
             # --- MISC ---
-            "asphalt": {"cat": "dielectric", "color": [0.05, 0.05, 0.05], "ior": 1.55, "k": 0.0, "specular_roughness": 0.9, "bump_type": "cracked"},
+            "asphalt": {"cat": "dielectric", "base_color": [0.05, 0.05, 0.05], "specular_ior": 1.55, "k": 0.0, "specular_roughness": 0.9, "bump_type": "cracked"},
 
             # --- ORGANICS (High SSS) ---
-            "oak_wood": {"cat": "organic", "color": [0.35, 0.25, 0.15], "ior": 1.5, "k": 0.0},
-            "pine_wood": {"cat": "organic", "color": [0.7, 0.5, 0.3], "ior": 1.5, "k": 0.0},
-            "mahogany": {"cat": "organic", "color": [0.2, 0.05, 0.02], "ior": 1.5, "k": 0.0},
-            "leather_tan": {"cat": "organic", "color": [0.4, 0.2, 0.1], "ior": 1.48, "k": 0.0},
-            "leather_black": {"cat": "organic", "color": [0.05, 0.05, 0.05], "ior": 1.5, "k": 0.0},
-            "paper": {"cat": "organic", "color": [0.9, 0.9, 0.85], "ior": 1.5, "k": 0.0, "sss": 0.1},
-            "cardboard": {"cat": "organic", "color": [0.5, 0.4, 0.3], "ior": 1.5, "k": 0.0},
-            "cork": {"cat": "organic", "color": [0.6, 0.4, 0.3], "ior": 1.2, "k": 0.0},
-            "clay": {"cat": "organic", "color": [0.5, 0.35, 0.3], "ior": 1.6, "k": 0.0, "sss": 0.15},
-            "skin_human": {"cat": "organic", "color": [0.8, 0.6, 0.5], "ior": 1.4, "k": 0.0, "sss": 0.8, "sss_color": [1.0, 0.2, 0.1], "hint": "human skin with deep red subsurface scattering"},
+            "oak_wood": {"cat": "organic", "base_color": [0.35, 0.25, 0.15], "specular_ior": 1.5, "k": 0.0},
+            "pine_wood": {"cat": "organic", "base_color": [0.7, 0.5, 0.3], "specular_ior": 1.5, "k": 0.0},
+            "mahogany": {"cat": "organic", "base_color": [0.2, 0.05, 0.02], "specular_ior": 1.5, "k": 0.0},
+            "leather_tan": {"cat": "organic", "base_color": [0.4, 0.2, 0.1], "specular_ior": 1.48, "k": 0.0},
+            "leather_black": {"cat": "organic", "base_color": [0.05, 0.05, 0.05], "specular_ior": 1.5, "k": 0.0},
+            "paper": {"cat": "organic", "base_color": [0.9, 0.9, 0.85], "specular_ior": 1.5, "k": 0.0, "subsurface": 0.1},
+            "cardboard": {"cat": "organic", "base_color": [0.5, 0.4, 0.3], "specular_ior": 1.5, "k": 0.0},
+            "cork": {"cat": "organic", "base_color": [0.6, 0.4, 0.3], "specular_ior": 1.2, "k": 0.0},
+            "clay": {"cat": "organic", "base_color": [0.5, 0.35, 0.3], "specular_ior": 1.6, "k": 0.0, "subsurface": 0.15},
+            "skin_human": {"cat": "organic", "base_color": [0.8, 0.6, 0.5], "specular_ior": 1.4, "k": 0.0, "subsurface": 0.8, "sss_color": [1.0, 0.2, 0.1], "hint": "human skin with deep red subsurface scattering"},
 
             # --- TRANSLUCENTS (Refraction & Jewels) ---
-            "glass": {"cat": "translucent", "color": [1.0, 1.0, 1.0], "ior": 1.52, "k": 0.0},
-            "water": {"cat": "translucent", "color": [0.9, 1.0, 1.0], "ior": 1.33, "k": 0.0},
-            "ice": {"cat": "translucent", "color": [0.8, 0.9, 1.0], "ior": 1.31, "k": 0.0},
-            "diamond": {"cat": "translucent", "color": [1.0, 1.0, 1.0], "ior": 2.42, "k": 0.0},
-            "emerald": {"cat": "translucent", "color": [0.1, 0.8, 0.2], "ior": 1.57, "k": 0.0},
-            "ruby": {"cat": "translucent", "color": [0.9, 0.0, 0.1], "ior": 1.76, "k": 0.0},
-            "amber": {"cat": "translucent", "color": [1.0, 0.6, 0.1], "ior": 1.54, "k": 0.0, "sss": 0.5},
-            "honey": {"cat": "translucent", "color": [0.8, 0.5, 0.1], "ior": 1.5, "k": 0.0, "sss": 0.8},
+            "glass": {"cat": "translucent", "base_color": [1.0, 1.0, 1.0], "specular_ior": 1.52, "k": 0.0},
+            "water": {"cat": "translucent", "base_color": [0.9, 1.0, 1.0], "specular_ior": 1.33, "k": 0.0},
+            "ice": {"cat": "translucent", "base_color": [0.8, 0.9, 1.0], "specular_ior": 1.31, "k": 0.0},
+            "diamond": {"cat": "translucent", "base_color": [1.0, 1.0, 1.0], "specular_ior": 2.42, "k": 0.0},
+            "emerald": {"cat": "translucent", "base_color": [0.1, 0.8, 0.2], "specular_ior": 1.57, "k": 0.0},
+            "ruby": {"cat": "translucent", "base_color": [0.9, 0.0, 0.1], "specular_ior": 1.76, "k": 0.0},
+            "amber": {"cat": "translucent", "base_color": [1.0, 0.6, 0.1], "specular_ior": 1.54, "k": 0.0, "subsurface": 0.5},
+            "honey": {"cat": "translucent", "base_color": [0.8, 0.5, 0.1], "specular_ior": 1.5, "k": 0.0, "subsurface": 0.8},
         }
 
         # 3. FINISHES (Physical Surface State)
         self.FINISHES = {
-            "polished": {"specular_roughness": 0.02, "anisotropy": 0.0, "bump_scale": 0.0, "noise_scale": 1.0, "hint": "mirror-like and smooth"},
-            "matte": {"specular_roughness": 0.9, "anisotropy": 0.0, "bump_scale": 0.0, "noise_scale": 1.0, "hint": "dull and non-reflective"},
-            "satin": {"specular_roughness": 0.25, "anisotropy": 0.1, "bump_scale": 0.02, "noise_scale": 1.0, "hint": "soft semi-gloss sheen"},
-            "brushed": {"specular_roughness": 0.35, "anisotropy": 0.8, "bump_scale": 0.1, "noise_scale": 0.5, "bump_type": "directional", "hint": "directional micro-scratches"},
+            "polished": {"specular_roughness": 0.02, "specular_anisotropy": 0.0, "bump_scale": 0.0, "noise_scale": 1.0, "hint": "mirror-like and smooth"},
+            "matte": {"specular_roughness": 0.9, "specular_anisotropy": 0.0, "bump_scale": 0.0, "noise_scale": 1.0, "hint": "dull and non-reflective"},
+            "satin": {"specular_roughness": 0.25, "specular_anisotropy": 0.1, "bump_scale": 0.02, "noise_scale": 1.0, "hint": "soft semi-gloss sheen"},
+            "brushed": {"specular_roughness": 0.35, "specular_anisotropy": 0.8, "bump_scale": 0.1, "noise_scale": 0.5, "bump_type": "directional", "hint": "directional micro-scratches"},
             "hammered": {"specular_roughness": 0.15, "bump_scale": 0.5, "noise_scale": 2.0, "bump_type": "cellular", "hint": "indented with small craters"}
         }
 
@@ -133,16 +133,36 @@ class BuildMaterialsData:
             "scratched": {"dirt": 0.1, "wear": 0.9, "hint": "showing heavy surface abrasions"}
         }
 
+    PARAM_DEFAULTS = {
+        "base_color": [0.5, 0.5, 0.5],
+        "metalness": 0.0,
+        "specular_ior": 1.5,
+        "k": 0.0,
+        "specular_roughness": 0.5,
+        "specular_anisotropy": 0.0,
+        "subsurface": 0.0,
+        "sss_color": [1.0, 1.0, 1.0],
+        "coat": 0.0,
+        "coat_roughness": 0.0,
+        "sheen": 0.0,
+        "refraction": 0.0,
+        "bump_scale": 0.0,
+        "bump_type": "none",
+        "noise_scale": 1.0,
+        "dirt": 0.0,
+        "wear": 0.0,
+    }
+
     def _build_entity(self, tech_id, b_name, f_name, c_name, base, category, finish, cond, color_override=None):
-        params = {**self.CATEGORIES[category], **base, **finish, **cond}
+        params = {**self.PARAM_DEFAULTS, **self.CATEGORIES[category], **base, **finish, **cond}
 
         if color_override:
             params["color"] = color_override
 
         # Layered shader logic: promote clearcoat flag into render-ready params
-        if params.get("clearcoat", 0.0) > 0:
+        if params.get("coat", 0.0) > 0:
             params["clearcoat_weight"] = 1.0
-            params["clearcoat_rough"] = params.get("clearcoat_rough", 0.03)
+            params["coat_roughness"] = params.get("coat_roughness", 0.03)
             params.setdefault("metallic_flake", 0.0)
         else:
             params["clearcoat_weight"] = 0.0
@@ -403,11 +423,11 @@ class BuildMaterials:
     neuron_library.json produced by BuildMaterialsData."""
 
     PARAM_MAP = {
-        "color":      "base_color",
+        "base_color":      "base_color",
         "metalness":  "metalness",
-        "ior":        "specular_IOR",
+        "specular_ior":        "specular_IOR",
         "specular_roughness":      "specular_roughness",
-        "anisotropy": "specular_anisotropy",
+        "specular_anisotropy": "specular_anisotropy",
     }
 
     def __init__(self, json_path=None):
@@ -459,7 +479,7 @@ class BuildMaterials:
             value = params.get(json_key)
             if value is None:
                 continue
-            if json_key == "color":
+            if json_key == "base_color":
                 surface.parmTuple(mtlx_parm).set(value)
             else:
                 surface.parm(mtlx_parm).set(float(value))

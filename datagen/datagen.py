@@ -9,7 +9,10 @@ from datagen.ui import ui_datagen
 
 from importlib import reload
 from datagen import materials
+from datagen import tools
+
 reload(materials)
+reload(tools)
 reload(ui_datagen)
    
 
@@ -51,8 +54,9 @@ class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
         labels.generate()
 
     def apply_material(self):
-
-        pass
+        material_id = self.listMaterials.currentItem().text()
+        tools.apply_material(material_id)
+        
 
 
 def run_datagen():
