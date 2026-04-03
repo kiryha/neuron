@@ -17,7 +17,7 @@ from .config import LIBRARY_JSON, MATLIB_NODE
 
 logger = logging.getLogger(__name__)
 LIST_TO_CREATE = ["gold_polished_clean", "car_paint_red_matte_dusty", "iron_brushed_scratched", 
-                  "glass_matte_clean", "honey_satin_dusty", "concrete_hammered_clean", "rubber_black_polished_scratched"]
+                  "glass_polished_clean", "glass_matte_clean", "honey_satin_dusty", "concrete_hammered_clean", "rubber_black_polished_scratched"]
 
 
 class BuildMaterialsData:
@@ -27,7 +27,7 @@ class BuildMaterialsData:
             "metal": {"metalness": 1.0, "has_k": True, "subsurface": 0.0, "coat": 0.0, "coat_roughness": 0.0},
             "dielectric": {"metalness": 0.0, "has_k": False, "subsurface": 0.0, "coat": 0.0, "coat_roughness": 0.0},
             "organic": {"metalness": 0.0, "has_k": False, "subsurface": 0.2, "coat": 0.0, "coat_roughness": 0.0},
-            "translucent": {"metalness": 0.0, "has_k": False, "refraction": 1.0, "coat": 0.0, "coat_roughness": 0.0}
+            "translucent": {"metalness": 0.0, "has_k": False, "transmission": 1.0, "base": 0.0, "coat": 0.0, "coat_roughness": 0.0}
         }
 
         # Color palette for materials where color is not a defining physical property
@@ -109,11 +109,13 @@ class BuildMaterialsData:
             "glass": {"cat": "translucent", "base_color": [1.0, 1.0, 1.0], "specular_ior": 1.52, "k": 0.0},
             "water": {"cat": "translucent", "base_color": [0.9, 1.0, 1.0], "specular_ior": 1.33, "k": 0.0},
             "ice": {"cat": "translucent", "base_color": [0.8, 0.9, 1.0], "specular_ior": 1.31, "k": 0.0},
-            "diamond": {"cat": "translucent", "base_color": [1.0, 1.0, 1.0], "specular_ior": 2.42, "k": 0.0},
-            "emerald": {"cat": "translucent", "base_color": [0.1, 0.8, 0.2], "specular_ior": 1.57, "k": 0.0},
-            "ruby": {"cat": "translucent", "base_color": [0.9, 0.0, 0.1], "specular_ior": 1.76, "k": 0.0},
-            "amber": {"cat": "translucent", "base_color": [1.0, 0.6, 0.1], "specular_ior": 1.54, "k": 0.0, "subsurface": 0.5},
-            "honey": {"cat": "translucent", "base_color": [0.8, 0.5, 0.1], "specular_ior": 1.5, "k": 0.0, "subsurface": 0.8},
+            "diamond": {"cat": "translucent", "base_color": [1.0, 1.0, 1.0], "specular_ior": 2.42, "k": 0.0, "transmission_dispersion": 55.0},
+            "emerald": {"cat": "translucent", "base_color": [0.1, 0.8, 0.2], "specular_ior": 1.57, "k": 0.0, "transmission_dispersion": 40.0},
+            "ruby": {"cat": "translucent", "base_color": [0.9, 0.0, 0.1], "specular_ior": 1.76, "k": 0.0, "transmission_dispersion": 42.0},
+            "amber": {"cat": "translucent", "base_color": [1.0, 0.6, 0.1], "specular_ior": 1.54, "k": 0.0, "subsurface": 0.5,
+                      "transmission_depth": 5.0, "transmission_scatter": [0.6, 0.3, 0.05]},
+            "honey": {"cat": "translucent", "base_color": [0.8, 0.5, 0.1], "specular_ior": 1.5, "k": 0.0, "subsurface": 0.8,
+                      "transmission_depth": 3.0, "transmission_scatter": [0.8, 0.5, 0.1]},
         }
 
         # 3. FINISHES (Physical Surface State)
@@ -145,7 +147,12 @@ class BuildMaterialsData:
         "coat": 0.0,
         "coat_roughness": 0.0,
         "sheen": 0.0,
-        "refraction": 0.0,
+        "transmission": 0.0,
+        "transmission_color": [1.0, 1.0, 1.0],
+        "transmission_depth": 0.0,
+        "transmission_scatter": [0.0, 0.0, 0.0],
+        "transmission_dispersion": 0.0,
+        "thin_walled": False,
         "bump_scale": 0.0,
         "bump_type": "none",
         "noise_scale": 1.0,
@@ -168,7 +175,18 @@ class BuildMaterialsData:
             params["clearcoat_weight"] = 0.0
             params["metallic_flake"] = 0.0
 
-        for key in ("cat", "colorable", "only_for"):
+        # Transmission model for translucent materials
+        if category == "translucent":
+            params["transmission_color"] = params.get("base_color", [1.0, 1.0, 1.0])
+            params["base_color"] = [0.0, 0.0, 0.0]
+
+            if "transmission_depth" not in base:
+                params["transmission_depth"] = 1.0
+
+            if any(kw in b_name for kw in ("bubble", "window")):
+                params["thin_walled"] = True
+
+        for key in ("cat", "colorable", "only_for", "base"):
             params.pop(key, None)
 
         # Create a high-entropy hash
@@ -176,11 +194,17 @@ class BuildMaterialsData:
         seed_float = int(hash_obj.hexdigest()[:8], 16) / float(0xFFFFFFFF)
         params["variation_seed"] = round(seed_float, 6)
 
+        semantic_hints = [base.get("hint", b_name), finish["hint"], cond["hint"]]
+        if params.get("transmission", 0.0) > 0:
+            semantic_hints.extend(["Refractive", "Translucent"])
+            if any(params.get("transmission_scatter", [0, 0, 0])):
+                semantic_hints.append("Volumetric")
+
         return {
             "id": tech_id,
             "metadata": {"base": b_name, "category": category, "finish": f_name, "condition": c_name},
             "parameters": params,
-            "semantic_hints": [base.get("hint", b_name), finish["hint"], cond["hint"]]
+            "semantic_hints": semantic_hints
         }
 
     def generate(self):
