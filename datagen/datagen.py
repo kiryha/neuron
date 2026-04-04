@@ -27,7 +27,9 @@ class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
 
         self.btnBuildData.clicked.connect(self.build_materials_data)
         self.btnBuildPrompts.clicked.connect(self.build_prompts)
-        self.btnApplyMaterial.clicked.connect(self.apply_material)
+        self.btnReloadData.clicked.connect(self.load_materials_data)
+
+        self.listMaterials.currentItemChanged.connect(self.apply_material)
 
     def load_materials_data(self):
         """
@@ -36,10 +38,13 @@ class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
         with open(materials.LIBRARY_JSON, "r") as f:
             self.materials_data = json.load(f)
 
+        self.listMaterials.clear()
+
         self.materials_list = list(self.materials_data.keys())
 
         for material in self.materials_list:
             self.listMaterials.addItem(material)
+
 
     def build_materials_data(self):
 
@@ -54,6 +59,7 @@ class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
         labels.generate()
 
     def apply_material(self):
+
         material_id = self.listMaterials.currentItem().text()
         tools.apply_material(material_id)
         

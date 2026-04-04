@@ -22,7 +22,7 @@ class Ui_Datagen(object):
     def setupUi(self, Datagen):
         if not Datagen.objectName():
             Datagen.setObjectName(u"Datagen")
-        Datagen.resize(402, 396)
+        Datagen.resize(402, 399)
         self.verticalLayout = QVBoxLayout(Datagen)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.btnBuildData = QPushButton(Datagen)
@@ -37,16 +37,16 @@ class Ui_Datagen(object):
 
         self.verticalLayout.addWidget(self.btnBuildPrompts)
 
+        self.btnReloadData = QPushButton(Datagen)
+        self.btnReloadData.setObjectName(u"btnReloadData")
+        self.btnReloadData.setMinimumSize(QSize(0, 50))
+
+        self.verticalLayout.addWidget(self.btnReloadData)
+
         self.listMaterials = QListWidget(Datagen)
         self.listMaterials.setObjectName(u"listMaterials")
 
         self.verticalLayout.addWidget(self.listMaterials)
-
-        self.btnApplyMaterial = QPushButton(Datagen)
-        self.btnApplyMaterial.setObjectName(u"btnApplyMaterial")
-        self.btnApplyMaterial.setMinimumSize(QSize(0, 50))
-
-        self.verticalLayout.addWidget(self.btnApplyMaterial)
 
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
@@ -62,6 +62,6 @@ class Ui_Datagen(object):
         Datagen.setWindowTitle(QCoreApplication.translate("Datagen", u"D A T A G E N", None))
         self.btnBuildData.setText(QCoreApplication.translate("Datagen", u"Build Materials Data", None))
         self.btnBuildPrompts.setText(QCoreApplication.translate("Datagen", u"Build Material Prompts", None))
-        self.btnApplyMaterial.setText(QCoreApplication.translate("Datagen", u"Apply Material Properties", None))
+        self.btnReloadData.setText(QCoreApplication.translate("Datagen", u"Reload Data", None))
     # retranslateUi
 

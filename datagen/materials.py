@@ -27,7 +27,7 @@ class BuildMaterialsData:
             "metal": {"metalness": 1.0, "has_k": True, "subsurface": 0.0, "coat": 0.0, "coat_roughness": 0.0},
             "dielectric": {"metalness": 0.0, "has_k": False, "subsurface": 0.0, "coat": 0.0, "coat_roughness": 0.0},
             "organic": {"metalness": 0.0, "has_k": False, "subsurface": 0.2, "coat": 0.0, "coat_roughness": 0.0},
-            "translucent": {"metalness": 0.0, "has_k": False, "transmission": 1.0, "base": 0.0, "coat": 0.0, "coat_roughness": 0.0}
+            "translucent": {"metalness": 0.0, "has_k": False, "transmission": 1.0, "transmission_dispersion": 1.0, "base_value": 0.0, "coat": 0.0, "coat_roughness": 0.0}
         }
 
         # Color palette for materials where color is not a defining physical property
@@ -136,6 +136,7 @@ class BuildMaterialsData:
         }
 
     PARAM_DEFAULTS = {
+        "base_value": 1.0,
         "base_color": [0.5, 0.5, 0.5],
         "metalness": 0.0,
         "specular_ior": 1.5,
@@ -186,7 +187,7 @@ class BuildMaterialsData:
             if any(kw in b_name for kw in ("bubble", "window")):
                 params["thin_walled"] = True
 
-        for key in ("cat", "colorable", "only_for", "base"):
+        for key in ("cat", "colorable", "only_for"):
             params.pop(key, None)
 
         # Create a high-entropy hash

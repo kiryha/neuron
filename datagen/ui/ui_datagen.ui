@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>402</width>
-    <height>396</height>
+    <height>399</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,10 +41,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QListWidget" name="listMaterials"/>
-   </item>
-   <item>
-    <widget class="QPushButton" name="btnApplyMaterial">
+    <widget class="QPushButton" name="btnReloadData">
      <property name="minimumSize">
       <size>
        <width>0</width>
@@ -52,9 +49,12 @@
       </size>
      </property>
      <property name="text">
-      <string>Apply Material Properties</string>
+      <string>Reload Data</string>
      </property>
     </widget>
+   </item>
+   <item>
+    <widget class="QListWidget" name="listMaterials"/>
    </item>
    <item>
     <spacer name="verticalSpacer">
