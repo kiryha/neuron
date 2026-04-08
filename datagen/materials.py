@@ -44,7 +44,6 @@ SHADER_PARAMETER_KEYS = (
     "transmission_scatter",
     "transmission_dispersion",
     "thin_walled",
-    "clearcoat_weight",
     "metallic_flake",
 )
 
@@ -58,7 +57,7 @@ PROCEDURAL_PARAMETER_KEYS = (
 )
 
 VALID_CATEGORIES = frozenset({"metal", "dielectric", "organic", "translucent"})
-VALID_BUMP_TYPES = frozenset({"none", "directional", "cellular", "cracked"})
+VALID_BUMP_TYPES = frozenset({"none", "directional", "cellular", "cracked", "stochastic"})
 
 # `k` is stored for conductor / metal shading metadata for future MaterialX networks; it is not
 # guaranteed to map 1:1 to a specific published MaterialX node until the shader graph is finalized.
@@ -82,7 +81,6 @@ _SHADER_DEFAULTS: dict[str, Any] = {
     "transmission_scatter": [0.0, 0.0, 0.0],
     "transmission_dispersion": 0.0,
     "thin_walled": False,
-    "clearcoat_weight": 0.0,
     "metallic_flake": 0.0,
 }
 
@@ -413,6 +411,13 @@ _BASES: dict[str, dict[str, Any]] = {
         "cat": "dielectric",
         "physical": {"base_color": [0.02, 0.02, 0.02], "specular_ior": 1.6, "k": 0.0, "specular_anisotropy": 0.5, "coat": 1.0},
         "semantic": {"base_phrase": "woven carbon fiber composite"},
+        "finish_overrides": {
+            "matte": {
+                "shader": {
+                    "coat_roughness": 0.68,
+                }
+            }
+        },
     },
     "bakelite": {
         "cat": "dielectric",
@@ -441,6 +446,16 @@ _BASES: dict[str, dict[str, Any]] = {
             "metallic_flake": 0.6,
         },
         "semantic": {"base_phrase": "automotive car paint"},
+        "finish_overrides": {
+            "matte": {
+                "shader": {
+                    "coat": 0.38,
+                    "coat_roughness": 0.72,
+                    "metallic_flake": 0.16,
+                    "specular_roughness": 0.92,
+                }
+            }
+        },
     },
     "silk": {
         "cat": "dielectric",
@@ -603,48 +618,86 @@ _BASES: dict[str, dict[str, Any]] = {
 _FINISHES: dict[str, dict[str, Any]] = {
     "polished": {
         "shader": {"specular_roughness": 0.02, "specular_anisotropy": 0.0},
-        "procedural": {"bump_scale": 0.0, "noise_scale": 1.0, "bump_type": "none"},
-        "semantic": {"adjective": "polished", "description": "with a mirror-like smooth reflectance"},
+        "procedural": {"bump_scale": 0.004, "noise_scale": 1.0, "bump_type": "stochastic"},
+        "semantic": {
+            "adjective": "polished",
+            "description": "with a mirror-like smooth reflectance",
+            "clean_phrase": "with a mirror-like smooth reflectance",
+            "worn_phrase": "with a glossy reflective surface marked by visible wear",
+            "contaminated_phrase": "with a highly reflective surface and contamination resting on top",
+            "aging_phrase": "with a once-bright polish dulled by age and exposure",
+        },
     },
     "matte": {
         "shader": {"specular_roughness": 0.9, "specular_anisotropy": 0.0},
-        "procedural": {"bump_scale": 0.0, "noise_scale": 1.0, "bump_type": "none"},
-        "semantic": {"adjective": "matte", "description": "with a diffuse low-reflectance surface"},
+        "procedural": {"bump_scale": 0.025, "noise_scale": 1.0, "bump_type": "stochastic"},
+        "semantic": {
+            "adjective": "matte",
+            "description": "with a diffuse low-reflectance surface",
+            "clean_phrase": "with a diffuse low-reflectance surface",
+            "worn_phrase": "with a matte surface showing scuffs and abrasion",
+            "contaminated_phrase": "with a matte base and dusty residue on the surface",
+            "aging_phrase": "with a chalky matte finish worn unevenly over time",
+        },
     },
     "satin": {
         "shader": {"specular_roughness": 0.25, "specular_anisotropy": 0.1},
-        "procedural": {"bump_scale": 0.02, "noise_scale": 1.0, "bump_type": "none"},
-        "semantic": {"adjective": "satin", "description": "with a soft semi-gloss sheen"},
+        "procedural": {"bump_scale": 0.02, "noise_scale": 1.0, "bump_type": "stochastic"},
+        "semantic": {
+            "adjective": "satin",
+            "description": "with a soft semi-gloss sheen",
+            "clean_phrase": "with a soft semi-gloss sheen",
+            "worn_phrase": "with a satin sheen softened by handling wear",
+            "contaminated_phrase": "with a semi-gloss surface showing settled surface dust",
+            "aging_phrase": "with a satin luster faded in patches",
+        },
     },
     "brushed": {
         "shader": {"specular_roughness": 0.35, "specular_anisotropy": 0.8},
         "procedural": {"bump_scale": 0.1, "noise_scale": 0.5, "bump_type": "directional"},
-        "semantic": {"adjective": "brushed", "description": "with directional micro-scratches"},
+        "semantic": {
+            "adjective": "brushed",
+            "description": "with directional micro-scratches",
+            "clean_phrase": "with directional micro-scratches",
+            "worn_phrase": "with brushed grain interrupted by deeper scratches",
+            "contaminated_phrase": "with directional brushing and dust caught along the grain",
+            "aging_phrase": "with brushed texture smoothed and tarnished in wear zones",
+        },
     },
     "hammered": {
         "shader": {"specular_roughness": 0.15, "specular_anisotropy": 0.0},
         "procedural": {"bump_scale": 0.5, "noise_scale": 2.0, "bump_type": "cellular"},
-        "semantic": {"adjective": "hammered", "description": "with small crater-like indentations"},
+        "semantic": {
+            "adjective": "hammered",
+            "description": "with small crater-like indentations",
+            "clean_phrase": "with small crater-like indentations",
+            "worn_phrase": "with hammered relief worn smooth on high points",
+            "contaminated_phrase": "with hammered recesses holding fine dust",
+            "aging_phrase": "with hammered texture softened by corrosion and wear",
+        },
     },
 }
 
 _CONDITIONS: dict[str, dict[str, Any]] = {
     "clean": {
         "procedural": {"dirt": 0.0, "wear": 0.0},
-        "semantic": {"phrase": "in pristine condition"},
+        "semantic": {"phrase": "in pristine condition", "mode": "pristine"},
     },
     "dusty": {
         "procedural": {"dirt": 0.6, "wear": 0.1},
-        "semantic": {"phrase": "covered in fine grey dust"},
+        "semantic": {
+            "phrase": "with fine dust settled on the surface",
+            "mode": "contamination",
+        },
     },
     "rusted": {
         "procedural": {"dirt": 0.8, "wear": 0.4},
-        "semantic": {"phrase": "oxidized with flaky corrosion"},
+        "semantic": {"phrase": "oxidized with flaky corrosion", "mode": "aging"},
         "only_for": ["metal"],
     },
     "scratched": {
         "procedural": {"dirt": 0.1, "wear": 0.9},
-        "semantic": {"phrase": "showing heavy surface abrasions"},
+        "semantic": {"phrase": "showing visible scratches and abrasion", "mode": "abrasion"},
     },
 }
 
@@ -737,6 +790,22 @@ def build_procedural_parameters(merged_proc: dict[str, Any]) -> dict[str, Any]:
     return {k: deepcopy(merged_proc[k]) for k in PROCEDURAL_PARAMETER_KEYS if k in merged_proc}
 
 
+_FINISH_PHRASE_BY_MODE: dict[str, str] = {
+    "pristine": "clean_phrase",
+    "abrasion": "worn_phrase",
+    "contamination": "contaminated_phrase",
+    "aging": "aging_phrase",
+}
+
+
+def _finish_description_for_mode(finish_sem: dict[str, Any], mode: str) -> str:
+    key = _FINISH_PHRASE_BY_MODE.get(mode, "clean_phrase")
+    for candidate in (finish_sem.get(key), finish_sem.get("description"), finish_sem.get("clean_phrase")):
+        if isinstance(candidate, str) and candidate.strip():
+            return candidate.strip()
+    return ""
+
+
 def build_semantic_payload(
     b_name: str,
     f_name: str,
@@ -747,30 +816,61 @@ def build_semantic_payload(
     shader: dict[str, Any],
     color_name: str | None,
     token_map: Any,
+    semantic_overrides_by_finish: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     base_phrase = base_sem.get("base_phrase") or token_map.get(b_name, b_name.replace("_", " "))
     if color_name:
         base_phrase = f"{color_name} {base_phrase}"
+    base_phrase = base_phrase.strip()
 
     finish_adjective = finish_sem.get("adjective", f_name.replace("_", " "))
-    finish_description = finish_sem.get("description", "")
-    condition_phrase = cond_sem.get("phrase", "")
+    condition_mode = str(cond_sem.get("mode", "pristine"))
+    finish_description = _finish_description_for_mode(finish_sem, condition_mode)
+    if b_name in ("glass", "glass_window") and f_name == "matte":
+        _frosted_glass_finish = {
+            "pristine": "with a frosted rough surface that blurs transmitted light",
+            "abrasion": "with frosted glass scuffed and scratched, distorting transmission",
+            "contamination": "with frosted glass and dust clinging to the rough surface",
+            "aging": "with weathered frosting and uneven transmission blur",
+        }
+        finish_description = _frosted_glass_finish.get(
+            condition_mode, _frosted_glass_finish["pristine"]
+        )
+    condition_phrase = str(cond_sem.get("phrase", "")).strip()
 
-    hints: list[str] = [
-        base_phrase.strip(),
-        f"{finish_adjective} finish".strip(),
-        condition_phrase.strip(),
-    ]
-    if float(shader.get("transmission", 0.0)) > 0.0:
+    hints: list[str] = [base_phrase, f"{finish_adjective} finish".strip(), condition_phrase]
+
+    tr = float(shader.get("transmission", 0.0))
+    ts = shader.get("transmission_scatter", [0.0, 0.0, 0.0])
+    scatter_max = max((float(x) for x in ts), default=0.0)
+
+    if tr > 0.0:
         hints.append("translucent")
-        if any(float(x) > 0.0 for x in shader.get("transmission_scatter", [0.0, 0.0, 0.0])):
-            hints.append("volumetric scattering")
+        if b_name in ("glass", "glass_window") and f_name == "matte":
+            hints.extend(
+                [
+                    "frosted glass",
+                    "blurred transmission through a rough interface",
+                ]
+            )
+        elif b_name in MaterialSpec.TRANSMISSION_LOCK_BASES and scatter_max > 0.05:
+            hints.append("light-scattering translucent medium")
+        elif scatter_max >= 0.28:
+            hints.append("participating medium appearance")
+
+    sem_over = (semantic_overrides_by_finish or {}).get(f_name) or {}
+    hint_extra = sem_over.get("semantic_hints_extra")
+    if isinstance(hint_extra, list):
+        hints.extend(str(x).strip() for x in hint_extra if str(x).strip())
+    elif isinstance(hint_extra, str) and hint_extra.strip():
+        hints.append(hint_extra.strip())
 
     return {
-        "base_phrase": base_phrase.strip(),
+        "base_phrase": base_phrase,
         "finish_adjective": finish_adjective,
         "finish_description": finish_description,
         "condition_phrase": condition_phrase,
+        "condition_mode": condition_mode,
         "semantic_hints": hints,
     }
 
@@ -801,7 +901,6 @@ def validate_material_entry(entry: dict[str, Any]) -> None:
         "specular_anisotropy",
         "coat",
         "coat_roughness",
-        "clearcoat_weight",
         "subsurface",
         "transmission",
         "sheen",
@@ -839,8 +938,17 @@ def validate_material_entry(entry: dict[str, Any]) -> None:
     if proc["bump_type"] not in VALID_BUMP_TYPES:
         raise ValueError(f"{entry['id']}: unknown bump_type {proc['bump_type']!r}")
 
-    if proc["bump_type"] != "none" and float(proc["bump_scale"]) <= 0.0:
-        raise ValueError(f"{entry['id']}: bump_type {proc['bump_type']!r} expects bump_scale > 0")
+    bscale = float(proc["bump_scale"])
+    if bscale < 0.0:
+        raise ValueError(f"{entry['id']}: bump_scale must be >= 0, got {bscale}")
+    if proc["bump_type"] == "none" and bscale != 0.0:
+        raise ValueError(f"{entry['id']}: bump_type 'none' requires bump_scale == 0.0, got {bscale}")
+    if proc["bump_type"] != "none" and bscale <= 0.0:
+        raise ValueError(f"{entry['id']}: bump_type {proc['bump_type']!r} requires bump_scale > 0")
+
+    nscale = float(proc["noise_scale"])
+    if nscale <= 0.0:
+        raise ValueError(f"{entry['id']}: noise_scale must be positive, got {nscale}")
 
     if not isinstance(shader["thin_walled"], bool):
         raise ValueError(f"{entry['id']}: thin_walled must be bool")
@@ -864,11 +972,37 @@ def validate_material_entry(entry: dict[str, Any]) -> None:
     if "only_for" in entry:
         raise ValueError(f"{entry['id']}: stray only_for leaked into entry")
 
+    coat_amt = float(shader["coat"])
+    coat_rough = float(shader["coat_roughness"])
+    spec_rough = float(shader["specular_roughness"])
+    if coat_amt >= 0.35 and spec_rough >= 0.78 and coat_rough <= 0.14:
+        raise ValueError(
+            f"{entry['id']}: matte-looking base (high specular roughness) with a thick near-mirror "
+            f"clearcoat (coat={coat_amt}, coat_roughness={coat_rough}) is physically contradictory"
+        )
+
     sem = entry.get("semantic") or {}
     for field in ("base_phrase", "finish_adjective", "finish_description", "condition_phrase"):
         val = sem.get(field, "")
         if not isinstance(val, str) or not val.strip():
             raise ValueError(f"{entry['id']}: semantic.{field} must be a non-empty string")
+
+    cm = sem.get("condition_mode", "")
+    if not isinstance(cm, str) or not cm.strip():
+        raise ValueError(f"{entry['id']}: semantic.condition_mode must be a non-empty string")
+
+    hints = sem.get("semantic_hints") or []
+    if not isinstance(hints, list) or not hints:
+        raise ValueError(f"{entry['id']}: semantic.semantic_hints must be a non-empty list")
+    if any("translucent" in str(h).lower() for h in hints) and float(shader["transmission"]) <= 0.0:
+        raise ValueError(f"{entry['id']}: semantic hints mention translucency but transmission is 0")
+
+    label = sem.get("semantic_label")
+    if label is not None:
+        if not isinstance(label, str) or not label.strip():
+            raise ValueError(f"{entry['id']}: semantic.semantic_label must be non-empty when present")
+        if re.search(r"([,;])\s*\1", label) or ", ." in label or ".. " in label:
+            raise ValueError(f"{entry['id']}: semantic.semantic_label has broken punctuation")
 
 
 def _merge_physical_layers(
@@ -918,6 +1052,10 @@ def _merge_physical_layers(
         if "procedural" in co:
             proc.update(deepcopy(co["procedural"]))
 
+    pco = (base_entry.get("procedural_overrides") or {}).get(c_name)
+    if pco:
+        proc.update(deepcopy(pco))
+
     pl = base_entry.get("procedural_layer")
     if pl:
         proc.update(deepcopy(pl))
@@ -939,15 +1077,14 @@ def _apply_category_transmission_model(
 
 
 def _apply_coat_and_flake(shader: dict[str, Any]) -> None:
+    """Normalize coat roughness and flake; ``coat`` is the canonical clear-coat weight (0–1)."""
     if float(shader.get("coat", 0.0)) > 0.0:
-        shader["clearcoat_weight"] = 1.0
         cr = float(shader.get("coat_roughness", 0.03))
         if cr <= 0.0:
             cr = 0.03
         shader["coat_roughness"] = cr
         shader.setdefault("metallic_flake", 0.0)
     else:
-        shader["clearcoat_weight"] = 0.0
         shader["metallic_flake"] = 0.0
 
 
@@ -1019,6 +1156,7 @@ def build_material_entry(
         shader_out,
         color_name,
         token_map,
+        semantic_overrides_by_finish=base_entry.get("semantic_overrides"),
     )
 
     entry = {
@@ -1035,8 +1173,10 @@ def build_material_entry(
 class BuildMaterialsData:
     """Deterministic generator for neuron_library.json material records."""
 
-    def generate(self, subset_ids: set[str] | None = None) -> dict[str, dict[str, Any]]:
+    def generate(self, subset_ids: set[str] | frozenset[str] | list[str] | None = None) -> dict[str, dict[str, Any]]:
         print(">> Building materials data...")
+        if subset_ids is not None:
+            subset_ids = set(subset_ids)
         token_map = MaterialSpec.BASE_TOKEN_MAP
         library: dict[str, dict[str, Any]] = {}
 
@@ -1078,10 +1218,29 @@ class BuildPrompts:
 
     TOKEN_MAP = MaterialSpec.TOKEN_MAP
 
-    TEMPLATES = [
+    _TEMPLATES_CLEAN = [
         "A close-up of {base_phrase}, {finish_description}, {condition_phrase}.",
         "Photorealistic material study of {base_phrase} with a {finish_adjective} finish, {condition_phrase}.",
     ]
+    _TEMPLATES_ABRASION = [
+        "Photorealistic material study of {base_phrase} {finish_description}, {condition_phrase}.",
+        "Close-up of {base_phrase}: {finish_description}; {condition_phrase}.",
+    ]
+    _TEMPLATES_CONTAMINATION = [
+        "Photorealistic study of {base_phrase} {finish_description}, {condition_phrase}.",
+        "Close-up of {base_phrase} with a {finish_adjective} finish — {condition_phrase}.",
+    ]
+    _TEMPLATES_AGING = [
+        "Material study of {base_phrase} {finish_description}, {condition_phrase}.",
+        "Weathered {base_phrase}: {finish_description}, {condition_phrase}.",
+    ]
+
+    _TEMPLATES_BY_MODE: dict[str, list[str]] = {
+        "pristine": _TEMPLATES_CLEAN,
+        "abrasion": _TEMPLATES_ABRASION,
+        "contamination": _TEMPLATES_CONTAMINATION,
+        "aging": _TEMPLATES_AGING,
+    }
 
     def __init__(self, json_path: Path | str | None = None, seed: int | None = None, overwrite: bool = False):
         self.json_path = Path(json_path) if json_path else LIBRARY_JSON
@@ -1090,6 +1249,8 @@ class BuildPrompts:
 
     def _validate_text(self, text: str) -> str:
         text = re.sub(r" {2,}", " ", text)
+        text = re.sub(r",\s*,", ",", text)
+        text = re.sub(r";\s*;", ";", text)
         text = re.sub(r",\s*\.", ".", text)
         text = re.sub(r",\s*$", "", text)
         text = text.strip()
@@ -1103,8 +1264,10 @@ class BuildPrompts:
         finish_description = sem.get("finish_description", "")
         finish_adjective = sem.get("finish_adjective", "")
         condition_phrase = sem.get("condition_phrase", "")
+        mode = str(sem.get("condition_mode", "pristine"))
+        templates = self._TEMPLATES_BY_MODE.get(mode, self._TEMPLATES_CLEAN)
 
-        template = rng.choice(self.TEMPLATES)
+        template = rng.choice(templates)
         label = template.format(
             base_phrase=base_phrase,
             finish_description=finish_description,
@@ -1132,7 +1295,7 @@ class BuildPrompts:
             sem = entry.setdefault("semantic", {})
             if sem.get("semantic_label") and not self.overwrite:
                 skipped += 1
-                rng.choice(self.TEMPLATES)
+                rng.choice(self._TEMPLATES_CLEAN)
                 continue
             sem["semantic_label"] = self._build_label(entry, rng)
             generated += 1

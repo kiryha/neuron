@@ -1,2 +1,2 @@
 from .config import DATA_ROOT
-from .materials import BuildMaterialsData, BuildMaterials, BuildPrompts, MaterialSpec
+from .materials import BuildMaterialsData, BuildPrompts, MaterialSpec
