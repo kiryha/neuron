@@ -1,11 +1,14 @@
 """
 Material data generator for Neuron (deterministic JSON for Houdini / MaterialX wiring).
 
-Authoring data lives in ``MaterialSpec`` (frozen). Run:
+Authoring data lives in ``MaterialSpec`` (frozen). Semantic text uses mode-aware composition
+(``composition_style``): contamination on frosted glass merges dust into the finish line once;
+other dusty materials keep a clean finish line and put dust only in ``condition_phrase``.
 
     BuildMaterialsData().generate()
-    BuildMaterialsData().generate(subset_ids={"gold_polished_clean", ...})  # optional debug subset
+    BuildMaterialsData().generate(subset_ids={list materials to generate})
 """
+
 
 from __future__ import annotations
 
@@ -20,7 +23,7 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any
 
-from .config import LIBRARY_JSON, MATLIB_NODE
+from .config import LIBRARY_JSON
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +61,12 @@ PROCEDURAL_PARAMETER_KEYS = (
 
 VALID_CATEGORIES = frozenset({"metal", "dielectric", "organic", "translucent"})
 VALID_BUMP_TYPES = frozenset({"none", "directional", "cellular", "cracked", "stochastic"})
+VALID_CONDITION_MODES = frozenset({"pristine", "abrasion", "contamination", "aging"})
+VALID_COMPOSITION_STYLES = frozenset({"pristine", "pattern_a", "pattern_b", "abrasion", "aging"})
+
+# Bases where airborne dust reads as clinging / trapped (viscous or tacky), not loose on a hard slab.
+_STICKY_CONTAMINATION_BASES = frozenset({"honey", "amber"})
+_SOFT_ELASTOMER_BASES = frozenset({"rubber", "silicone"})
 
 # `k` is stored for conductor / metal shading metadata for future MaterialX networks; it is not
 # guaranteed to map 1:1 to a specific published MaterialX node until the shader graph is finalized.
@@ -550,19 +559,37 @@ _BASES: dict[str, dict[str, Any]] = {
         "physical": {"base_color": [1.0, 1.0, 1.0], "specular_ior": 1.52, "k": 0.0, "thin_walled": False},
         "semantic": {"base_phrase": "transparent optical glass"},
         "finish_overrides": {
+            # Matte glass: forward transmission_scatter models diffuse blur through a rough interface
+            # (frosted / etched look), not a volumetric participating medium.
             "matte": {
                 "shader": {
                     "specular_roughness": 0.88,
                     "transmission": 0.9,
                     "transmission_scatter": [0.12, 0.12, 0.12],
                 }
-            }
+            },
+            # Optional: slightly lower micro-breakup than default polished (see module policy note).
+            "polished": {
+                "procedural": {"bump_scale": 0.002},
+            },
         },
     },
     "glass_window": {
         "cat": "translucent",
         "physical": {"base_color": [1.0, 1.0, 1.0], "specular_ior": 1.52, "k": 0.0, "thin_walled": True},
         "semantic": {"base_phrase": "thin plate glass window"},
+        "finish_overrides": {
+            "matte": {
+                "shader": {
+                    "specular_roughness": 0.88,
+                    "transmission": 0.9,
+                    "transmission_scatter": [0.12, 0.12, 0.12],
+                }
+            },
+            "polished": {
+                "procedural": {"bump_scale": 0.002},
+            },
+        },
     },
     "water": {
         "cat": "translucent",
@@ -615,6 +642,10 @@ _BASES: dict[str, dict[str, Any]] = {
     },
 }
 
+# Polished stochastic micro-breakup: ``bump_type=stochastic`` with very small ``bump_scale`` keeps
+# a stable HDA / training signal for subtle normal breakup while ``specular_roughness`` stays low.
+# That avoids implying a mathematically perfect surface (unrealistic for real materials) without
+# reading as rough polish. Override per base via ``finish_overrides["polished"]["procedural"]``.
 _FINISHES: dict[str, dict[str, Any]] = {
     "polished": {
         "shader": {"specular_roughness": 0.02, "specular_anisotropy": 0.0},
@@ -697,7 +728,10 @@ _CONDITIONS: dict[str, dict[str, Any]] = {
     },
     "scratched": {
         "procedural": {"dirt": 0.1, "wear": 0.9},
-        "semantic": {"phrase": "showing visible scratches and abrasion", "mode": "abrasion"},
+        "semantic": {
+            "phrase": "with heavy handling wear and usage marks",
+            "mode": "abrasion",
+        },
     },
 }
 
@@ -724,6 +758,8 @@ class MaterialSpec:
     CONDITIONS = _freeze_root_mapping(_CONDITIONS)
     BASE_TOKEN_MAP = _freeze_root_mapping(_BASE_TOKEN_MAP_RAW)
     TOKEN_MAP = BASE_TOKEN_MAP
+    VALID_CONDITION_MODES = VALID_CONDITION_MODES
+    VALID_COMPOSITION_STYLES = VALID_COMPOSITION_STYLES
 
 
 def _mutable_authoring_copy(obj: Any) -> Any:
@@ -797,6 +833,20 @@ _FINISH_PHRASE_BY_MODE: dict[str, str] = {
     "aging": "aging_phrase",
 }
 
+_FROSTED_GLASS_FINISH_BY_MODE: dict[str, str] = {
+    "pristine": "with a frosted rough surface that blurs transmitted light",
+    "abrasion": "with frosted glass scuffed and scratched, distorting transmission",
+    "contamination": "with frosted rough glass and fine dust caught on the micro-rough interface",
+    "aging": "with weathered frosting and uneven transmission blur",
+}
+
+_CONTROLLED_FROSTED_VOCAB = (
+    "frosted glass",
+    "rough transmissive surface",
+    "blurred transmitted light",
+    "diffuse transmission through a rough interface",
+)
+
 
 def _finish_description_for_mode(finish_sem: dict[str, Any], mode: str) -> str:
     key = _FINISH_PHRASE_BY_MODE.get(mode, "clean_phrase")
@@ -806,17 +856,125 @@ def _finish_description_for_mode(finish_sem: dict[str, Any], mode: str) -> str:
     return ""
 
 
+def _resolve_dusty_condition_phrase(
+    b_name: str,
+    f_name: str,
+    category: str,
+    base_authoring: dict[str, Any],
+) -> str:
+    ovr = (base_authoring.get("condition_semantic_overrides") or {}).get("dusty") or {}
+    p = ovr.get("phrase")
+    if isinstance(p, str) and p.strip():
+        return p.strip()
+    if b_name in _STICKY_CONTAMINATION_BASES:
+        return "with fine dust adhered to the sticky viscous surface"
+    if b_name == "car_paint":
+        return "with fine dust and road film on the painted surface"
+    if b_name in _SOFT_ELASTOMER_BASES:
+        return "with dust clinging to the soft elastomer surface"
+    if b_name in ("glass", "glass_window") and f_name != "matte":
+        return "with fine dust on the clear outer surface"
+    if category == "metal":
+        return "with fine oxide-tinted dust on the metal surface"
+    return "with fine dust settled on the surface"
+
+
+def _build_contextual_hints_v2(
+    base_phrase: str,
+    finish_adjective: str,
+    f_name: str,
+    condition_mode: str,
+    composition_style: str,
+    b_name: str,
+    condition_phrase: str,
+    tr: float,
+    scatter_max: float,
+) -> list[str]:
+    adj = finish_adjective
+    hints: list[str] = [base_phrase]
+
+    if condition_mode == "pristine":
+        hints.extend([f"{adj} finish", "clean intact surface"])
+    elif condition_mode == "abrasion":
+        hints.extend([f"{adj} finish with visible wear", "scratches and surface abrasion"])
+    elif condition_mode == "contamination":
+        if composition_style == "pattern_b":
+            hints.extend(
+                [
+                    f"{adj} frosted transmissive surface",
+                    "light surface contamination",
+                    "dust on a rough transmissive interface",
+                ]
+            )
+        elif b_name in _STICKY_CONTAMINATION_BASES:
+            hints.extend(
+                [
+                    f"{adj} finish with adhered surface dust",
+                    "sticky viscous surface contamination",
+                ]
+            )
+        else:
+            hints.extend(
+                [
+                    f"{adj} finish with light surface contamination",
+                    "fine dust contamination",
+                ]
+            )
+    else:
+        hints.extend([f"{adj} weathered finish", condition_phrase])
+
+    if tr > 0.0:
+        hints.append("translucent")
+        if b_name in ("glass", "glass_window") and f_name == "matte":
+            hints.extend(list(_CONTROLLED_FROSTED_VOCAB))
+        elif b_name in MaterialSpec.TRANSMISSION_LOCK_BASES and scatter_max > 0.05:
+            hints.append("light-scattering translucent medium")
+        elif scatter_max >= 0.28:
+            hints.append("participating medium appearance")
+
+    return hints
+
+
+def _semantic_tags_for(
+    b_name: str,
+    f_name: str,
+    tr: float,
+    scatter_max: float,
+    condition_mode: str,
+) -> list[str]:
+    tags: list[str] = []
+    if tr > 0.0:
+        tags.append("translucent")
+    if b_name in ("glass", "glass_window") and f_name == "matte":
+        tags.extend(
+            [
+                "frosted",
+                "blurred_transmission",
+                "rough_transmissive_interface",
+            ]
+        )
+    elif tr > 0.0 and b_name in MaterialSpec.TRANSMISSION_LOCK_BASES and scatter_max > 0.05:
+        tags.append("dense_translucent_medium")
+    if condition_mode == "contamination":
+        tags.append("surface_contamination")
+    elif condition_mode == "abrasion":
+        tags.append("surface_wear")
+    return tags
+
+
 def build_semantic_payload(
     b_name: str,
     f_name: str,
     c_name: str,
+    category: str,
     base_sem: dict[str, Any],
     finish_sem: dict[str, Any],
     cond_sem: dict[str, Any],
     shader: dict[str, Any],
     color_name: str | None,
     token_map: Any,
-    semantic_overrides_by_finish: dict[str, Any] | None = None,
+    semantic_overrides_by_finish: dict[str, Any] | None,
+    base_authoring: dict[str, Any],
 ) -> dict[str, Any]:
     base_phrase = base_sem.get("base_phrase") or token_map.get(b_name, b_name.replace("_", " "))
     if color_name:
@@ -825,38 +983,55 @@ def build_semantic_payload(
 
     finish_adjective = finish_sem.get("adjective", f_name.replace("_", " "))
     condition_mode = str(cond_sem.get("mode", "pristine"))
-    finish_description = _finish_description_for_mode(finish_sem, condition_mode)
-    if b_name in ("glass", "glass_window") and f_name == "matte":
-        _frosted_glass_finish = {
-            "pristine": "with a frosted rough surface that blurs transmitted light",
-            "abrasion": "with frosted glass scuffed and scratched, distorting transmission",
-            "contamination": "with frosted glass and dust clinging to the rough surface",
-            "aging": "with weathered frosting and uneven transmission blur",
-        }
-        finish_description = _frosted_glass_finish.get(
-            condition_mode, _frosted_glass_finish["pristine"]
-        )
-    condition_phrase = str(cond_sem.get("phrase", "")).strip()
 
-    hints: list[str] = [base_phrase, f"{finish_adjective} finish".strip(), condition_phrase]
+    is_frosted_glass = b_name in ("glass", "glass_window") and f_name == "matte"
+
+    if c_name == "dusty" and is_frosted_glass:
+        condition_phrase = "lightly contaminated at the surface"
+    elif c_name == "dusty":
+        condition_phrase = _resolve_dusty_condition_phrase(b_name, f_name, category, base_authoring)
+    else:
+        condition_phrase = str(cond_sem.get("phrase", "")).strip()
+
+    composition_style = "pristine"
+    if condition_mode == "contamination" and is_frosted_glass:
+        composition_style = "pattern_b"
+        finish_description = _FROSTED_GLASS_FINISH_BY_MODE.get(
+            condition_mode, _FROSTED_GLASS_FINISH_BY_MODE["pristine"]
+        )
+    elif condition_mode == "contamination":
+        composition_style = "pattern_a"
+        finish_description = _finish_description_for_mode(finish_sem, "pristine")
+    elif is_frosted_glass:
+        finish_description = _FROSTED_GLASS_FINISH_BY_MODE.get(
+            condition_mode, _FROSTED_GLASS_FINISH_BY_MODE["pristine"]
+        )
+    elif condition_mode == "abrasion":
+        composition_style = "abrasion"
+        finish_description = _finish_description_for_mode(finish_sem, "abrasion")
+    elif condition_mode == "aging":
+        composition_style = "aging"
+        finish_description = _finish_description_for_mode(finish_sem, "aging")
+    else:
+        finish_description = _finish_description_for_mode(finish_sem, "pristine")
 
     tr = float(shader.get("transmission", 0.0))
     ts = shader.get("transmission_scatter", [0.0, 0.0, 0.0])
     scatter_max = max((float(x) for x in ts), default=0.0)
 
-    if tr > 0.0:
-        hints.append("translucent")
-        if b_name in ("glass", "glass_window") and f_name == "matte":
-            hints.extend(
-                [
-                    "frosted glass",
-                    "blurred transmission through a rough interface",
-                ]
-            )
-        elif b_name in MaterialSpec.TRANSMISSION_LOCK_BASES and scatter_max > 0.05:
-            hints.append("light-scattering translucent medium")
-        elif scatter_max >= 0.28:
-            hints.append("participating medium appearance")
+    semantic_tags = _semantic_tags_for(b_name, f_name, tr, scatter_max, condition_mode)
+
+    hints = _build_contextual_hints_v2(
+        base_phrase,
+        finish_adjective,
+        f_name,
+        condition_mode,
+        composition_style,
+        b_name,
+        condition_phrase,
+        tr,
+        scatter_max,
+    )
 
     sem_over = (semantic_overrides_by_finish or {}).get(f_name) or {}
     hint_extra = sem_over.get("semantic_hints_extra")
@@ -871,6 +1046,8 @@ def build_semantic_payload(
         "finish_description": finish_description,
         "condition_phrase": condition_phrase,
         "condition_mode": condition_mode,
+        "composition_style": composition_style,
+        "semantic_tags": semantic_tags,
         "semantic_hints": hints,
     }
 
@@ -988,8 +1165,28 @@ def validate_material_entry(entry: dict[str, Any]) -> None:
             raise ValueError(f"{entry['id']}: semantic.{field} must be a non-empty string")
 
     cm = sem.get("condition_mode", "")
-    if not isinstance(cm, str) or not cm.strip():
-        raise ValueError(f"{entry['id']}: semantic.condition_mode must be a non-empty string")
+    if not isinstance(cm, str) or cm not in VALID_CONDITION_MODES:
+        raise ValueError(f"{entry['id']}: semantic.condition_mode must be one of {sorted(VALID_CONDITION_MODES)}")
+
+    cs = sem.get("composition_style", "")
+    if not isinstance(cs, str) or cs not in VALID_COMPOSITION_STYLES:
+        raise ValueError(f"{entry['id']}: semantic.composition_style missing or invalid")
+
+    tags = sem.get("semantic_tags")
+    if not isinstance(tags, list) or not all(isinstance(x, str) and x.strip() for x in tags):
+        raise ValueError(f"{entry['id']}: semantic.semantic_tags must be a list of non-empty strings")
+
+    fd = sem["finish_description"].lower()
+    cp = sem["condition_phrase"].lower()
+    comp_st = sem["composition_style"]
+    if comp_st == "pattern_a" and "dust" in fd and "dust" in cp:
+        raise ValueError(
+            f"{entry['id']}: redundant dust wording in finish_description and condition_phrase (pattern_a)"
+        )
+    if cm == "abrasion" and ("mirror-like" in fd or "mirror like" in fd):
+        raise ValueError(f"{entry['id']}: abrasion mode must not use mirror-perfect finish wording")
+    if "frosted" in sem["semantic_tags"] and "mirror" in fd:
+        raise ValueError(f"{entry['id']}: frosted semantic_tags conflict with mirror wording in finish")
 
     hints = sem.get("semantic_hints") or []
     if not isinstance(hints, list) or not hints:
@@ -1003,6 +1200,11 @@ def validate_material_entry(entry: dict[str, Any]) -> None:
             raise ValueError(f"{entry['id']}: semantic.semantic_label must be non-empty when present")
         if re.search(r"([,;])\s*\1", label) or ", ." in label or ".. " in label:
             raise ValueError(f"{entry['id']}: semantic.semantic_label has broken punctuation")
+        ll = label.lower()
+        if "frosted" in sem["semantic_tags"] and "mirror" in ll:
+            raise ValueError(f"{entry['id']}: semantic_label contradicts frosted material (mirror wording)")
+        if comp_st == "pattern_a" and len(re.findall(r"\bdust(y)?\b", ll)) >= 2:
+            raise ValueError(f"{entry['id']}: semantic_label repeats dust wording (likely redundant)")
 
 
 def _merge_physical_layers(
@@ -1150,13 +1352,15 @@ def build_material_entry(
         b_name,
         f_name,
         c_name,
+        category,
         base_entry.get("semantic", {}),
         MaterialSpec.FINISHES[f_name]["semantic"],
         MaterialSpec.CONDITIONS[c_name]["semantic"],
         shader_out,
         color_name,
         token_map,
-        semantic_overrides_by_finish=base_entry.get("semantic_overrides"),
+        base_entry.get("semantic_overrides"),
+        base_entry,
     )
 
     entry = {
@@ -1218,29 +1422,10 @@ class BuildPrompts:
 
     TOKEN_MAP = MaterialSpec.TOKEN_MAP
 
-    _TEMPLATES_CLEAN = [
-        "A close-up of {base_phrase}, {finish_description}, {condition_phrase}.",
-        "Photorealistic material study of {base_phrase} with a {finish_adjective} finish, {condition_phrase}.",
-    ]
-    _TEMPLATES_ABRASION = [
-        "Photorealistic material study of {base_phrase} {finish_description}, {condition_phrase}.",
-        "Close-up of {base_phrase}: {finish_description}; {condition_phrase}.",
-    ]
-    _TEMPLATES_CONTAMINATION = [
-        "Photorealistic study of {base_phrase} {finish_description}, {condition_phrase}.",
-        "Close-up of {base_phrase} with a {finish_adjective} finish — {condition_phrase}.",
-    ]
-    _TEMPLATES_AGING = [
-        "Material study of {base_phrase} {finish_description}, {condition_phrase}.",
-        "Weathered {base_phrase}: {finish_description}, {condition_phrase}.",
-    ]
-
-    _TEMPLATES_BY_MODE: dict[str, list[str]] = {
-        "pristine": _TEMPLATES_CLEAN,
-        "abrasion": _TEMPLATES_ABRASION,
-        "contamination": _TEMPLATES_CONTAMINATION,
-        "aging": _TEMPLATES_AGING,
-    }
+    _TEMPLATE_PRISTINE = "Close-up of {base_phrase}, {finish_description}, {condition_phrase}."
+    _TEMPLATE_ABRASION = "Photorealistic study of {base_phrase}, {finish_description}; {condition_phrase}."
+    _TEMPLATE_CONTAMINATION = "Photorealistic study of {base_phrase}, {finish_description}, {condition_phrase}."
+    _TEMPLATE_AGING = "Weathered {base_phrase}: {finish_description}, {condition_phrase}."
 
     def __init__(self, json_path: Path | str | None = None, seed: int | None = None, overwrite: bool = False):
         self.json_path = Path(json_path) if json_path else LIBRARY_JSON
@@ -1265,9 +1450,20 @@ class BuildPrompts:
         finish_adjective = sem.get("finish_adjective", "")
         condition_phrase = sem.get("condition_phrase", "")
         mode = str(sem.get("condition_mode", "pristine"))
-        templates = self._TEMPLATES_BY_MODE.get(mode, self._TEMPLATES_CLEAN)
+        tags = sem.get("semantic_tags") or []
 
-        template = rng.choice(templates)
+        if "frosted" in tags:
+            template = self._TEMPLATE_PRISTINE
+        elif mode == "abrasion":
+            template = self._TEMPLATE_ABRASION
+        elif mode == "contamination":
+            template = self._TEMPLATE_CONTAMINATION
+        elif mode == "aging":
+            template = self._TEMPLATE_AGING
+        else:
+            template = self._TEMPLATE_PRISTINE
+
+        rng.choice([template])
         label = template.format(
             base_phrase=base_phrase,
             finish_description=finish_description,
@@ -1295,7 +1491,7 @@ class BuildPrompts:
             sem = entry.setdefault("semantic", {})
             if sem.get("semantic_label") and not self.overwrite:
                 skipped += 1
-                rng.choice(self._TEMPLATES_CLEAN)
+                rng.choice([self._TEMPLATE_PRISTINE])
                 continue
             sem["semantic_label"] = self._build_label(entry, rng)
             generated += 1
