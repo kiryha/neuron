@@ -48,9 +48,13 @@ class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
 
     def build_materials_data(self):
 
+        # Create only these materials
+        subset_ids = ["gold_polished_clean", "car_paint_red_matte_dusty", "iron_brushed_scratched", 
+                  "glass_polished_clean", "glass_matte_clean", "honey_satin_dusty", "concrete_hammered_clean", "rubber_black_polished_scratched"]
+
         # Generate Expanded Material List
         materials_data = materials.BuildMaterialsData()
-        materials_data.generate()
+        materials_data.generate(subset_ids)
 
     def build_prompts(self):
 
