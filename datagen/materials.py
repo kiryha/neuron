@@ -65,15 +65,15 @@ class BuildMaterialsData:
 
             # --- STONES & CERAMICS (Dielectrics: High IOR) ---
             "marble": {"cat": "dielectric", "base_color": [0.9, 0.9, 0.9], "specular_ior": 1.48, "k": 0.0, "subsurface": 0.1},
-            "granite": {"cat": "dielectric", "base_color": [0.4, 0.4, 0.4], "specular_ior": 1.6, "k": 0.0},
-            "concrete": {"cat": "dielectric", "base_color": [0.5, 0.5, 0.5], "specular_ior": 1.6, "k": 0.0},
-            "brick": {"cat": "dielectric", "base_color": [0.5, 0.2, 0.15], "specular_ior": 1.5, "k": 0.0},
+            "granite": {"cat": "dielectric", "base_color": [0.4, 0.4, 0.4], "specular_ior": 1.6, "k": 0.0, "specular_roughness_min": 0.55},
+            "concrete": {"cat": "dielectric", "base_color": [0.5, 0.5, 0.5], "specular_ior": 1.6, "k": 0.0, "specular_roughness_min": 0.68},
+            "brick": {"cat": "dielectric", "base_color": [0.5, 0.2, 0.15], "specular_ior": 1.5, "k": 0.0, "specular_roughness_min": 0.74},
             "porcelain": {"cat": "dielectric", "base_color": [0.95, 0.95, 0.95], "specular_ior": 1.5, "k": 0.0, "subsurface": 0.2},
-            "terracotta": {"cat": "dielectric", "base_color": [0.6, 0.3, 0.2], "specular_ior": 1.6, "k": 0.0},
-            "slate": {"cat": "dielectric", "base_color": [0.2, 0.22, 0.25], "specular_ior": 1.55, "k": 0.0},
-            "sandstone": {"cat": "dielectric", "base_color": [0.7, 0.6, 0.45], "specular_ior": 1.5, "k": 0.0},
+            "terracotta": {"cat": "dielectric", "base_color": [0.6, 0.3, 0.2], "specular_ior": 1.6, "k": 0.0, "specular_roughness_min": 0.72},
+            "slate": {"cat": "dielectric", "base_color": [0.2, 0.22, 0.25], "specular_ior": 1.55, "k": 0.0, "specular_roughness_min": 0.65},
+            "sandstone": {"cat": "dielectric", "base_color": [0.7, 0.6, 0.45], "specular_ior": 1.5, "k": 0.0, "specular_roughness_min": 0.78},
             "obsidian": {"cat": "dielectric", "base_color": [0.02, 0.02, 0.03], "specular_ior": 1.48, "k": 0.0},
-            "basalt": {"cat": "dielectric", "base_color": [0.1, 0.1, 0.1], "specular_ior": 1.7, "k": 0.0},
+            "basalt": {"cat": "dielectric", "base_color": [0.1, 0.1, 0.1], "specular_ior": 1.7, "k": 0.0, "specular_roughness_min": 0.55},
 
             # --- PLASTICS & SYNTHETICS ---
             "plastic_abs": {"cat": "dielectric", "base_color": [0.1, 0.1, 0.1], "specular_ior": 1.54, "k": 0.0, "colorable": True},
@@ -87,11 +87,11 @@ class BuildMaterialsData:
 
             # --- FABRICS (Anisotropic/Microfiber logic) ---
             "silk": {"cat": "dielectric", "base_color": [0.8, 0.2, 0.5], "specular_ior": 1.5, "k": 0.0, "specular_anisotropy": 0.9, "colorable": True, "hint": "shimmering fabric with directional sheen"},
-            "cotton": {"cat": "dielectric", "base_color": [0.9, 0.9, 0.9], "specular_ior": 1.3, "k": 0.0, "specular_roughness": 0.95, "colorable": True, "hint": "soft, matte fibrous weave"},
+            "cotton": {"cat": "dielectric", "base_color": [0.9, 0.9, 0.9], "specular_ior": 1.3, "k": 0.0, "specular_roughness_min": 0.92, "colorable": True, "hint": "soft, matte fibrous weave"},
             "velvet": {"cat": "dielectric", "base_color": [0.1, 0.02, 0.05], "specular_ior": 1.5, "k": 0.0, "sheen": 1.0, "colorable": True, "hint": "deep pile fabric with edge highlights"},
 
             # --- MISC ---
-            "asphalt": {"cat": "dielectric", "base_color": [0.05, 0.05, 0.05], "specular_ior": 1.55, "k": 0.0, "specular_roughness": 0.9, "bump_type": "cracked"},
+            "asphalt": {"cat": "dielectric", "base_color": [0.05, 0.05, 0.05], "specular_ior": 1.55, "k": 0.0, "specular_roughness_min": 0.88, "bump_type": "cracked"},
 
             # --- ORGANICS (High SSS) ---
             "oak_wood": {"cat": "organic", "base_color": [0.35, 0.25, 0.15], "specular_ior": 1.5, "k": 0.0},
@@ -99,10 +99,10 @@ class BuildMaterialsData:
             "mahogany": {"cat": "organic", "base_color": [0.2, 0.05, 0.02], "specular_ior": 1.5, "k": 0.0},
             "leather_tan": {"cat": "organic", "base_color": [0.4, 0.2, 0.1], "specular_ior": 1.48, "k": 0.0},
             "leather_black": {"cat": "organic", "base_color": [0.05, 0.05, 0.05], "specular_ior": 1.5, "k": 0.0},
-            "paper": {"cat": "organic", "base_color": [0.9, 0.9, 0.85], "specular_ior": 1.5, "k": 0.0, "subsurface": 0.1},
-            "cardboard": {"cat": "organic", "base_color": [0.5, 0.4, 0.3], "specular_ior": 1.5, "k": 0.0},
-            "cork": {"cat": "organic", "base_color": [0.6, 0.4, 0.3], "specular_ior": 1.2, "k": 0.0},
-            "clay": {"cat": "organic", "base_color": [0.5, 0.35, 0.3], "specular_ior": 1.6, "k": 0.0, "subsurface": 0.15},
+            "paper": {"cat": "organic", "base_color": [0.9, 0.9, 0.85], "specular_ior": 1.5, "k": 0.0, "subsurface": 0.1, "specular_roughness_min": 0.78},
+            "cardboard": {"cat": "organic", "base_color": [0.5, 0.4, 0.3], "specular_ior": 1.5, "k": 0.0, "specular_roughness_min": 0.82},
+            "cork": {"cat": "organic", "base_color": [0.6, 0.4, 0.3], "specular_ior": 1.2, "k": 0.0, "specular_roughness_min": 0.85},
+            "clay": {"cat": "organic", "base_color": [0.5, 0.35, 0.3], "specular_ior": 1.6, "k": 0.0, "subsurface": 0.15, "specular_roughness_min": 0.55},
             "skin_human": {"cat": "organic", "base_color": [0.8, 0.6, 0.5], "specular_ior": 1.4, "k": 0.0, "subsurface": 0.8, "sss_color": [1.0, 0.2, 0.1], "hint": "human skin with deep red subsurface scattering"},
 
             # --- TRANSLUCENTS (Refraction & Jewels) ---
@@ -163,6 +163,12 @@ class BuildMaterialsData:
 
     def _build_entity(self, tech_id, b_name, f_name, c_name, base, category, finish, cond, color_override=None):
         params = {**self.PARAM_DEFAULTS, **self.CATEGORIES[category], **base, **finish, **cond}
+
+        # Finishes use metal-centric roughness; porous / fibrous bases need a floor so
+        # e.g. hammered concrete stays matte. specular_roughness: 0 = mirror, 1 = diffuse.
+        rough_floor = params.pop("specular_roughness_min", None)
+        if rough_floor is not None:
+            params["specular_roughness"] = max(float(rough_floor), float(params.get("specular_roughness", 0.5)))
 
         if color_override:
             params["color"] = color_override
