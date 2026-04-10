@@ -1207,6 +1207,44 @@ def validate_material_entry(entry: dict[str, Any]) -> None:
             raise ValueError(f"{entry['id']}: semantic_label repeats dust wording (likely redundant)")
 
 
+def _assert_assembled_label_quality(entry_id: str, label: str, sem: dict[str, Any]) -> None:
+    """
+    Post-assembly checks for BuildPrompts output (syntax / redundancy only; meaning lives in semantic fields).
+    """
+    if not isinstance(label, str) or not label.strip():
+        raise ValueError(f"{entry_id}: assembled semantic_label is empty")
+
+    if re.search(r"\.\s*\.+", label) or re.search(r"([,;])\s*\1", label):
+        raise ValueError(f"{entry_id}: semantic_label has malformed punctuation")
+
+    # Clause-level duplicate detection: splitting on comma/semicolon can miss repeats when a single
+    # semantic phrase legitimately contains commas (chunks may fall under the length threshold).
+    parts = [p.strip() for p in re.split(r"[,;]", label) if p.strip()]
+    lowered = [p.lower() for p in parts]
+    for i, a in enumerate(lowered):
+        if len(a) < 24:
+            continue
+        if sum(1 for b in lowered if b == a) > 1:
+            raise ValueError(f"{entry_id}: semantic_label repeats a long clause (duplicated phrasing)")
+
+    ll = label.lower()
+    comp_st = sem.get("composition_style", "")
+    if comp_st == "pattern_a" and len(re.findall(r"\bdust(y)?\b", ll)) >= 2:
+        raise ValueError(f"{entry_id}: semantic_label repeats dust wording (likely redundant)")
+
+    # Require major content words from semantic parts to appear in the label (optional QA guard).
+    def _significant_tokens(s: str) -> list[str]:
+        return [t.lower() for t in re.findall(r"\b[a-zA-Z][a-zA-Z\-]{2,}\b", s)]
+
+    required: list[str] = []
+    for key in ("base_phrase", "finish_description", "condition_phrase"):
+        required.extend(_significant_tokens(str(sem.get(key, ""))))
+    required = list(dict.fromkeys(required))[:10]
+    for tok in required:
+        if tok and tok not in ll:
+            raise ValueError(f"{entry_id}: semantic_label missing expected token {tok!r} from semantic fields")
+
+
 def _merge_physical_layers(
     category: str,
     base_entry: dict[str, Any],
@@ -1422,10 +1460,40 @@ class BuildPrompts:
 
     TOKEN_MAP = MaterialSpec.TOKEN_MAP
 
-    _TEMPLATE_PRISTINE = "Close-up of {base_phrase}, {finish_description}, {condition_phrase}."
-    _TEMPLATE_ABRASION = "Photorealistic study of {base_phrase}, {finish_description}; {condition_phrase}."
-    _TEMPLATE_CONTAMINATION = "Photorealistic study of {base_phrase}, {finish_description}, {condition_phrase}."
-    _TEMPLATE_AGING = "Weathered {base_phrase}: {finish_description}, {condition_phrase}."
+    # Controlled template families: same placeholders, shallow syntactic variation only.
+    # Vocabulary stays within close-up / material study / texture study / photorealistic material study.
+    _TEMPLATES_PRISTINE: tuple[str, ...] = (
+        "Close-up of {base_phrase}, {finish_description}, {condition_phrase}.",
+        "Photorealistic material study of {base_phrase} with {finish_description}, {condition_phrase}.",
+        "Texture study of {base_phrase} with {finish_description}, {condition_phrase}.",
+    )
+    _TEMPLATES_ABRASION: tuple[str, ...] = (
+        "Photorealistic material study of {base_phrase}, {finish_description}; {condition_phrase}.",
+        "Close-up of {base_phrase} with {finish_description}, {condition_phrase}.",
+        "Texture study of {base_phrase}, {finish_description}; {condition_phrase}.",
+    )
+    _TEMPLATES_CONTAMINATION: tuple[str, ...] = (
+        "Photorealistic material study of {base_phrase}, {finish_description}, {condition_phrase}.",
+        "Close-up of {base_phrase} with {finish_description}, {condition_phrase}.",
+        "Texture study of {base_phrase}, {finish_description}, {condition_phrase}.",
+    )
+    _TEMPLATES_AGING: tuple[str, ...] = (
+        "Weathered {base_phrase}: {finish_description}, {condition_phrase}.",
+        "Photorealistic material study of weathered {base_phrase} with {finish_description}, {condition_phrase}.",
+        "Close-up of weathered {base_phrase}, {finish_description}; {condition_phrase}.",
+    )
+    # Pristine + frosted glass: transmission wording stays in finish_description; shells stay neutral.
+    _TEMPLATES_FROSTED_PRISTINE: tuple[str, ...] = (
+        "Close-up of {base_phrase}, {finish_description}, {condition_phrase}.",
+        "Texture study of {base_phrase} with {finish_description}, {condition_phrase}.",
+        "Photorealistic material study of {base_phrase}, {finish_description}; {condition_phrase}.",
+    )
+    # Pristine + transmissive (non-frosted): same slots; physics adjectives remain in authored phrases.
+    _TEMPLATES_TRANSLUCENT_PRISTINE: tuple[str, ...] = (
+        "Close-up of {base_phrase}, {finish_description}, {condition_phrase}.",
+        "Photorealistic material study of {base_phrase} with {finish_description}, {condition_phrase}.",
+        "Material study of {base_phrase}, {finish_description}, {condition_phrase}.",
+    )
 
     def __init__(self, json_path: Path | str | None = None, seed: int | None = None, overwrite: bool = False):
         self.json_path = Path(json_path) if json_path else LIBRARY_JSON
@@ -1443,34 +1511,41 @@ class BuildPrompts:
             text = text[0].upper() + text[1:]
         return text
 
-    def _build_label(self, entry: dict[str, Any], rng: random.Random) -> str:
-        sem = entry.get("semantic") or {}
-        base_phrase = sem.get("base_phrase", "")
-        finish_description = sem.get("finish_description", "")
-        finish_adjective = sem.get("finish_adjective", "")
-        condition_phrase = sem.get("condition_phrase", "")
+    def _template_family_for(self, sem: dict[str, Any]) -> tuple[str, ...]:
         mode = str(sem.get("condition_mode", "pristine"))
         tags = sem.get("semantic_tags") or []
 
-        if "frosted" in tags:
-            template = self._TEMPLATE_PRISTINE
-        elif mode == "abrasion":
-            template = self._TEMPLATE_ABRASION
-        elif mode == "contamination":
-            template = self._TEMPLATE_CONTAMINATION
-        elif mode == "aging":
-            template = self._TEMPLATE_AGING
-        else:
-            template = self._TEMPLATE_PRISTINE
+        if mode == "abrasion":
+            return self._TEMPLATES_ABRASION
+        if mode == "contamination":
+            return self._TEMPLATES_CONTAMINATION
+        if mode == "aging":
+            return self._TEMPLATES_AGING
+        if mode == "pristine":
+            if "frosted" in tags:
+                return self._TEMPLATES_FROSTED_PRISTINE
+            if "translucent" in tags:
+                return self._TEMPLATES_TRANSLUCENT_PRISTINE
+            return self._TEMPLATES_PRISTINE
+        return self._TEMPLATES_PRISTINE
 
-        rng.choice([template])
+    def _select_template(self, sem: dict[str, Any], rng: random.Random) -> str:
+        return rng.choice(self._template_family_for(sem))
+
+    def _build_label(self, entry: dict[str, Any], template: str) -> str:
+        sem = entry.get("semantic") or {}
+        base_phrase = sem.get("base_phrase", "")
+        finish_description = sem.get("finish_description", "")
+        condition_phrase = sem.get("condition_phrase", "")
+
         label = template.format(
             base_phrase=base_phrase,
             finish_description=finish_description,
-            finish_adjective=finish_adjective,
             condition_phrase=condition_phrase,
         )
-        return self._validate_text(label)
+        label = self._validate_text(label)
+        _assert_assembled_label_quality(entry["id"], label, sem)
+        return label
 
     def generate(self) -> dict[str, Any]:
         print(">> Building prompts...")
@@ -1487,13 +1562,14 @@ class BuildPrompts:
         rng = random.Random(self.seed)
         generated, skipped = 0, 0
 
-        for _tech_id, entry in library.items():
+        for _tech_id, entry in sorted(library.items(), key=lambda kv: kv[0]):
             sem = entry.setdefault("semantic", {})
+            template = self._select_template(sem, rng)
             if sem.get("semantic_label") and not self.overwrite:
                 skipped += 1
-                rng.choice([self._TEMPLATE_PRISTINE])
                 continue
-            sem["semantic_label"] = self._build_label(entry, rng)
+            sem["semantic_label"] = self._build_label(entry, template)
+            validate_material_entry(entry)
             generated += 1
 
         with open(self.json_path, "w", encoding="utf-8") as f:
