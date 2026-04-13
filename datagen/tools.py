@@ -45,3 +45,9 @@ def apply_material(material_id):
     hada_node.parm("bump_scale").set(proc.get("bump_scale"))
 
     hada_node.parm("thin_walled").set(shader.get("thin_walled"))
+
+def set_material(material_id):
+    """Set the material on the neuromat HDA"""
+
+    neuromat = hou.node(f"/stage/{HDA_NAME}")
+    neuromat.parm("material_id").set(material_id)

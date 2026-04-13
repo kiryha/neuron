@@ -37,7 +37,7 @@ SHADER_PARAMETER_KEYS = (
     "specular_roughness",
     "specular_anisotropy",
     "subsurface",
-    "sss_color",
+    "subsurface_color",
     "coat",
     "coat_roughness",
     "sheen",
@@ -80,7 +80,7 @@ _SHADER_DEFAULTS: dict[str, Any] = {
     "specular_roughness": 0.5,
     "specular_anisotropy": 0.0,
     "subsurface": 0.0,
-    "sss_color": [1.0, 1.0, 1.0],
+    "subsurface_color": [1.0, 1.0, 1.0],
     "coat": 0.0,
     "coat_roughness": 0.0,
     "sheen": 0.0,
@@ -550,7 +550,7 @@ _BASES: dict[str, dict[str, Any]] = {
             "specular_ior": 1.4,
             "k": 0.0,
             "subsurface": 0.8,
-            "sss_color": [1.0, 0.2, 0.1],
+            "subsurface_color": [1.0, 0.2, 0.1],
         },
         "semantic": {"base_phrase": "human skin with subsurface scattering"},
     },
@@ -1085,9 +1085,9 @@ def validate_material_entry(entry: dict[str, Any]) -> None:
     ):
         _01(key)
 
-    sss = shader["sss_color"]
+    sss = shader["subsurface_color"]
     if len(sss) != 3 or not all(0.0 <= float(x) <= 1.0 for x in sss):
-        raise ValueError(f"{entry['id']}: sss_color invalid")
+        raise ValueError(f"{entry['id']}: subsurface_color invalid")
 
     tc = shader["transmission_color"]
     if len(tc) != 3 or not all(0.0 <= float(x) <= 1.0 for x in tc):

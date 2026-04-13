@@ -71,7 +71,7 @@ class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
     def apply_material(self):
 
         material_id = self.listMaterials.currentItem().text()
-        tools.apply_material(material_id)
+        tools.set_material(material_id)
         
 
 
