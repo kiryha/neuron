@@ -556,7 +556,14 @@ _BASES: dict[str, dict[str, Any]] = {
     },
     "glass": {
         "cat": "translucent",
-        "physical": {"base_color": [1.0, 1.0, 1.0], "specular_ior": 1.52, "k": 0.0, "thin_walled": False},
+        "physical": {
+            "base_color": [1.0, 1.0, 1.0],
+            "specular_ior": 1.52,
+            "k": 0.0,
+            "thin_walled": False,
+            # Mild chromatic dispersion (crown / soda-lime scale; weaker than gemstone authoring above).
+            "transmission_dispersion": 24.0,
+        },
         "semantic": {"base_phrase": "transparent optical glass"},
         "finish_overrides": {
             # Matte glass: forward transmission_scatter models diffuse blur through a rough interface
@@ -569,14 +576,23 @@ _BASES: dict[str, dict[str, Any]] = {
                 }
             },
             # Optional: slightly lower micro-breakup than default polished (see module policy note).
+            # Polished bulk glass: keep dispersion explicit here so finish merge cannot leave it at the
+            # translucent category default (0) if base ``physical`` keys are absent or reordered.
             "polished": {
+                "shader": {"transmission_dispersion": 24.0},
                 "procedural": {"bump_scale": 0.002},
             },
         },
     },
     "glass_window": {
         "cat": "translucent",
-        "physical": {"base_color": [1.0, 1.0, 1.0], "specular_ior": 1.52, "k": 0.0, "thin_walled": True},
+        "physical": {
+            "base_color": [1.0, 1.0, 1.0],
+            "specular_ior": 1.52,
+            "k": 0.0,
+            "thin_walled": True,
+            "transmission_dispersion": 24.0,
+        },
         "semantic": {"base_phrase": "thin plate glass window"},
         "finish_overrides": {
             "matte": {
@@ -587,6 +603,7 @@ _BASES: dict[str, dict[str, Any]] = {
                 }
             },
             "polished": {
+                "shader": {"transmission_dispersion": 24.0},
                 "procedural": {"bump_scale": 0.002},
             },
         },
