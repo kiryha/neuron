@@ -9,6 +9,7 @@ pinned: false
 ---
 
 # Neuron
+![Data Model](images/neuromat.jpg)
 
 Neuron is a personal generative-AI research project built from the ground up to learn how text-conditioned image generation works. Its first milestone, **Material Hero**, generates the rendered appearance of one fixed 3D object from a material description.
 
