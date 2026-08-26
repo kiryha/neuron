@@ -145,7 +145,9 @@ docs/          Canonical project documentation
 docs/sources/  Historical briefs, exported chats, and source material
 ```
 
-Files in `docs/sources/` preserve project history and rationale. They may contain outdated or speculative advice and are not, by themselves, the current specification. Canonical documents are being consolidated under `docs/`.
+Start with [docs/START-HERE.md](docs/START-HERE.md) for the current status, decisions, specifications, and runbooks.
+
+Files in `docs/sources/` preserve project history and rationale. They may contain outdated or speculative advice and are not, by themselves, the current specification.
 
 ## Run the current scaffold
 
