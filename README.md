@@ -8,93 +8,170 @@ app_port: 7860
 pinned: false
 ---
 
-# Neuron: Latent Scene Engine
+# Neuron
 
-Neuron is an experimental 3D application architecture designed to bridge the gap between traditional VFX pipelines and generative world models. It replaces explicit geometric data (vertices, normals, textures) with a Neural Voxel Field (NVF) and Implicit Neural Representations (INR), allowing for high-fidelity scene generation that remains spatially consistent and artistically controllable.
+Neuron is a personal generative-AI research project built from the ground up to learn how text-conditioned image generation works. Its first milestone, **Material Hero**, generates the rendered appearance of one fixed 3D object from a material description.
 
-## Project Concept
+Example prompts:
 
-In a traditional pipeline, scenes are composed of discrete assets and lights within a Cartesian coordinate system. In Neuron, the scene exists as a coordinate-aligned latent space.
+- `gold brushed dirty`
+- `black rubber polished scratched`
+- `clear glass clean`
 
-Instead of manual sculpting and shading, artists use prompt-directed entities. By leveraging semantic-local latent spaces, Neuron allows for non-destructive, iterative refinement. A prompt change such as adding "rain" or "wear and tear" modifies the high-frequency details of the neural field without destabilizing the underlying spatial structure or camera orientation.
+The current focus is deliberately narrow: many materials, one geometry, controlled cameras, and controlled studio lighting. This makes it possible to study text conditioning, neural rendering, multi-view consistency, dataset design, and deployment without first solving general text-to-3D generation.
 
-The ultimate architectural goal of Neuron is to move beyond monolithic scene generation toward a modular, production-ready Digital Content Creation (DCC) ecosystem:
+## Material Hero
 
-### Modular Neural Assets
-Assets such as characters, environments, and props are treated as independent "Latent Fragments." These are stored as discrete neural weight files (.neuron) rather than static meshes. This allows for a referencing system similar to USD, where assets can be loaded, versioned, and updated across multiple shots without redundant data overhead.
+Material Hero uses a **Sculpted Rubber Toy** as its single fixed geometry. Houdini procedurally renders that object with many combinations of material base, finish, condition, and color. Each rendered view is linked to a canonical text description and the camera and geometry data required for training.
 
-### Compositional Neural Scene Graphs (CNSG)
-Neuron implements a Compositional Neural Scene Graph to manage complex shots. By placing "Neural Proxies" in the viewport, the engine performs real-time coordinate transformations. When a camera ray intersects a proxy, the system transforms the ray into the asset's local latent space, allowing multiple independent neural fields to coexist and interact within a single global environment.
+The trained model will directly predict the final rendered RGB appearance. It will **not** generate PBR shader parameters or texture maps.
 
-### Neural Deformation and Animation
-Animation in Neuron shifts from vertex-based rigging to learned "Deformation Fields." Characters are defined in a canonical neural state, and animation is achieved by warping the coordinate space based on pose-vectors (e.g., joint rotations). This allows for complex secondary effects like muscle bulge and skin sliding to emerge naturally from the neural representation rather than being manually simulated.
+Conceptually, the first model learns:
 
-### Production Pipeline Integration
-While Neuron functions as a standalone generative engine, it is designed to bridge into established VFX workflows. The final goal includes modules for "baking" these dynamic latent scenes into 3D Gaussian Splatting (3DGS) stages or high-density USD assets, ensuring that the creative flexibility of AI is backed by the reliability of industry-standard delivery formats.
+```text
+RGB = F(surface position, surface normal, view direction, text description)
+```
 
-## Architecture
+The fixed geometry supplies the surface and silhouette; the prompt controls its appearance. As a result, every generation depicts the same Material Hero, while prompts change qualities such as material, color, finish, dirt, wear, and bump character.
 
-Neuron is designed as a web-based application hosted on Hugging Face Spaces, utilizing a client-server model to separate 3D manipulation from neural inference.
+### Initial constraints
 
-### 1. Frontend (The Viewport)
-- Framework: React with Three.js / React Three Fiber.
-- Functionality: Provides a standard 3D viewport with camera controls (Orbit/Fly) and scene hierarchy. It manages the camera transform matrix and proxy geometry (greyboxes).
-- Interaction: The viewport sends camera coordinates and prompt strings to the backend to receive a neural-rendered frame.
+- One fixed hero geometry
+- Controlled material vocabulary
+- Fixed studio lighting and color-management configuration
+- Camera-conditioned, multi-view output
+- Direct RGB generation
+- Deterministic appearance for a given prompt in the first version
+- No arbitrary object or scene generation
+- No generated shader graphs, material parameters, or texture maps
+- No user-controlled relighting in the first version
 
-### 2. Backend (The Neural Engine)
-- Framework: Python (PyTorch) with FastAPI or Gradio.
-- Inference: A coordinate-based MLP (Multi-Layer Perceptron) or Transformer that samples the latent field.
-- Logic: For every ray-marched point (x, y, z) and text embedding (w), the model returns color (RGB) and density (sigma).
+These are intentional scope boundaries, not final limitations of the wider Neuron concept.
 
-### 3. Data and Training
-- Synthetic Data: Trained on high-quality multi-view datasets generated procedurally in SideFX Houdini.
-- Storage: Model weights and latent embeddings are managed via Hugging Face LFS.
-- Conditioning: Uses CLIP or similar encoders to map natural language prompts to vectors that steer the neural field's output.
+## Pipeline
 
-## Technical Implementation
+```text
+Houdini procedural materials
+        |
+        v
+Multi-view RGB images + prompts + camera/geometry metadata
+        |
+        v
+Text-conditioned neural appearance model
+        |
+        v
+Neuron web viewport on Hugging Face Spaces
+```
 
-Neuron utilizes a hybrid approach to ensure production-grade stability:
+### 1. Data generation
 
-- Neural Voxel Fields (NVF): A sparse voxel grid provides spatial anchoring, ensuring that objects do not "drift" or "shimmer" when the camera moves.
-- Implicit Neural Representation (INR): Sub-voxel details are generated on-the-fly, allowing for infinite resolution and complex material behavior (refraction, caustics) without the overhead of heavy meshes.
-- Latent Anchoring: Global structural features are locked to specific latent seeds, while descriptive prompts perturb only the relevant semantic layers of the model.
+SideFX Houdini and Karma generate the synthetic ground-truth dataset. The current material system includes procedural variation, dirt, wear, and bump signals and is being completed and validated before batch rendering.
 
-## Development Roadmap
+Each training record is expected to preserve at least:
 
-#### Phase 1: Synthetic Data Generation (Houdini)
-* Objective: Generate the "Ground Truth" dataset for neural training.
-* Task: Utilize SideFX Houdini to create a procedural Shader Ball and export multi-view renders alongside a `transforms.json` file containing precise camera matrices.
+- material ID and canonical prompt;
+- camera ID, transform, and intrinsics;
+- beauty RGB image and alpha;
+- world-space position and surface normal data;
+- the render configuration needed for reproducibility.
 
-#### Phase 2: Material Hero (INR Training)
-* Objective: Develop the "Neural Shader" core using your expertise as a 3D artist and pipeline developer.
-* Task: Train a coordinate-based Implicit Neural Representation (INR) to map spatial coordinates and text prompts to RGB and density values, establishing a functional "Neuro-Material Library".
+Additional AOVs are useful for diagnostics and possible auxiliary supervision, but RGB remains the generated result.
 
-#### Phase 3: Hybrid Acceleration (Voxel Baking)
-* Objective: Achieve real-time performance for the web viewport.
-* Task: "Bake" the trained INR weights into a Sparse Voxel Grid or Neural Voxel Field (NVF) to transition the application from slow inference to interactive 60+ FPS navigation.
+### 2. Training
 
-#### Phase 4: Compositional Scene Graph (Modular Assets)
-* Objective: Enable modular world-building consistent with your interests in Universal Scene Description (USD).
-* Task: Implement a Compositional Neural Scene Graph (CNSG) to load separate `.neuron` files for characters, props, and environments, allowing them to be referenced and transformed as modular assets.
+The first training implementation will learn prompt-conditioned appearance on the fixed hero surface. All views of a material must remain in the same dataset split so validation measures generalization to unseen material combinations rather than memorization of alternate camera views.
 
-#### Phase 5: Production Management (DCC UI)
-* Objective: Finalize the Digital Content Creation (DCC) interface.
-* Task: Build the project/shot management system, floating glassmorphism UI widgets, and camera animation paths to prepare "Anchor Frames" for cinematic export.
+The training implementation has not been built yet. It begins after the Houdini dataset and manifest have been validated.
 
-#### Phase 6: Temporal Synthesis (Veo/LTX)
-* Objective: Achieve final cinematic animation with physical realism.
-* Task: Integrate video diffusion models, such as Veo 3.1, to animate shots. Neuron will provide spatial and structural consistency (Frame 0 and camera paths), while the video model generates realistic physics and fluid motion.
+### 3. Application
 
-## Usage
+The intended application accepts a material prompt and displays the generated Material Hero from the active camera. The viewport camera supplies view information to the neural renderer.
 
-To run the application locally or on a private Hugging Face Space:
+The current React application is only a visual scaffold with a placeholder sphere. The FastAPI backend currently exposes a status endpoint and serves the built frontend; neural inference is not connected yet.
 
-1. Clone the repository with Git LFS support.
-2. Install Python dependencies: pip install -r requirements.txt.
-3. Launch the server: python app.py.
-4. Access the web interface via the provided local or cloud URL.
+## Current status
+
+The project is currently finishing **Phase 1: Houdini data generation**.
+
+- The procedural material library and semantic label generator exist.
+- A small stress-test material set is used to validate shader behavior.
+- Variation, dirt, and wear systems are implemented in the Houdini material HDA.
+- Bump generation is the current Houdini work area.
+- Dataset batching, final renders, training, and neural inference remain to be implemented.
+- The browser UI and backend are scaffolds, not a functioning model demo.
+
+Final dataset renders must also be produced without the watermark present in the current Houdini Apprentice development renders.
+
+## Roadmap
+
+### Phase 1 — Material dataset
+
+- Finish and validate the Houdini material HDA.
+- Confirm required RGB, alpha, geometry, camera, and metadata outputs.
+- Render the material stress set.
+- Automate and render the complete dataset.
+
+### Phase 2 — Material Hero model
+
+- Implement the dataset loader and validation tools.
+- Establish a simple text-conditioned RGB baseline.
+- Train for consistent appearance across camera views.
+- Evaluate both seen materials and held-out material combinations.
+- Save a reproducible model artifact with its vocabulary and configuration.
+
+### Phase 3 — Neuron application
+
+- Replace the placeholder sphere with the Material Hero viewport representation.
+- Connect prompt and camera input to model inference.
+- Display generated RGB results interactively.
+- Package and deploy the application on Hugging Face Spaces.
+
+### Later research — persistent neural assets
+
+The longer-term Neuron direction is a 3D application built from versioned neural assets: promptable objects, characters, and environments that can be referenced and composed into shots through a USD-like scene graph.
+
+Material Hero is intended to become the first small neural asset and to test the foundational ideas of persistent model state, prompt conditioning, camera-aware rendering, versioning, and viewport integration. General neural geometry, multi-asset composition, relighting, deformation, and animation are future research and are not part of the current Material Hero milestone.
+
+## Repository structure
+
+```text
+datagen/       Material definitions and Houdini data-generation tools
+train/         Training package scaffold
+neuron/        Future neural-engine package
+src/           React and React Three Fiber frontend
+main.py        FastAPI application and static frontend server
+docs/          Canonical project documentation
+docs/sources/  Historical briefs, exported chats, and source material
+```
+
+Files in `docs/sources/` preserve project history and rationale. They may contain outdated or speculative advice and are not, by themselves, the current specification. Canonical documents are being consolidated under `docs/`.
+
+## Run the current scaffold
+
+### Frontend development
+
+```bash
+npm ci
+npm run dev
+```
+
+Vite serves the development frontend on port `5173`.
+
+### Production-style local run
+
+```bash
+npm ci
+npm run build
+python -m pip install -r requirements.txt
+python -m uvicorn main:app --host 0.0.0.0 --port 7860
+```
+
+This serves the built frontend and the placeholder FastAPI backend on port `7860`.
+
+### Docker
+
+The included `Dockerfile` builds the React frontend and serves it through FastAPI using the same port expected by Hugging Face Spaces.
 
 ## Hugging Face
-```
-git push hf main
-```
+
+The repository is configured for a Docker-based Hugging Face Space. Deployment is planned after the first trained Material Hero model is integrated.
