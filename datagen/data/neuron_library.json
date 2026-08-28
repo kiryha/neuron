@@ -1,0 +1,581 @@
+{
+    "gold_polished_clean": {
+        "id": "gold_polished_clean",
+        "metadata": {
+            "base": "gold",
+            "category": "metal",
+            "finish": "polished",
+            "condition": "clean"
+        },
+        "shader_parameters": {
+            "base_value": 1.0,
+            "base_color": [
+                1.0,
+                0.85,
+                0.5
+            ],
+            "metalness": 1.0,
+            "specular_ior": 0.47,
+            "k": 2.83,
+            "specular_roughness": 0.02,
+            "specular_anisotropy": 0.0,
+            "subsurface": 0.0,
+            "subsurface_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "coat": 0.0,
+            "coat_roughness": 0.0,
+            "sheen": 0.0,
+            "transmission": 0.0,
+            "transmission_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "transmission_depth": 0.0,
+            "transmission_scatter": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "transmission_dispersion": 0.0,
+            "thin_walled": false,
+            "metallic_flake": 0.0
+        },
+        "procedural_parameters": {
+            "variation_seed": 0.050671,
+            "bump_scale": 0.004,
+            "bump_type": "stochastic",
+            "noise_scale": 1.0,
+            "dirt": 0.0,
+            "wear": 0.0
+        },
+        "semantic": {
+            "base_phrase": "precious 24k gold metal",
+            "finish_adjective": "polished",
+            "finish_description": "with a mirror-like smooth reflectance",
+            "condition_phrase": "in pristine condition",
+            "condition_mode": "pristine",
+            "composition_style": "pristine",
+            "semantic_tags": [],
+            "semantic_hints": [
+                "precious 24k gold metal",
+                "polished finish",
+                "clean intact surface"
+            ],
+            "semantic_label": "Photorealistic material study of precious 24k gold metal with with a mirror-like smooth reflectance, in pristine condition."
+        }
+    },
+    "iron_brushed_scratched": {
+        "id": "iron_brushed_scratched",
+        "metadata": {
+            "base": "iron",
+            "category": "metal",
+            "finish": "brushed",
+            "condition": "scratched"
+        },
+        "shader_parameters": {
+            "base_value": 1.0,
+            "base_color": [
+                0.56,
+                0.57,
+                0.58
+            ],
+            "metalness": 1.0,
+            "specular_ior": 2.9,
+            "k": 3.0,
+            "specular_roughness": 0.35,
+            "specular_anisotropy": 0.8,
+            "subsurface": 0.0,
+            "subsurface_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "coat": 0.0,
+            "coat_roughness": 0.0,
+            "sheen": 0.0,
+            "transmission": 0.0,
+            "transmission_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "transmission_depth": 0.0,
+            "transmission_scatter": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "transmission_dispersion": 0.0,
+            "thin_walled": false,
+            "metallic_flake": 0.0
+        },
+        "procedural_parameters": {
+            "variation_seed": 0.896587,
+            "bump_scale": 0.1,
+            "bump_type": "directional",
+            "noise_scale": 0.5,
+            "dirt": 0.1,
+            "wear": 0.9
+        },
+        "semantic": {
+            "base_phrase": "raw industrial iron",
+            "finish_adjective": "brushed",
+            "finish_description": "with brushed grain interrupted by deeper scratches",
+            "condition_phrase": "with heavy handling wear and usage marks",
+            "condition_mode": "abrasion",
+            "composition_style": "abrasion",
+            "semantic_tags": [
+                "surface_wear"
+            ],
+            "semantic_hints": [
+                "raw industrial iron",
+                "brushed finish with visible wear",
+                "scratches and surface abrasion"
+            ],
+            "semantic_label": "Photorealistic material study of raw industrial iron, with brushed grain interrupted by deeper scratches; with heavy handling wear and usage marks."
+        }
+    },
+    "concrete_hammered_clean": {
+        "id": "concrete_hammered_clean",
+        "metadata": {
+            "base": "concrete",
+            "category": "dielectric",
+            "finish": "hammered",
+            "condition": "clean"
+        },
+        "shader_parameters": {
+            "base_value": 1.0,
+            "base_color": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "metalness": 0.0,
+            "specular_ior": 1.6,
+            "k": 0.0,
+            "specular_roughness": 0.68,
+            "specular_anisotropy": 0.0,
+            "subsurface": 0.0,
+            "subsurface_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "coat": 0.0,
+            "coat_roughness": 0.0,
+            "sheen": 0.0,
+            "transmission": 0.0,
+            "transmission_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "transmission_depth": 0.0,
+            "transmission_scatter": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "transmission_dispersion": 0.0,
+            "thin_walled": false,
+            "metallic_flake": 0.0
+        },
+        "procedural_parameters": {
+            "variation_seed": 0.141328,
+            "bump_scale": 0.5,
+            "bump_type": "cellular",
+            "noise_scale": 2.0,
+            "dirt": 0.0,
+            "wear": 0.0
+        },
+        "semantic": {
+            "base_phrase": "industrial poured concrete",
+            "finish_adjective": "hammered",
+            "finish_description": "with small crater-like indentations",
+            "condition_phrase": "in pristine condition",
+            "condition_mode": "pristine",
+            "composition_style": "pristine",
+            "semantic_tags": [],
+            "semantic_hints": [
+                "industrial poured concrete",
+                "hammered finish",
+                "clean intact surface"
+            ],
+            "semantic_label": "Close-up of industrial poured concrete, with small crater-like indentations, in pristine condition."
+        }
+    },
+    "rubber_black_polished_scratched": {
+        "id": "rubber_black_polished_scratched",
+        "metadata": {
+            "base": "rubber",
+            "category": "dielectric",
+            "finish": "polished",
+            "condition": "scratched",
+            "color_name": "black"
+        },
+        "shader_parameters": {
+            "base_value": 1.0,
+            "base_color": [
+                0.02,
+                0.02,
+                0.02
+            ],
+            "metalness": 0.0,
+            "specular_ior": 1.51,
+            "k": 0.0,
+            "specular_roughness": 0.15,
+            "specular_anisotropy": 0.0,
+            "subsurface": 0.0,
+            "subsurface_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "coat": 0.0,
+            "coat_roughness": 0.0,
+            "sheen": 0.0,
+            "transmission": 0.0,
+            "transmission_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "transmission_depth": 0.0,
+            "transmission_scatter": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "transmission_dispersion": 0.0,
+            "thin_walled": false,
+            "metallic_flake": 0.0
+        },
+        "procedural_parameters": {
+            "variation_seed": 0.961417,
+            "bump_scale": 0.004,
+            "bump_type": "stochastic",
+            "noise_scale": 1.0,
+            "dirt": 0.1,
+            "wear": 0.9
+        },
+        "semantic": {
+            "base_phrase": "black vulcanized rubber",
+            "finish_adjective": "polished",
+            "finish_description": "with a glossy reflective surface marked by visible wear",
+            "condition_phrase": "with heavy handling wear and usage marks",
+            "condition_mode": "abrasion",
+            "composition_style": "abrasion",
+            "semantic_tags": [
+                "surface_wear"
+            ],
+            "semantic_hints": [
+                "black vulcanized rubber",
+                "polished finish with visible wear",
+                "scratches and surface abrasion"
+            ],
+            "semantic_label": "Photorealistic material study of black vulcanized rubber, with a glossy reflective surface marked by visible wear; with heavy handling wear and usage marks."
+        }
+    },
+    "car_paint_red_matte_dusty": {
+        "id": "car_paint_red_matte_dusty",
+        "metadata": {
+            "base": "car_paint",
+            "category": "dielectric",
+            "finish": "matte",
+            "condition": "dusty",
+            "color_name": "red"
+        },
+        "shader_parameters": {
+            "base_value": 1.0,
+            "base_color": [
+                0.8,
+                0.05,
+                0.05
+            ],
+            "metalness": 0.0,
+            "specular_ior": 1.5,
+            "k": 0.0,
+            "specular_roughness": 0.92,
+            "specular_anisotropy": 0.0,
+            "subsurface": 0.0,
+            "subsurface_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "coat": 0.38,
+            "coat_roughness": 0.72,
+            "sheen": 0.0,
+            "transmission": 0.0,
+            "transmission_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "transmission_depth": 0.0,
+            "transmission_scatter": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "transmission_dispersion": 0.0,
+            "thin_walled": false,
+            "metallic_flake": 0.16
+        },
+        "procedural_parameters": {
+            "variation_seed": 0.348156,
+            "bump_scale": 0.025,
+            "bump_type": "stochastic",
+            "noise_scale": 1.0,
+            "dirt": 0.6,
+            "wear": 0.1
+        },
+        "semantic": {
+            "base_phrase": "red automotive car paint",
+            "finish_adjective": "matte",
+            "finish_description": "with a diffuse low-reflectance surface",
+            "condition_phrase": "with fine dust and road film on the painted surface",
+            "condition_mode": "contamination",
+            "composition_style": "pattern_a",
+            "semantic_tags": [
+                "surface_contamination"
+            ],
+            "semantic_hints": [
+                "red automotive car paint",
+                "matte finish with light surface contamination",
+                "fine dust contamination"
+            ],
+            "semantic_label": "Texture study of red automotive car paint, with a diffuse low-reflectance surface, with fine dust and road film on the painted surface."
+        }
+    },
+    "glass_polished_clean": {
+        "id": "glass_polished_clean",
+        "metadata": {
+            "base": "glass",
+            "category": "translucent",
+            "finish": "polished",
+            "condition": "clean"
+        },
+        "shader_parameters": {
+            "base_value": 0.0,
+            "base_color": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "metalness": 0.0,
+            "specular_ior": 1.52,
+            "k": 0.0,
+            "specular_roughness": 0.02,
+            "specular_anisotropy": 0.0,
+            "subsurface": 0.0,
+            "subsurface_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "coat": 0.0,
+            "coat_roughness": 0.0,
+            "sheen": 0.0,
+            "transmission": 1.0,
+            "transmission_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "transmission_depth": 1.0,
+            "transmission_scatter": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "transmission_dispersion": 24.0,
+            "thin_walled": false,
+            "metallic_flake": 0.0
+        },
+        "procedural_parameters": {
+            "variation_seed": 0.407403,
+            "bump_scale": 0.002,
+            "bump_type": "stochastic",
+            "noise_scale": 1.0,
+            "dirt": 0.0,
+            "wear": 0.0
+        },
+        "semantic": {
+            "base_phrase": "transparent optical glass",
+            "finish_adjective": "polished",
+            "finish_description": "with a mirror-like smooth reflectance",
+            "condition_phrase": "in pristine condition",
+            "condition_mode": "pristine",
+            "composition_style": "pristine",
+            "semantic_tags": [
+                "translucent"
+            ],
+            "semantic_hints": [
+                "transparent optical glass",
+                "polished finish",
+                "clean intact surface",
+                "translucent"
+            ],
+            "semantic_label": "Material study of transparent optical glass, with a mirror-like smooth reflectance, in pristine condition."
+        }
+    },
+    "glass_matte_clean": {
+        "id": "glass_matte_clean",
+        "metadata": {
+            "base": "glass",
+            "category": "translucent",
+            "finish": "matte",
+            "condition": "clean"
+        },
+        "shader_parameters": {
+            "base_value": 0.0,
+            "base_color": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "metalness": 0.0,
+            "specular_ior": 1.52,
+            "k": 0.0,
+            "specular_roughness": 0.88,
+            "specular_anisotropy": 0.0,
+            "subsurface": 0.0,
+            "subsurface_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "coat": 0.0,
+            "coat_roughness": 0.0,
+            "sheen": 0.0,
+            "transmission": 0.9,
+            "transmission_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "transmission_depth": 1.0,
+            "transmission_scatter": [
+                0.12,
+                0.12,
+                0.12
+            ],
+            "transmission_dispersion": 24.0,
+            "thin_walled": false,
+            "metallic_flake": 0.0
+        },
+        "procedural_parameters": {
+            "variation_seed": 0.161251,
+            "bump_scale": 0.025,
+            "bump_type": "stochastic",
+            "noise_scale": 1.0,
+            "dirt": 0.0,
+            "wear": 0.0
+        },
+        "semantic": {
+            "base_phrase": "transparent optical glass",
+            "finish_adjective": "matte",
+            "finish_description": "with a frosted rough surface that blurs transmitted light",
+            "condition_phrase": "in pristine condition",
+            "condition_mode": "pristine",
+            "composition_style": "pristine",
+            "semantic_tags": [
+                "translucent",
+                "frosted",
+                "blurred_transmission",
+                "rough_transmissive_interface"
+            ],
+            "semantic_hints": [
+                "transparent optical glass",
+                "matte finish",
+                "clean intact surface",
+                "translucent",
+                "frosted glass",
+                "rough transmissive surface",
+                "blurred transmitted light",
+                "diffuse transmission through a rough interface"
+            ],
+            "semantic_label": "Close-up of transparent optical glass, with a frosted rough surface that blurs transmitted light, in pristine condition."
+        }
+    },
+    "honey_satin_dusty": {
+        "id": "honey_satin_dusty",
+        "metadata": {
+            "base": "honey",
+            "category": "translucent",
+            "finish": "satin",
+            "condition": "dusty"
+        },
+        "shader_parameters": {
+            "base_value": 0.0,
+            "base_color": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "metalness": 0.0,
+            "specular_ior": 1.5,
+            "k": 0.0,
+            "specular_roughness": 0.25,
+            "specular_anisotropy": 0.1,
+            "subsurface": 0.8,
+            "subsurface_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "coat": 0.0,
+            "coat_roughness": 0.0,
+            "sheen": 0.0,
+            "transmission": 1.0,
+            "transmission_color": [
+                0.8,
+                0.5,
+                0.1
+            ],
+            "transmission_depth": 3.0,
+            "transmission_scatter": [
+                0.8,
+                0.5,
+                0.1
+            ],
+            "transmission_dispersion": 0.0,
+            "thin_walled": false,
+            "metallic_flake": 0.0
+        },
+        "procedural_parameters": {
+            "variation_seed": 0.750128,
+            "bump_scale": 0.02,
+            "bump_type": "stochastic",
+            "noise_scale": 1.0,
+            "dirt": 0.6,
+            "wear": 0.1
+        },
+        "semantic": {
+            "base_phrase": "viscous golden honey",
+            "finish_adjective": "satin",
+            "finish_description": "with a soft semi-gloss sheen",
+            "condition_phrase": "with fine dust adhered to the sticky viscous surface",
+            "condition_mode": "contamination",
+            "composition_style": "pattern_a",
+            "semantic_tags": [
+                "translucent",
+                "dense_translucent_medium",
+                "surface_contamination"
+            ],
+            "semantic_hints": [
+                "viscous golden honey",
+                "satin finish with adhered surface dust",
+                "sticky viscous surface contamination",
+                "translucent",
+                "light-scattering translucent medium"
+            ],
+            "semantic_label": "Photorealistic material study of viscous golden honey, with a soft semi-gloss sheen, with fine dust adhered to the sticky viscous surface."
+        }
+    }
+}

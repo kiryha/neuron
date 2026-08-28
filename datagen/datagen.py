@@ -35,16 +35,23 @@ class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
         """
         Load the materials data from the JSON file
         """
-        with open(materials.LIBRARY_JSON, "r") as f:
-            self.materials_data = json.load(f)
+
+        if materials.LIBRARY_JSON.exists():
+            with open(materials.LIBRARY_JSON, "r") as f:
+                self.materials_data = json.load(f)
+        else:
+            hou.ui.displayMessage(
+                f"Materials data file not found:\n{materials.LIBRARY_JSON}",
+                buttons=("OK",),
+                severity=hou.severityType.Error,
+            )
+            return
 
         self.listMaterials.clear()
-
         self.materials_list = list(self.materials_data.keys())
-
         for material in self.materials_list:
             self.listMaterials.addItem(material)
-
+        
 
     def build_materials_data(self):
         # Pass ``subset_ids`` to build a small test set; use ``None`` for the full combinatorial library.
