@@ -17,13 +17,17 @@ import json
 import logging
 import random
 import re
+from importlib import reload
 from copy import deepcopy
 from itertools import product
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any
 
-from .config import LIBRARY_JSON
+from . import config
+reload(config)
+LIBRARY_JSON = config.LIBRARY_JSON
+
 
 logger = logging.getLogger(__name__)
 

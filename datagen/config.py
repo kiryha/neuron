@@ -1,10 +1,9 @@
 from pathlib import Path
 
-# Canonical library and render root. Matches the HDA dataset_path; not inside the Git repo.
-DATA_ROOT = Path(r"E:\Projects\neuron_data")
+DATA_ROOT = Path(__file__).parent / "data"
 
 # Material library manifest
-LIBRARY_JSON = DATA_ROOT / "neuron_library.json"
+LIBRARY_JSON = DATA_ROOT / "neuron_library_dev.json"
 
 # Synthetic dataset renders
 DATASET_DIR = DATA_ROOT / "dataset"
