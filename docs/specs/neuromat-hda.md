@@ -2,7 +2,7 @@
 
 Status: **Bump branches implemented; visual and full shader-contract validation pending**
 
-Last reviewed: 2026-08-26
+Last reviewed: 2026-08-28
 
 ## Purpose
 
@@ -178,7 +178,7 @@ Required behavior:
 
 Known current gaps:
 
-- `subsurface`, `subsurface_color`, and `thin_walled` are not connected to the live Standard Surface result.
+- `subsurface`, `subsurface_color`, and `thin_walled` are connected through relative references from the HDA interface to Standard Surface.
 - `k` and `metallic_flake` are not consumed by the production graph.
 - The treatment of `transmission_scatter` requires verification in Karma/MaterialX.
 

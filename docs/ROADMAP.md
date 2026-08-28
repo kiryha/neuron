@@ -11,6 +11,7 @@ Goal: one deterministic JSON-driven material asset that renders every supported 
 Deliverables:
 
 - Correct direct bump routing for none, stochastic, directional, and cellular — implemented, visual validation pending
+- Standard Surface bindings for subsurface, subsurface color, and thin-wall — implemented, stress validation pending
 - Verified material-ID-driven HDA cook path suitable for interactive and batch operation
 - Tuned and approved stochastic, directional, and cellular bump
 - Decision and implementation for cracked asphalt

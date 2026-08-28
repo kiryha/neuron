@@ -97,7 +97,7 @@ The project is currently finishing **Phase 1: Houdini data generation**.
 - The procedural material library and semantic label generator exist.
 - A small stress-test material set is used to validate shader behavior.
 - Variation, dirt, and wear systems are implemented in the Houdini material HDA.
-- Bump generation is the current Houdini work area.
+- Stochastic, directional, and cellular bump branches are implemented; fixed-camera stress validation is the current Houdini work area.
 - Dataset batching, final renders, training, and neural inference remain to be implemented.
 - The browser UI and backend are scaffolds, not a functioning model demo.
 

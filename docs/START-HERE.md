@@ -1,6 +1,6 @@
 # Start here
 
-Last reviewed: 2026-08-26
+Last reviewed: 2026-08-28
 
 Neuron is currently focused on **Material Hero**: a text-conditioned image generator that renders the appearance of one fixed Sculpted Rubber Toy under controlled cameras and studio lighting.
 

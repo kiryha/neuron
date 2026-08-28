@@ -76,23 +76,19 @@ Selecting an item in the Houdini UI intentionally changes only `material_id`. Co
 
 The separate repository helper `tools.apply_material()` is an older partial path; do not use it as the batch contract unless it is deliberately brought back in sync.
 
-## 6. Resume the current bump checkpoint
+## 6. Validate the current bump implementation
 
-The production switch is temporarily wrong: it has only none and stochastic connected, and its selector subtracts one from the enum. Fix routing before trusting material names.
+The production switch now directly maps none, stochastic, directional, and cellular, and all four inputs are connected. The next task is visual approval rather than branch construction.
 
 Recommended order:
 
-1. Define one shared mapping for none, stochastic, directional, cellular, and the chosen cracked policy.
-2. Connect every supported switch input.
-3. Add an explicit debug override if branch isolation is useful; do not alter production enum arithmetic for testing.
-4. Select a true stochastic stress material for stochastic tuning.
-5. Test the proposed higher-frequency/lower-amplitude stochastic settings from [STATUS.md](../STATUS.md).
-6. Change one parameter group at a time and save comparable renders.
-7. Build directional bump and test `iron_brushed_scratched`.
-8. Build cellular bump and test `concrete_hammered_clean`.
-9. Decide whether cracked asphalt is implemented or excluded before the full-library scan.
-
-Do not tune stochastic bump on iron and then mistake that result for completed directional behavior.
+1. Confirm direct mode selection with the bump diagnostic.
+2. Test stochastic using `rubber_black_polished_scratched` and polished glass/gold cases.
+3. Test directional using `iron_brushed_scratched`.
+4. Test cellular using `concrete_hammered_clean`.
+5. Compare all results under one fixed camera and lighting setup.
+6. Change one parameter group at a time if tuning is required and save comparable renders.
+7. Decide whether cracked asphalt is implemented, remapped, or excluded before the full-library scan.
 
 ## 7. Validate the complete shader contract
 
@@ -102,7 +98,7 @@ After bump branches:
 2. Verify dirt follows AO/concavity without becoming a shadow duplicate.
 3. Verify wear follows convex/exposed areas and remains distinct from dirt.
 4. Verify bump changes highlight response without changing silhouette.
-5. Connect or explicitly remove unsupported SSS, subsurface color, thin-wall, `k`, flake, and transmission-scatter fields.
+5. Verify the implemented SSS, subsurface-color, and thin-wall references, then implement or explicitly classify `k`, flake, and transmission-scatter fields.
 6. Clamp physical ranges without silently flattening intended material differences.
 
 ## 8. Stress-set render order

@@ -1,6 +1,6 @@
 # Current project status
 
-- Last verified: 2026-08-26
+- Last verified: 2026-08-28
 - Repository baseline inspected: `main` at `02ba1a3`
 - Current phase: **Phase 1 — finish and validate Houdini data generation**
 
@@ -26,10 +26,10 @@ Finish the `neuromat` HDA, validate the eight-material stress set, and lock the 
 
 - Project root: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D`
 - Active scene: `scenes\material_hero_004.hipnc`
-  - Modified: 2026-08-26 17:50
+  - Modified: 2026-08-28 13:22
 - Active HDA: `hda\lop_KKO8.neuromat.1.2.hdanc`
   - Type: `KKO8::neuromat::1.2`
-  - Modified: 2026-08-26 17:38
+  - Modified: 2026-08-28 13:20
 - Generated JSON: `E:\Projects\neuron_data\neuron_library.json`
   - Current content: eight-material stress subset
   - Modified: 2026-04-16 15:39
@@ -55,6 +55,7 @@ Finish the `neuromat` HDA, validate the eight-material stress set, and lock the 
 - JSON-driven top-level material parameters
 - Internal `/stage/neuromat/read_JSON_data` Python Script LOP that resolves `material_id` from `dataset_path` and applies JSON values during the HDA cook
 - Internal bump-type and bump-cap Python Script LOPs
+- Standard Surface references for `subsurface`, `subsurface_color`, and `thin_walled`
 - UV-based map projection
 - Variation mask affecting appearance
 - AO/concavity-driven dirt
@@ -64,11 +65,11 @@ Finish the `neuromat` HDA, validate the eight-material stress set, and lock the 
 
 **Current selected material:**
 
-- `rubber_black_polished_scratched`
+- `glass_polished_clean`
 - JSON bump type: stochastic
-- Bump scale: `0.004`
+- Bump scale: `0.002`
 - Noise scale: `1.0`
-- Bump cap: `0.02`
+- Bump cap: `0.006`
 
 ## Current incomplete or incorrect state
 
@@ -103,10 +104,11 @@ Finish the `neuromat` HDA, validate the eight-material stress set, and lock the 
 
 These are implemented values, not yet approved final look-dev values. Judge them under the fixed camera/light setup before locking the HDA.
 
-### Shader wiring
+### Remaining shader coverage
 
-- `subsurface`, `subsurface_color`, and `thin_walled` are loaded at the HDA interface but are not connected to the live Standard Surface result.
+- `subsurface`, `subsurface_color`, and `thin_walled` are now linked from the HDA interface to the live Standard Surface parameters.
 - `k` and `metallic_flake` are present in JSON but are not consumed by the current production shader graph.
+- The intended Karma/MaterialX treatment of `transmission_scatter` still requires explicit verification.
 - The current bump AOV is derived after `mtlxbump`; its meaning should be documented as altered normal versus scalar height before training use.
 
 ### Render outputs
@@ -138,7 +140,7 @@ There is no separate Alpha RenderVar; confirm that the beauty alpha is correct a
 | P0 | Bump look-dev not validated | Render and review stochastic, directional, and cellular stress materials before automation |
 | P0 | Unsupported cracked bump records | Implement cracked asphalt or exclude/remap its 12 records before full-library rendering |
 | P0 | No dataset automation or manifest | Build and validate a small camera/material pilot before full scale |
-| P1 | Missing shader wiring | Connect or explicitly remove unsupported SSS, thin-wall, `k`, and flake behavior |
+| P1 | Unresolved shader-schema fields | Implement or explicitly classify `k`, metallic flake, and transmission-scatter behavior |
 | P1 | Label defect | Prevent duplicate words and regenerate/overwrite affected labels |
 | P1 | Render contract not frozen | Verify alpha, coordinate spaces, color management, naming, and metadata |
 | P2 | One camera only | Implement and validate the planned camera distribution after HDA lock |
@@ -149,7 +151,7 @@ There is no separate Alpha RenderVar; confirm that the beauty alpha is correct a
 2. Inspect beauty plus variation, dirt, wear, and bump/normal diagnostics for each material.
 3. Approve or retune stochastic, directional, and cellular bump from those comparisons.
 4. Decide how `cracked` asphalt records are handled: implement the branch or exclude/remap them for v1.
-5. Resolve missing shader inputs and confirm the final RenderVars.
+5. Resolve remaining shader-schema fields and confirm the final RenderVars.
 6. Fix label duplicate-word QA and regenerate the stress labels with overwrite enabled.
 7. Freeze the HDA/scene as the approved material-render baseline.
 8. Build the camera dome and render a small stress-material × camera pilot.
