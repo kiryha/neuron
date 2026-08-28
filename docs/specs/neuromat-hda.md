@@ -1,6 +1,6 @@
 # `neuromat` HDA specification
 
-Status: **Implemented in part; bump and shader coverage incomplete**
+Status: **Bump branches implemented; visual and full shader-contract validation pending**
 
 Last reviewed: 2026-08-26
 
@@ -147,30 +147,24 @@ Inputs:
 
 | Type | Intended use | Required HDA state |
 | --- | --- | --- |
-| `none` | Intentionally smooth surface | Connected and returns zero |
-| `stochastic` | Polished/matte/satin micro-breakup | Present, requires tuning |
-| `directional` | Brushed grain and aligned scratches | Not implemented in production path |
-| `cellular` | Hammered/pitted response | Not implemented in production path |
+| `none` | Intentionally smooth surface | Implemented; returns zero |
+| `stochastic` | Polished/matte/satin micro-breakup | Implemented; visual approval pending |
+| `directional` | Brushed grain and aligned scratches | Implemented; visual approval pending |
+| `cellular` | Hammered/pitted response | Implemented; visual approval pending |
 | `cracked` | Asphalt macro cracking | Emitted by generator, no HDA branch |
 
 The final selector must use one explicit mapping shared by JSON validation, HDA menu values, and shader switch inputs. Do not use an offset expression that relies on unconnected slots.
 
-## Current bump checkpoint
+## Current bump implementation
 
-The live production switch currently connects only none and stochastic. It uses `bump_type_int - 1`, causing directional materials to select stochastic.
+The live production switch now selects the direct integer mode with all four intended inputs connected.
 
-Current stochastic construction:
+- Stochastic combines two object-space Fractal 3D noises at `noise_scale × 50` and `× 120`, octaves `3 / 2`, and weights `0.7 / 0.3`.
+- Directional combines anisotropic UV noise at `noise_scale × (80, 8)` with stochastic breakup at weights `0.8 / 0.2`.
+- Cellular combines object-space cellular noise at `noise_scale × 18` with stochastic breakup at weights `0.85 / 0.15`.
+- The selected height is scaled by `bump_scale`, limited by `bump_cap`, and converted through MaterialX bump.
 
-- object-space position input;
-- coarse and fine Fractal 3D noises;
-- frequency multipliers `6` and `24`;
-- octaves `3` and `2`;
-- weights `0.7` and `0.3`;
-- scale by material `bump_scale`;
-- clamp by HDA `bump_cap`;
-- convert through `mtlxbump`.
-
-See [STATUS.md](../STATUS.md) for the next tuning test and exact current material values.
+Implementation does not equal approval. The next gate is a fixed-camera comparison of the stress materials, followed by a small multi-camera pilot.
 
 ## Shader integration
 

@@ -10,9 +10,9 @@ Goal: one deterministic JSON-driven material asset that renders every supported 
 
 Deliverables:
 
-- Correct bump routing and supported branch list
+- Correct direct bump routing for none, stochastic, directional, and cellular — implemented, visual validation pending
 - Verified material-ID-driven HDA cook path suitable for interactive and batch operation
-- Tuned stochastic, directional, and cellular bump
+- Tuned and approved stochastic, directional, and cellular bump
 - Decision and implementation for cracked asphalt
 - Variation, dirt, and wear validation
 - Required shader parameters connected or removed from the contract

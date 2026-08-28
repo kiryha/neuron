@@ -26,10 +26,10 @@ Finish the `neuromat` HDA, validate the eight-material stress set, and lock the 
 
 - Project root: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D`
 - Active scene: `scenes\material_hero_004.hipnc`
-  - Modified: 2026-08-26 14:14
+  - Modified: 2026-08-26 17:50
 - Active HDA: `hda\lop_KKO8.neuromat.1.2.hdanc`
   - Type: `KKO8::neuromat::1.2`
-  - Modified: 2026-04-24 15:56
+  - Modified: 2026-08-26 17:38
 - Generated JSON: `E:\Projects\neuron_data\neuron_library.json`
   - Current content: eight-material stress subset
   - Modified: 2026-04-16 15:39
@@ -64,21 +64,21 @@ Finish the `neuromat` HDA, validate the eight-material stress set, and lock the 
 
 **Current selected material:**
 
-- `iron_brushed_scratched`
-- JSON bump type: directional
-- Bump scale: `0.1`
-- Noise scale: `0.5`
-- Dirt: `0.1`
-- Wear: `0.9`
+- `rubber_black_polished_scratched`
+- JSON bump type: stochastic
+- Bump scale: `0.004`
+- Noise scale: `1.0`
+- Bump cap: `0.02`
 
 ## Current incomplete or incorrect state
 
-### Bump routing
+### Bump implementation
 
-- The production bump switch has only `none` and `stochastic` inputs connected.
-- JSON/HDA values are intended as none `0`, stochastic `1`, directional `2`, cellular `3`.
-- The live selector expression is `ch("../../../bump_type_int") - 1`.
-- Therefore a directional material currently selects the stochastic input; cellular selects an unconnected input.
+- The production bump switch now uses direct `bump_type_int` selection.
+- Inputs are connected as none `0`, stochastic `1`, directional `2`, and cellular `3`.
+- Stochastic, directional, and cellular networks are present in the production material graph.
+- The final selected height is scaled, capped, and passed through MaterialX bump before the Standard Surface normal input.
+- Structural implementation is complete for these four modes; visual validation across the stress set is still pending.
 - The Python generator also emits `cracked` for 12 asphalt combinations, but no cracked HDA branch or enum mapping is currently implemented.
 
 ### Material application path
@@ -90,26 +90,18 @@ Finish the `neuromat` HDA, validate the eight-material stress set, and lock the 
 - This design is working interactively and is suitable for future batching by changing one material ID per work item.
 - `datagen/tools.py::apply_material()` is an older partial alternative and is not the active UI path; it should be removed or clearly marked legacy later to prevent confusion.
 
-### Stochastic bump checkpoint
+### Current bump construction
 
-Current live settings:
+- Stochastic frequencies: `noise_scale × 50` and `noise_scale × 120`
+- Stochastic octaves: `3 / 2`
+- Stochastic weights: `0.7 / 0.3`
+- Directional frequency: `noise_scale × (80, 8)` in UV space
+- Directional/stochastic breakup weights: `0.8 / 0.2`
+- Cellular frequency: `noise_scale × 18`
+- Cellular/stochastic breakup weights: `0.85 / 0.15`
+- Polished-clean bump cap: `0.006`; other finish/condition combinations: `0.02`
 
-- Coarse frequency: `noise_scale × 6`
-- Fine frequency: `noise_scale × 24`
-- Coarse/fine octaves: `3 / 2`
-- Coarse/fine weights: `0.7 / 0.3`
-- General bump cap for the selected material: `0.02`
-
-The last look-dev result read as broad, melted macro-waviness. The next planned test from the HDA discussion was approximately:
-
-- Coarse frequency: `noise_scale × 40`
-- Fine frequency: `noise_scale × 160`
-- Coarse/fine octaves: `2 / 1`
-- Coarse/fine weights: `0.85 / 0.15`
-- Test bump height near `0.0015`
-- Conservative cap near `0.004–0.006`
-
-These are **planned test values**, not accepted production constants.
+These are implemented values, not yet approved final look-dev values. Judge them under the fixed camera/light setup before locking the HDA.
 
 ### Shader wiring
 
@@ -143,7 +135,8 @@ There is no separate Alpha RenderVar; confirm that the beauty alpha is correct a
 | Priority | Blocker | Required resolution |
 | --- | --- | --- |
 | P0 | Watermarked/noncommercial development renders | Produce final training images through a suitable non-watermarked Houdini render path |
-| P0 | Incomplete bump routing | Implement and validate every bump type emitted by the material generator, or remove unsupported records |
+| P0 | Bump look-dev not validated | Render and review stochastic, directional, and cellular stress materials before automation |
+| P0 | Unsupported cracked bump records | Implement cracked asphalt or exclude/remap its 12 records before full-library rendering |
 | P0 | No dataset automation or manifest | Build and validate a small camera/material pilot before full scale |
 | P1 | Missing shader wiring | Connect or explicitly remove unsupported SSS, thin-wall, `k`, and flake behavior |
 | P1 | Label defect | Prevent duplicate words and regenerate/overwrite affected labels |
@@ -152,16 +145,16 @@ There is no separate Alpha RenderVar; confirm that the beauty alpha is correct a
 
 ## Next exact actions
 
-1. Save a new HDA version or recoverable backup before editing.
-2. Replace the temporary offset bump selector with a direct, documented routing scheme.
-3. Decide how `cracked` asphalt records are handled: implement the branch or exclude them from v1.
-4. Tune stochastic bump on a material whose intended branch is stochastic.
-5. Implement and validate directional bump using `iron_brushed_scratched`.
-6. Implement and validate cellular bump using `concrete_hammered_clean`.
-7. Validate all eight stress materials, including translucent and SSS cases.
-8. Resolve missing shader inputs and confirm the final RenderVars.
-9. Fix label duplicate-word QA and regenerate the stress labels with overwrite enabled.
-10. Render a small multi-camera pilot and validate the manifest before scaling up.
+1. Render all eight stress materials from the current fixed camera and lighting setup.
+2. Inspect beauty plus variation, dirt, wear, and bump/normal diagnostics for each material.
+3. Approve or retune stochastic, directional, and cellular bump from those comparisons.
+4. Decide how `cracked` asphalt records are handled: implement the branch or exclude/remap them for v1.
+5. Resolve missing shader inputs and confirm the final RenderVars.
+6. Fix label duplicate-word QA and regenerate the stress labels with overwrite enabled.
+7. Freeze the HDA/scene as the approved material-render baseline.
+8. Build the camera dome and render a small stress-material × camera pilot.
+9. Validate view consistency, camera metadata, AOV alignment, and manifest structure.
+10. Only then automate and launch the full material × camera batch.
 
 ## Phase 1 exit criteria
 
