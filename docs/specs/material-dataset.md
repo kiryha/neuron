@@ -58,7 +58,7 @@ The following eight materials cover the major material, transmission, coating, d
 7. `concrete_hammered_clean`
 8. `rubber_black_polished_scratched`
 
-The stress set is a QA tool. Passing it does not prove that every full-library record is supported; the 12 cracked asphalt records require separate resolution.
+The stress set is a QA tool. Passing it does not prove that every full-library record is supported, so the complete generated library must also pass schema validation. Asphalt uses the supported stochastic bump mode.
 
 ## Material record contract
 

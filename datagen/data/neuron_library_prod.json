@@ -110957,8 +110957,8 @@
         },
         "procedural_parameters": {
             "variation_seed": 0.84802,
-            "bump_scale": 0.35,
-            "bump_type": "cracked",
+            "bump_scale": 0.02,
+            "bump_type": "stochastic",
             "noise_scale": 1.0,
             "dirt": 0.0,
             "wear": 0.0
@@ -111026,8 +111026,8 @@
         },
         "procedural_parameters": {
             "variation_seed": 0.131966,
-            "bump_scale": 0.35,
-            "bump_type": "cracked",
+            "bump_scale": 0.02,
+            "bump_type": "stochastic",
             "noise_scale": 1.0,
             "dirt": 0.6,
             "wear": 0.1
@@ -111097,8 +111097,8 @@
         },
         "procedural_parameters": {
             "variation_seed": 0.343142,
-            "bump_scale": 0.35,
-            "bump_type": "cracked",
+            "bump_scale": 0.02,
+            "bump_type": "stochastic",
             "noise_scale": 1.0,
             "dirt": 0.1,
             "wear": 0.9
@@ -111168,8 +111168,8 @@
         },
         "procedural_parameters": {
             "variation_seed": 0.637977,
-            "bump_scale": 0.35,
-            "bump_type": "cracked",
+            "bump_scale": 0.02,
+            "bump_type": "stochastic",
             "noise_scale": 1.0,
             "dirt": 0.0,
             "wear": 0.0
@@ -111237,8 +111237,8 @@
         },
         "procedural_parameters": {
             "variation_seed": 0.027179,
-            "bump_scale": 0.35,
-            "bump_type": "cracked",
+            "bump_scale": 0.02,
+            "bump_type": "stochastic",
             "noise_scale": 1.0,
             "dirt": 0.6,
             "wear": 0.1
@@ -111308,8 +111308,8 @@
         },
         "procedural_parameters": {
             "variation_seed": 0.607103,
-            "bump_scale": 0.35,
-            "bump_type": "cracked",
+            "bump_scale": 0.02,
+            "bump_type": "stochastic",
             "noise_scale": 1.0,
             "dirt": 0.1,
             "wear": 0.9
@@ -111379,8 +111379,8 @@
         },
         "procedural_parameters": {
             "variation_seed": 0.900088,
-            "bump_scale": 0.35,
-            "bump_type": "cracked",
+            "bump_scale": 0.02,
+            "bump_type": "stochastic",
             "noise_scale": 0.5,
             "dirt": 0.0,
             "wear": 0.0
@@ -111448,8 +111448,8 @@
         },
         "procedural_parameters": {
             "variation_seed": 0.374492,
-            "bump_scale": 0.35,
-            "bump_type": "cracked",
+            "bump_scale": 0.02,
+            "bump_type": "stochastic",
             "noise_scale": 0.5,
             "dirt": 0.6,
             "wear": 0.1
@@ -111519,8 +111519,8 @@
         },
         "procedural_parameters": {
             "variation_seed": 0.84033,
-            "bump_scale": 0.35,
-            "bump_type": "cracked",
+            "bump_scale": 0.02,
+            "bump_type": "stochastic",
             "noise_scale": 0.5,
             "dirt": 0.1,
             "wear": 0.9
@@ -111590,8 +111590,8 @@
         },
         "procedural_parameters": {
             "variation_seed": 0.890923,
-            "bump_scale": 0.35,
-            "bump_type": "cracked",
+            "bump_scale": 0.02,
+            "bump_type": "stochastic",
             "noise_scale": 2.0,
             "dirt": 0.0,
             "wear": 0.0
@@ -111659,8 +111659,8 @@
         },
         "procedural_parameters": {
             "variation_seed": 0.735461,
-            "bump_scale": 0.35,
-            "bump_type": "cracked",
+            "bump_scale": 0.02,
+            "bump_type": "stochastic",
             "noise_scale": 2.0,
             "dirt": 0.6,
             "wear": 0.1
@@ -111730,8 +111730,8 @@
         },
         "procedural_parameters": {
             "variation_seed": 0.856786,
-            "bump_scale": 0.35,
-            "bump_type": "cracked",
+            "bump_scale": 0.02,
+            "bump_type": "stochastic",
             "noise_scale": 2.0,
             "dirt": 0.1,
             "wear": 0.9

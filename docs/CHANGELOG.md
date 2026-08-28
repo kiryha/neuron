@@ -21,3 +21,9 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Connected HDA `subsurface`, `subsurface_color`, and `thin_walled` values to their MaterialX Standard Surface parameters with relative references.
 - Verified the saved scene and HDA contain all five expressions: subsurface, three subsurface-color components, and thin-wall.
 - Removed these fields from the HDA blocker list; `k`, metallic flake, and transmission-scatter policy remain unresolved.
+
+### Bump schema simplification
+
+- Removed `cracked` from the generator's valid bump types, so no new Houdini branch is required.
+- Remapped all asphalt variants to the existing stochastic bump mode at scale `0.02`.
+- Updated the checked-in production library and canonical documentation to match the four-mode HDA contract.

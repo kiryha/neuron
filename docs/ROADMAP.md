@@ -14,7 +14,7 @@ Deliverables:
 - Standard Surface bindings for subsurface, subsurface color, and thin-wall — implemented, stress validation pending
 - Verified material-ID-driven HDA cook path suitable for interactive and batch operation
 - Tuned and approved stochastic, directional, and cellular bump
-- Decision and implementation for cracked asphalt
+- Full-library confirmation that every generated bump mode maps to the HDA — verified
 - Variation, dirt, and wear validation
 - Required shader parameters connected or removed from the contract
 - Stress-set look-dev renders

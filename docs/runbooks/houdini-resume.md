@@ -88,7 +88,7 @@ Recommended order:
 4. Test cellular using `concrete_hammered_clean`.
 5. Compare all results under one fixed camera and lighting setup.
 6. Change one parameter group at a time if tuning is required and save comparable renders.
-7. Decide whether cracked asphalt is implemented, remapped, or excluded before the full-library scan.
+7. Include asphalt in the full-library scan and judge its stochastic breakup before release.
 
 ## 7. Validate the complete shader contract
 

@@ -151,9 +151,8 @@ Inputs:
 | `stochastic` | Polished/matte/satin micro-breakup | Implemented; visual approval pending |
 | `directional` | Brushed grain and aligned scratches | Implemented; visual approval pending |
 | `cellular` | Hammered/pitted response | Implemented; visual approval pending |
-| `cracked` | Asphalt macro cracking | Emitted by generator, no HDA branch |
 
-The final selector must use one explicit mapping shared by JSON validation, HDA menu values, and shader switch inputs. Do not use an offset expression that relies on unconnected slots.
+The final selector must use one explicit mapping shared by JSON validation, HDA menu values, and shader switch inputs. The validated v1 contract contains only none, stochastic, directional, and cellular. Do not use an offset expression that relies on unconnected slots.
 
 ## Current bump implementation
 

@@ -64,7 +64,7 @@ PROCEDURAL_PARAMETER_KEYS = (
 )
 
 VALID_CATEGORIES = frozenset({"metal", "dielectric", "organic", "translucent"})
-VALID_BUMP_TYPES = frozenset({"none", "directional", "cellular", "cracked", "stochastic"})
+VALID_BUMP_TYPES = frozenset({"none", "directional", "cellular", "stochastic"})
 VALID_CONDITION_MODES = frozenset({"pristine", "abrasion", "contamination", "aging"})
 VALID_COMPOSITION_STYLES = frozenset({"pristine", "pattern_a", "pattern_b", "abrasion", "aging"})
 
@@ -495,12 +495,12 @@ _BASES: dict[str, dict[str, Any]] = {
             "specular_ior": 1.55,
             "k": 0.0,
             "specular_roughness_min": 0.88,
-            "bump_type": "cracked",
-            "bump_scale": 0.35,
+            "bump_type": "stochastic",
+            "bump_scale": 0.02,
         },
         "semantic": {"base_phrase": "weathered road asphalt"},
-        # Re-assert macro road breakup after finish/condition procedural merges.
-        "procedural_layer": {"bump_type": "cracked", "bump_scale": 0.35},
+        # Re-assert irregular road breakup after finish/condition procedural merges.
+        "procedural_layer": {"bump_type": "stochastic", "bump_scale": 0.02},
     },
     "oak_wood": {
         "cat": "organic",

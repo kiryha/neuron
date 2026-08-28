@@ -17,6 +17,7 @@ This file records accepted choices that should survive individual chats. Impleme
 | D-011 | Accepted | 2026-08-26 | Watermarked Houdini Apprentice renders are not final training data. | Apprentice can be used for development, but a non-watermarked final-render path is a Phase 1 gate. |
 | D-012 | Accepted | 2026-08-26 | Persistent neural assets remain the long-term Neuron direction. | Material Hero should teach reusable packaging and inference concepts, but the general engine is a later phase. |
 | D-013 | Accepted | 2026-08-26 | Future scene composition should retain USD-like references, transforms, versions, and overrides. | Neural representations may replace traditional payloads; a full USD replacement is not part of Material Hero. |
+| D-014 | Accepted | 2026-08-28 | Remove the unsupported `cracked` bump type and map asphalt to `stochastic` at bump scale `0.02`. | Houdini needs only the existing none, stochastic, directional, and cellular modes; asphalt must be judged during stochastic bump validation. |
 
 ## Open decisions
 
@@ -26,7 +27,6 @@ This file records accepted choices that should survive individual chats. Impleme
 | O-002 | What text representation is used first: controlled learned tokens, pretrained encoder, or both? | Before Phase 2A implementation |
 | O-003 | Is the scalable frame manifest JSONL, a structured `transforms.json`, or both? | Before Phase 1B pilot |
 | O-004 | What are the final render resolution, camera count, and storage budget? | Before Phase 1B pilot |
-| O-005 | Is cracked asphalt implemented, remapped, or excluded from v1? | Before Phase 1A exit |
 | O-006 | Which auxiliary AOVs are worth retaining after the pilot? | Before Phase 1B exit |
 
 ## Adding a decision

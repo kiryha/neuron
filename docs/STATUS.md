@@ -1,7 +1,7 @@
 # Current project status
 
 - Last verified: 2026-08-28
-- Repository baseline inspected: `main` at `02ba1a3`
+- Repository baseline inspected: `main` at `1e57aaf`
 - Current phase: **Phase 1 — finish and validate Houdini data generation**
 
 ## Current objective
@@ -15,7 +15,8 @@ Finish the `neuromat` HDA, validate the eight-material stress set, and lock the 
 - `datagen/materials.py` is the current material and label generator.
 - The generator defines 56 bases, 5 finishes, 4 conditions, 10 colors, and 4 categories.
 - Compatibility filtering produces **1,806** material records.
-- Current bump-type distribution is 1,131 stochastic, 396 directional, 267 cellular, and 12 cracked records.
+- Current bump-type distribution is 1,143 stochastic, 396 directional, and 267 cellular records.
+- A full regeneration plus validation of all 1,806 records passes with no unsupported bump modes.
 - The Houdini UI currently generates an eight-material stress subset by default.
 - `train/train_hero.py` and `train/loss.py` are empty.
 - `neuron/` contains only a package scaffold.
@@ -80,7 +81,7 @@ Finish the `neuromat` HDA, validate the eight-material stress set, and lock the 
 - Stochastic, directional, and cellular networks are present in the production material graph.
 - The final selected height is scaled, capped, and passed through MaterialX bump before the Standard Surface normal input.
 - Structural implementation is complete for these four modes; visual validation across the stress set is still pending.
-- The Python generator also emits `cracked` for 12 asphalt combinations, but no cracked HDA branch or enum mapping is currently implemented.
+- Asphalt is explicitly mapped to stochastic bump at scale `0.02`; the generator and checked-in production library no longer contain the unsupported `cracked` mode.
 
 ### Material application path
 
@@ -138,7 +139,6 @@ There is no separate Alpha RenderVar; confirm that the beauty alpha is correct a
 | --- | --- | --- |
 | P0 | Watermarked/noncommercial development renders | Produce final training images through a suitable non-watermarked Houdini render path |
 | P0 | Bump look-dev not validated | Render and review stochastic, directional, and cellular stress materials before automation |
-| P0 | Unsupported cracked bump records | Implement cracked asphalt or exclude/remap its 12 records before full-library rendering |
 | P0 | No dataset automation or manifest | Build and validate a small camera/material pilot before full scale |
 | P1 | Unresolved shader-schema fields | Implement or explicitly classify `k`, metallic flake, and transmission-scatter behavior |
 | P1 | Label defect | Prevent duplicate words and regenerate/overwrite affected labels |
@@ -150,13 +150,12 @@ There is no separate Alpha RenderVar; confirm that the beauty alpha is correct a
 1. Render all eight stress materials from the current fixed camera and lighting setup.
 2. Inspect beauty plus variation, dirt, wear, and bump/normal diagnostics for each material.
 3. Approve or retune stochastic, directional, and cellular bump from those comparisons.
-4. Decide how `cracked` asphalt records are handled: implement the branch or exclude/remap them for v1.
-5. Resolve remaining shader-schema fields and confirm the final RenderVars.
-6. Fix label duplicate-word QA and regenerate the stress labels with overwrite enabled.
-7. Freeze the HDA/scene as the approved material-render baseline.
-8. Build the camera dome and render a small stress-material × camera pilot.
-9. Validate view consistency, camera metadata, AOV alignment, and manifest structure.
-10. Only then automate and launch the full material × camera batch.
+4. Resolve remaining shader-schema fields and confirm the final RenderVars.
+5. Fix label duplicate-word QA and regenerate the stress labels with overwrite enabled.
+6. Freeze the HDA/scene as the approved material-render baseline.
+7. Build the camera dome and render a small stress-material × camera pilot.
+8. Validate view consistency, camera metadata, AOV alignment, and manifest structure.
+9. Only then automate and launch the full material × camera batch.
 
 ## Phase 1 exit criteria
 
