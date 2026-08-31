@@ -98,7 +98,7 @@ After bump branches:
 2. Verify dirt follows AO/concavity without becoming a shadow duplicate.
 3. Verify wear follows convex/exposed areas and remains distinct from dirt.
 4. Verify bump changes highlight response without changing silhouette.
-5. Verify the implemented SSS, subsurface-color, and thin-wall references, then implement or explicitly classify `k`, flake, and transmission-scatter fields.
+5. Verify the implemented SSS, subsurface-color, and thin-wall references. Treat `k` and metallic flake as metadata-only; verify or explicitly classify transmission-scatter behavior.
 6. Clamp physical ranges without silently flattening intended material differences.
 
 ## 8. Stress-set render order

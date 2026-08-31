@@ -27,3 +27,9 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Removed `cracked` from the generator's valid bump types, so no new Houdini branch is required.
 - Remapped all asphalt variants to the existing stochastic bump mode at scale `0.02`.
 - Updated the checked-in production library and canonical documentation to match the four-mode HDA contract.
+
+### Metadata-only shader fields
+
+- Classified `k` and `metallic_flake` as unused metadata for Material Hero v1.
+- Kept both fields in JSON for compatibility, provenance, and possible future shader work, while explicitly excluding them from required HDA behavior.
+- Reduced the unresolved shader-schema work to `transmission_scatter` verification or classification.

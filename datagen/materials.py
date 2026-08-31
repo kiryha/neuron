@@ -31,7 +31,8 @@ LIBRARY_JSON = config.LIBRARY_JSON
 
 logger = logging.getLogger(__name__)
 
-# Keys written to shader_parameters (render-facing only).
+# Keys serialized under shader_parameters. Metadata-only exceptions are declared below so retained
+# values cannot be mistaken for active v1 shader controls.
 SHADER_PARAMETER_KEYS = (
     "base_value",
     "base_color",
@@ -54,6 +55,8 @@ SHADER_PARAMETER_KEYS = (
     "metallic_flake",
 )
 
+METADATA_ONLY_SHADER_PARAMETER_KEYS = frozenset({"k", "metallic_flake"})
+
 PROCEDURAL_PARAMETER_KEYS = (
     "variation_seed",
     "bump_scale",
@@ -71,9 +74,6 @@ VALID_COMPOSITION_STYLES = frozenset({"pristine", "pattern_a", "pattern_b", "abr
 # Bases where airborne dust reads as clinging / trapped (viscous or tacky), not loose on a hard slab.
 _STICKY_CONTAMINATION_BASES = frozenset({"honey", "amber"})
 _SOFT_ELASTOMER_BASES = frozenset({"rubber", "silicone"})
-
-# `k` is stored for conductor / metal shading metadata for future MaterialX networks; it is not
-# guaranteed to map 1:1 to a specific published MaterialX node until the shader graph is finalized.
 
 _SHADER_DEFAULTS: dict[str, Any] = {
     "base_value": 1.0,

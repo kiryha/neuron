@@ -16,7 +16,7 @@ Deliverables:
 - Tuned and approved stochastic, directional, and cellular bump
 - Full-library confirmation that every generated bump mode maps to the HDA — verified
 - Variation, dirt, and wear validation
-- Required shader parameters connected or removed from the contract
+- Required shader parameters connected or explicitly classified; `k` and metallic flake are metadata-only, while transmission-scatter remains pending
 - Stress-set look-dev renders
 - Frozen HDA version and recoverable scene
 

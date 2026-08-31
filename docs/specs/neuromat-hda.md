@@ -47,7 +47,7 @@ Repository files under `datagen/hips/` are older references, not the active defi
 - `base_color`
 - `metalness`
 - `specular_ior`
-- `k`
+- `k` (metadata-only in v1)
 - `specular_roughness`
 - `specular_anisotropy`
 - `subsurface`
@@ -61,7 +61,9 @@ Repository files under `datagen/hips/` are older references, not the active defi
 - `transmission_scatter`
 - `transmission_dispersion`
 - `thin_walled`
-- `metallic_flake`
+- `metallic_flake` (metadata-only in v1)
+
+`k` and `metallic_flake` remain physically under `shader_parameters` for compatibility with existing libraries and possible future shader experiments. They are explicitly unused metadata in Material Hero v1: the production graph ignores them, their values do not affect rendered pixels, and no HDA binding is required. New code must not assume that every key under `shader_parameters` is render-facing.
 
 ### `procedural_parameters`
 
@@ -175,10 +177,10 @@ Required behavior:
 - Bump modifies the normal response physically through MaterialX.
 - Translucent and SSS materials remain visually distinguishable and stable.
 
-Known current gaps:
+Current coverage and exclusions:
 
 - `subsurface`, `subsurface_color`, and `thin_walled` are connected through relative references from the HDA interface to Standard Surface.
-- `k` and `metallic_flake` are not consumed by the production graph.
+- `k` and `metallic_flake` are intentionally not consumed because they are metadata-only in v1.
 - The treatment of `transmission_scatter` requires verification in Karma/MaterialX.
 
 Any unsupported JSON parameter must be connected, explicitly removed from the v1 schema, or documented as metadata-only. Silent no-op parameters are not acceptable in the final library.

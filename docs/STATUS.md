@@ -1,7 +1,7 @@
 # Current project status
 
 - Last verified: 2026-08-28
-- Repository baseline inspected: `main` at `1e57aaf`
+- Repository baseline inspected: `main` at `6036331`
 - Current phase: **Phase 1 — finish and validate Houdini data generation**
 
 ## Current objective
@@ -108,7 +108,7 @@ These are implemented values, not yet approved final look-dev values. Judge them
 ### Remaining shader coverage
 
 - `subsurface`, `subsurface_color`, and `thin_walled` are now linked from the HDA interface to the live Standard Surface parameters.
-- `k` and `metallic_flake` are present in JSON but are not consumed by the current production shader graph.
+- `k` and `metallic_flake` are explicitly classified as unused metadata for v1. They remain in JSON for provenance/future work but are intentionally ignored by the production graph and do not affect pixels.
 - The intended Karma/MaterialX treatment of `transmission_scatter` still requires explicit verification.
 - The current bump AOV is derived after `mtlxbump`; its meaning should be documented as altered normal versus scalar height before training use.
 
@@ -140,7 +140,7 @@ There is no separate Alpha RenderVar; confirm that the beauty alpha is correct a
 | P0 | Watermarked/noncommercial development renders | Produce final training images through a suitable non-watermarked Houdini render path |
 | P0 | Bump look-dev not validated | Render and review stochastic, directional, and cellular stress materials before automation |
 | P0 | No dataset automation or manifest | Build and validate a small camera/material pilot before full scale |
-| P1 | Unresolved shader-schema fields | Implement or explicitly classify `k`, metallic flake, and transmission-scatter behavior |
+| P1 | Unresolved transmission-scatter policy | Verify or explicitly classify `transmission_scatter` behavior |
 | P1 | Label defect | Prevent duplicate words and regenerate/overwrite affected labels |
 | P1 | Render contract not frozen | Verify alpha, coordinate spaces, color management, naming, and metadata |
 | P2 | One camera only | Implement and validate the planned camera distribution after HDA lock |
@@ -150,7 +150,7 @@ There is no separate Alpha RenderVar; confirm that the beauty alpha is correct a
 1. Render all eight stress materials from the current fixed camera and lighting setup.
 2. Inspect beauty plus variation, dirt, wear, and bump/normal diagnostics for each material.
 3. Approve or retune stochastic, directional, and cellular bump from those comparisons.
-4. Resolve remaining shader-schema fields and confirm the final RenderVars.
+4. Resolve `transmission_scatter` behavior and confirm the final RenderVars.
 5. Fix label duplicate-word QA and regenerate the stress labels with overwrite enabled.
 6. Freeze the HDA/scene as the approved material-render baseline.
 7. Build the camera dome and render a small stress-material × camera pilot.
