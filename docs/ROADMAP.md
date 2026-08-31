@@ -31,23 +31,24 @@ Exit gate:
 
 Status: **Planned**
 
-Goal: define exactly what one training frame contains and prove it with a small multi-camera pilot.
+Goal: define exactly what the fixed-view v0 training release contains and prove it with a small material pilot.
 
 Deliverables:
 
-- Camera distribution and intrinsics
+- One fixed training camera and intrinsics
 - Beauty, alpha, `P`, `Pz`, and `N` definitions
 - Optional auxiliary/debug AOV definitions
 - Linear color and OCIO metadata
 - Dataset naming and logical manifest schema
 - Material-library snapshot and label validation
 - Dataset validator
+- Houdini-to-Three.js `P`/`N`/`V`/alpha convention and calibration plan
 - Render/storage/time estimate
 
 Exit gate:
 
-- A pilot covering all stress materials and several cameras loads without manual repair.
-- All views of a material can be grouped into one dataset split.
+- A pilot covering all stress materials at the fixed camera loads without manual repair.
+- Geometry AOVs, beauty, labels, and material IDs remain aligned.
 - Re-rendering the pilot is deterministic.
 - Outputs contain no Houdini watermark.
 
@@ -59,7 +60,7 @@ Goal: generate the approved dataset without changing its material, lighting, cam
 
 Deliverables:
 
-- Automated material × camera render graph
+- Automated fixed-camera material render graph
 - Resume/retry behavior
 - Complete manifests and material snapshot
 - Validation report and checksums
@@ -68,8 +69,8 @@ Deliverables:
 Exit gate:
 
 - Every manifest row resolves to valid files and metadata.
-- No material or camera IDs are missing or duplicated.
-- Train, validation, and test sets have no cross-view material leakage.
+- No material IDs are missing or duplicated.
+- Train, validation, and test sets have no material-ID leakage.
 
 ## Phase 2A — Establish a learning baseline
 
@@ -83,7 +84,7 @@ Deliverables:
 
 - Dataset loader
 - Controlled text tokenizer/encoder baseline
-- Camera and surface-context preparation
+- Fixed-camera and surface-context preparation
 - Direct RGB predictor
 - Checkpoint and experiment configuration
 - Overfit-one-material and overfit-small-subset tests
@@ -91,39 +92,75 @@ Deliverables:
 Exit gate:
 
 - The model can intentionally overfit a tiny sample.
-- It can reconstruct held-out views of seen materials better than a prompt-agnostic baseline.
+- It can reconstruct the fixed view for held-out materials better than prompt-agnostic and nearest-material baselines.
 
-## Phase 2B — Material Hero training
+## Phase 2B — Three.js out-of-distribution laboratory
 
 Status: **Planned**
 
-Goal: generate stable views of the fixed hero from material prompts, including held-out prompt combinations.
+Goal: reproduce the v0 training pose from Three.js, then observe what the fixed-view model does under unsupported camera and supplied-mesh changes.
 
 Deliverables:
 
-- Full training and evaluation loop
-- Material-level data splits
-- Compositional holdout evaluation
-- Multi-view consistency evaluation
-- Reproducible model artifact and prompt vocabulary
+- Three.js float-buffer rendering for `P`, `N`, and alpha plus deterministic `V` derivation
+- Exact hero/camera calibration against Houdini
+- Prompt inference and generated-RGB display
+- Orbit, zoom, and alternate-mesh controls marked out of distribution
+- Repeatable evaluation scenes, prompts, captures, and measurements
 
 Exit gate:
 
-- Prompt changes produce the intended material attributes.
-- The Sculpted Rubber Toy identity and silhouette remain stable across views.
-- Held-out material combinations perform meaningfully above baseline.
+- The exact training pose agrees with the Houdini-buffer inference baseline within documented tolerances.
+- Unsupported-view and unsupported-geometry failures can be reproduced and compared with later checkpoints.
+
+## Phase 2C — Multi-view extension
+
+Status: **Planned**
+
+Goal: add controlled camera diversity for the same hero and measure whether orbit behavior improves.
+
+Deliverables:
+
+- Measured camera-dome pilot and accepted camera count
+- Versioned multi-view dataset using the same material split
+- Retrained checkpoint with otherwise comparable experiment configuration
+- Seen, interpolated, and held-out-camera evaluation
+
+Exit gate:
+
+- Novel-view behavior improves measurably over v0 on the standardized app tests.
+- Exact-view material quality does not regress without explanation.
+
+## Phase 2D — Multi-geometry extension
+
+Status: **Planned**
+
+Goal: add geometry diversity and measure whether switching supplied meshes improves.
+
+Deliverables:
+
+- Accepted geometry suite and normalization convention
+- Versioned multi-view, multi-geometry dataset
+- Seen- and held-out-geometry splits
+- Retrained checkpoint and comparison against v0 and the multi-view checkpoint
+
+Exit gate:
+
+- Geometry-switching behavior improves measurably on the standardized test meshes.
+- Remaining limitations are documented rather than presented as universal material rendering.
 
 ## Phase 3 — Material Hero application
 
 Status: **Scaffold only**
 
-Goal: enter a prompt, control the camera, and display the generated Material Hero in the Neuron web application.
+Goal: package the experimental material-rendering laboratory into a clear Neuron web application and deploy the selected checkpoints.
 
 Deliverables:
 
 - Model-loading and render API
 - Prompt validation
-- Camera-to-inference integration
+- Three.js geometry-buffer-to-inference integration
+- Dataset/model version selection or comparison
 - Proxy/neural display behavior
 - Error and progress feedback
 - Docker/Hugging Face deployment
@@ -131,7 +168,7 @@ Deliverables:
 Exit gate:
 
 - A clean checkout can load the published model and serve the demo.
-- A user can render supported prompts from multiple camera views.
+- A user can render supported prompts, identify the loaded training scope, and distinguish calibrated from out-of-distribution requests.
 
 ## Later research — persistent neural assets
 

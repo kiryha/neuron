@@ -6,7 +6,7 @@ This file records accepted choices that should survive individual chats. Impleme
 | --- | --- | --- | --- | --- |
 | D-001 | Accepted | 2026-08-26 | Material Hero is the current product milestone. | General neural assets and scenes must not distract from finishing data, training, and the first app. |
 | D-002 | Accepted | 2026-08-26 | The model directly generates rendered RGB appearance. | PBR parameters, shader graphs, and texture maps are not model outputs. |
-| D-003 | Accepted | 2026-08-26 | Material Hero v1 uses one fixed Sculpted Rubber Toy geometry. | Every prompt renders the same object; arbitrary geometry generation is out of scope. |
+| D-003 | Superseded | 2026-08-26 | Material Hero v1 uses one fixed Sculpted Rubber Toy geometry. | Superseded by D-016; it remains true for the first training dataset, while later experiments deliberately test additional views and supplied meshes. |
 | D-004 | Accepted | 2026-08-26 | Camera and fixed-surface context are part of the learning problem. | Preserve camera metadata, `P`, `N`, view direction derivation, and alpha/silhouette; the exact network architecture remains open. |
 | D-005 | Accepted | 2026-08-26 | The first prompt-to-appearance mapping is deterministic. | Multiple samples from one prompt and a generative noise seed are deferred. |
 | D-006 | Accepted | 2026-08-26 | Lighting, exposure, color management, geometry transform, and background remain controlled for v1. | The first model learns appearance under one studio setup and is not a relighting model. |
@@ -19,6 +19,7 @@ This file records accepted choices that should survive individual chats. Impleme
 | D-013 | Accepted | 2026-08-26 | Future scene composition should retain USD-like references, transforms, versions, and overrides. | Neural representations may replace traditional payloads; a full USD replacement is not part of Material Hero. |
 | D-014 | Accepted | 2026-08-28 | Remove the unsupported `cracked` bump type and map asphalt to `stochastic` at bump scale `0.02`. | Houdini needs only the existing none, stochastic, directional, and cellular modes; asphalt must be judged during stochastic bump validation. |
 | D-015 | Accepted | 2026-08-28 | Treat `k` and `metallic_flake` as unused metadata for Material Hero v1. | Keep their values in JSON for provenance and possible future shader work, but they have no render effect and require no `neuromat` implementation. |
+| D-016 | Accepted | 2026-08-31 | Develop geometry generalization as a staged experiment: fixed camera and one hero first; Three.js out-of-distribution orbit, zoom, and mesh tests; then a multi-view dataset; then a multi-view, multi-geometry dataset. | Every stage keeps prompt-to-RGB and `P`/`N`/`V`/alpha conditioning, measures the failures of the previous dataset, and does not claim unsupported views or meshes as working product features. |
 
 ## Open decisions
 
@@ -27,8 +28,9 @@ This file records accepted choices that should survive individual chats. Impleme
 | O-001 | What exact neural architecture is the first baseline: per-surface MLP, image network, or staged comparison? | Before Phase 2A implementation |
 | O-002 | What text representation is used first: controlled learned tokens, pretrained encoder, or both? | Before Phase 2A implementation |
 | O-003 | Is the scalable frame manifest JSONL, a structured `transforms.json`, or both? | Before Phase 1B pilot |
-| O-004 | What are the final render resolution, camera count, and storage budget? | Before Phase 1B pilot |
+| O-004 | What are the multi-view render resolution, camera count, and storage budget? | Before the multi-view dataset extension |
 | O-006 | Which auxiliary AOVs are worth retaining after the pilot? | Before Phase 1B exit |
+| O-007 | Which additional geometries and position-normalization convention are used for multi-geometry training? | Before the multi-geometry dataset extension |
 
 ## Adding a decision
 

@@ -1,12 +1,12 @@
 # Material dataset specification
 
-Status: **Partially implemented; render and manifest contract not frozen**
+Status: **Partially implemented; fixed-view v0 render and manifest contract not frozen**
 
-Last reviewed: 2026-08-26
+Last reviewed: 2026-08-31
 
 ## Purpose
 
-The dataset teaches a model to generate the fixed Material Hero’s final RGB appearance from material text and camera/surface context. It must be deterministic, traceable, multi-view consistent, and free of watermarks or undocumented changes.
+Dataset v0 teaches a model to generate the fixed Material Hero's RGB appearance from material text and one fixed camera/surface context. Later versioned releases add multiple cameras and then multiple geometries. Every release must be deterministic, traceable, comparable with earlier releases, and free of watermarks or undocumented changes.
 
 ## Current material catalog
 
@@ -91,6 +91,7 @@ The material library used for a render must be copied or hashed into the dataset
 | Alpha/coverage | Fixed silhouette and valid-pixel mask | Required |
 | World position `P` | Surface coordinate input/debugging | Required for the planned baseline |
 | Surface normal `N` | Orientation input | Required for the planned baseline |
+| View direction `V` | Camera-relative surface direction | Required; may be stored or deterministically derived from `P` and camera metadata |
 | Camera depth `Pz` | Geometry and projection validation | Required |
 | Camera transform | Reproduce rays and view direction | Required |
 | Camera intrinsics | Reproduce projection | Required |
@@ -118,7 +119,7 @@ Debug data may be excluded from the final training package after the pilot prove
 
 ## Render rules
 
-- Use one fixed Sculpted Rubber Toy and transform.
+- Use one fixed Sculpted Rubber Toy and transform for v0.
 - Use one frozen studio-lighting setup.
 - Keep HDRI, light intensity, exposure, render engine, samples, color management, and background identical across materials.
 - Use deterministic material seeds.
@@ -127,20 +128,33 @@ Debug data may be excluded from the final training package after the pilot prove
 - Do not use watermarked Houdini Apprentice renders in the released training set.
 - Freeze the HDA, scene, material JSON, and render configuration before the full run.
 
-## Camera plan
+## Camera and geometry sequence
 
-Historical planning targeted roughly 200 dome cameras. That count is **not yet locked**.
+### Dataset v0 — fixed view
 
-At 1,806 materials and 200 cameras, the full matrix would contain 361,200 frames before AOV multiplication. A small pilot must measure render time, storage, loading performance, and whether that camera density is necessary before committing to the full matrix.
+- One Sculpted Rubber Toy and one fixed camera
+- Approximately 1,806 beauty frames before exclusions or corrections
+- One aligned geometry-buffer set may be shared by every material because `P`, `N`, `V`, and alpha are invariant across material changes
+- Camera transform, intrinsics, geometry hash, and buffer conventions remain recorded even though they are constant
 
-The final camera set must:
+### Dataset v1 — multi-view hero
 
-- cover the hero without severe redundancy;
-- preserve a constant, documented focal length unless variation is intentional;
-- use stable camera IDs;
-- record camera-to-world transform and intrinsics;
-- avoid accidental clipping or framing changes;
-- remain identical for every material.
+- The same hero rendered under a controlled camera dome
+- Camera count, resolution, and storage budget remain open until a small pilot is measured
+- Historical planning mentioned roughly 200 cameras, but that is not an accepted requirement
+- Cameras use stable IDs and remain identical for every material
+
+### Dataset v2 — multi-view, multi-geometry
+
+- Several normalized geometries rendered across the approved camera set
+- Geometry IDs, hashes, transforms, scale rules, and normal-generation rules become required metadata
+- The geometry suite and position-normalization convention must be accepted before rendering
+
+Each release must preserve the earlier evaluation cases so improvements from view diversity and then geometry diversity can be compared without changing every other variable at once.
+
+## Houdini-to-Three.js calibration
+
+Before judging model output from the application, reproduce the v0 hero and camera in Three.js and compare its `P`, `N`, `V`, alpha, projection, and silhouette against Houdini. Record coordinate handedness, space, units, object transform, camera convention, pixel origin, normal interpolation, edge coverage, and vertical image orientation. A mismatch here is an input-pipeline defect, not evidence about learned generalization.
 
 ## Logical manifest schema
 
@@ -148,9 +162,10 @@ The serialization format remains open, but each frame must logically provide:
 
 ```json
 {
-  "frame_id": "gold_polished_clean_cam_0042",
+  "frame_id": "gold_polished_clean_hero_cam_0000",
   "material_id": "gold_polished_clean",
-  "camera_id": "cam_0042",
+  "geometry_id": "sculpted_rubber_toy",
+  "camera_id": "cam_0000",
   "split": "train",
   "compact_prompt": "gold polished clean",
   "semantic_label": "...",
@@ -161,12 +176,15 @@ The serialization format remains open, but each frame must logically provide:
     "alpha": "...",
     "position": "...",
     "normal": "...",
+    "view_direction": "...",
     "depth": "..."
   }
 }
 ```
 
 The example matrices are placeholders for shape only. Real matrices must contain full validated values and documented conventions.
+
+The `view_direction` path may be omitted when the release contract specifies a deterministic derivation from `P` and camera metadata. The validator must reproduce and check that derivation.
 
 For scale, a JSONL frame manifest plus separate dataset-level and material-level metadata is recommended, but this remains open decision O-003.
 
@@ -184,6 +202,7 @@ dataset_release/
     alpha/
     position/
     normal/
+    view_direction/       optional when derived deterministically
     depth/
   debug/                 optional
   validation_report.json
@@ -196,6 +215,7 @@ Do not organize the only copy exclusively as thousands of material folders if th
 
 - Assign splits by `material_id` before rendering or packaging.
 - Keep every camera view of a material in the same split.
+- For multi-geometry releases, define separate seen-geometry and held-out-geometry evaluations without weakening the material-ID split.
 - Include a compositional holdout where base, finish, color, or condition concepts are individually represented in training but an exact combination is not.
 - Do not tune against the final test split.
 - Store the split assignment as versioned data.
@@ -215,7 +235,7 @@ Before release, automatically verify:
 - no unexpected lighting, exposure, or color changes occurred;
 - repeated pilot renders are deterministic within a defined tolerance.
 
-Visual QA must include contact sheets holding camera constant across materials and holding material constant across cameras.
+Visual QA for v0 must hold the camera constant across materials. Multi-view releases additionally hold material constant across cameras; multi-geometry releases also hold prompt and camera constant across geometries.
 
 ## Release identity
 
@@ -226,6 +246,7 @@ Every dataset release should record:
 - active scene and HDA versions plus hashes;
 - Houdini and renderer versions;
 - material library hash;
+- geometry or geometry-set hashes;
 - camera-set hash;
 - render settings and color configuration;
 - manifest and split hashes;

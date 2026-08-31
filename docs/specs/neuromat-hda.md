@@ -2,7 +2,7 @@
 
 Status: **Bump branches implemented; visual and full shader-contract validation pending**
 
-Last reviewed: 2026-08-28
+Last reviewed: 2026-08-31
 
 ## Purpose
 
@@ -165,7 +165,7 @@ The live production switch now selects the direct integer mode with all four int
 - Cellular combines object-space cellular noise at `noise_scale × 18` with stochastic breakup at weights `0.85 / 0.15`.
 - The selected height is scaled by `bump_scale`, limited by `bump_cap`, and converted through MaterialX bump.
 
-Implementation does not equal approval. The next gate is a fixed-camera comparison of the stress materials, followed by a small multi-camera pilot.
+Implementation does not equal approval. The next gate is a fixed-camera comparison of the stress materials, followed by the fixed-camera dataset-v0 pilot. Camera-dome work begins only after the first trained model and its Three.js out-of-distribution tests are understood.
 
 ## Shader integration
 

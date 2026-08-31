@@ -1,18 +1,18 @@
 # Material Hero model specification
 
-Status: **Planned; input/output contract accepted, architecture open**
+Status: **Planned; staged input/output experiment accepted, architecture open**
 
-Last reviewed: 2026-08-26
+Last reviewed: 2026-08-31
 
 ## Objective
 
-Train a small, understandable model that directly generates the rendered RGB appearance of one fixed Sculpted Rubber Toy from a material description and camera/surface context.
+Train a small, understandable model that directly generates rendered RGB from a material description and rasterized surface context. The first release uses one Sculpted Rubber Toy and one fixed camera; later releases add camera and geometry diversity to measure how generalization changes.
 
 Material Hero is a constrained text-to-image problem. It is not a general text-to-image model, text-to-3D model, material-map generator, or relighting system.
 
 ## Functional contract
 
-For visible points on the fixed hero surface, the intended relationship is:
+For visible surface points, the intended relationship is:
 
 ```text
 RGB = F(P, N, V, text)
@@ -20,26 +20,26 @@ RGB = F(P, N, V, text)
 
 Where:
 
-- `P` is a position on the fixed hero surface in a documented coordinate space.
+- `P` is a visible surface position in a documented coordinate space.
 - `N` is the corresponding surface normal.
 - `V` is view direction derived from the active camera.
 - `text` describes material appearance.
 - `RGB` is the final rendered appearance under the fixed Houdini studio setup.
 
-The exact network may operate per surface sample, per ray, or on rasterized image buffers. That implementation choice remains open, but the external behavior does not change.
+The exact network may operate per surface sample or on rasterized image buffers. The first implementation is not required to learn geometry, density, or ray-marched occupancy.
 
 ## Fixed and variable factors
 
-| Factor | V1 behavior |
+| Factor | First training release |
 | --- | --- |
 | Geometry | Fixed Sculpted Rubber Toy |
 | Geometry transform and scale | Fixed |
 | Material appearance | Controlled by text |
-| Camera | Variable and supplied as context |
+| Camera | One fixed training camera; runtime changes are deliberate out-of-distribution tests |
 | Lighting/HDRI | Fixed and baked into learned appearance |
 | Exposure and color management | Fixed and recorded |
 | Background | Fixed or composited using geometry alpha |
-| Random generation seed | Deferred; deterministic v1 |
+| Random generation seed | Deferred; deterministic first release |
 
 ## Inputs
 
@@ -51,7 +51,7 @@ The exact network may operate per surface sample, per ray, or on rasterized imag
 - Surface normal
 - Foreground coverage/silhouette
 
-The implementation may derive view direction and surface buffers from the fixed proxy geometry instead of loading them from disk at inference time.
+Houdini provides the training buffers. The application is planned to rasterize corresponding buffers from supplied Three.js meshes and cameras. At the exact training geometry and camera, those buffers must be calibrated against Houdini before model behavior is judged. Orbit, zoom, and alternate meshes remain out of distribution until represented in a later training release.
 
 ### Prompt inputs
 
@@ -67,7 +67,7 @@ Training records preserve both a compact prompt such as `gold brushed dirty` and
 ## Output
 
 - Final rendered RGB image or foreground RGB samples that assemble into that image
-- Display alpha comes from the fixed geometry coverage unless an experiment explicitly predicts it
+- Display alpha comes from the supplied geometry coverage unless an experiment explicitly predicts it
 
 PBR parameters, BaseColor maps, Roughness maps, normal maps, shader graphs, density, and geometry are not required model outputs.
 
@@ -75,33 +75,49 @@ PBR parameters, BaseColor maps, Roughness maps, normal maps, shader graphs, dens
 
 Begin with the smallest model that can prove the data path:
 
-1. Rasterize or load `P`, `N`, view direction, and alpha for foreground pixels.
+1. Load the fixed Houdini `P`, `N`, view direction, and alpha buffers for foreground pixels.
 2. Encode controlled material tokens with a small learned embedding.
 3. Use positional/Fourier features only where a simple MLP cannot reproduce spatial detail.
 4. Predict linear foreground RGB.
-5. Composite with the fixed alpha/background for display.
+5. Composite with alpha/background for display.
+6. Reproduce the fixed training buffers in Three.js and compare inference against the Houdini-buffer baseline.
 
 This baseline is preferred over starting with a diffusion model because it is easier to implement, debug, overfit intentionally, and relate back to the known geometry. A diffusion or image-space refinement stage can be evaluated later if the baseline cannot represent the required detail.
 
-## Training sequence
+## Staged training sequence
 
-### Smoke test
+### Dataset/model v0 — fixed-view baseline
 
-- One material
-- One or a few cameras
-- Confirm image loading, coordinate conventions, masking, loss, checkpointing, and reconstruction
+- One Sculpted Rubber Toy, one camera, and fixed lighting
+- One beauty target per material plus aligned `P`, `N`, `V`, and alpha
+- Smoke-test one material, overfit a small material subset, then train the approved material library
+- Confirm prompt conditioning and exact-view reconstruction before evaluating unsupported inputs
 
-### Small-subset overfit
+### Runtime v0 — out-of-distribution observation
 
-- Several visually distinct materials
-- Multiple cameras per material
-- Confirm text conditioning changes appearance and camera conditioning changes view
+- Recreate the training geometry and camera in Three.js as the calibration case
+- Orbit and zoom the hero without claiming novel-view support
+- Supply several additional meshes and observe failure or partial transfer without claiming geometry support
+- Save comparable outputs for the same prompts, cameras, and meshes
 
-### Generalization experiment
+### Dataset/model v1 — multi-view extension
 
-- Full approved dataset or a representative subset
-- Split by material ID
-- Hold out exact material combinations while retaining their individual concepts elsewhere in training
+- Render the same hero under a controlled camera dome
+- Keep model architecture and evaluation prompts as stable as practical
+- Retrain and measure improvement on orbit, interpolation, and held-out camera tests
+
+### Dataset/model v2 — multi-geometry extension
+
+- Render several normalized geometries from multiple cameras
+- Define geometry-aware splits and at least one held-out geometry
+- Retrain and measure improvement when switching supplied Three.js meshes
+
+### Controlled comparison rules
+
+- Preserve the same material splits, evaluation prompts, calibration camera, and named test meshes across versions.
+- Keep architecture, training budget, resolution, and random seeds unchanged where practical; record every intentional difference.
+- Compare v0, multi-view, and multi-geometry checkpoints on the same exact-view, orbit/zoom, and geometry-switch test grid.
+- Archive model, dataset, application, and geometry-buffer versions with every result.
 
 ## Dataset split rules
 
@@ -124,8 +140,11 @@ Exact losses, feature encodings, model width, and optimizer settings remain expe
 
 Minimum evaluation should include:
 
-- Reconstruction error on seen material/view combinations
-- Novel-view performance for held-out cameras of seen materials during development experiments
+- Reconstruction error at the exact v0 training geometry and camera
+- Houdini-buffer versus Three.js-buffer output at the matched training pose
+- Unsupported orbit, zoom, and alternate-geometry results for v0, clearly labeled as out of distribution
+- Novel-view performance after multi-view training
+- Seen- and held-out-geometry performance after multi-geometry training
 - Material-level validation on entirely held-out material IDs
 - Compositional prompt evaluation
 - Silhouette stability
@@ -138,6 +157,7 @@ Qualitative grids should hold camera constant while changing prompt, and hold pr
 
 - Transparent and refractive materials may require more than a purely local surface function.
 - Sharp view-dependent metal reflections require accurate view conditioning.
+- Houdini and Three.js differences in geometry, transforms, projection, normals, sampling, or edge coverage can masquerade as model-generalization failures.
 - One deterministic procedural example per prompt does not teach multiple valid samples for the same prompt.
 - Long semantic labels and compact UI prompts must share a compatible text representation.
 - A model can memorize material IDs without learning compositional semantics; held-out combinations are required to detect this.
@@ -146,14 +166,15 @@ Qualitative grids should hold camera constant while changing prompt, and hold pr
 
 - It intentionally overfits a tiny dataset, proving the training path is correct.
 - Different supported prompts produce visibly appropriate appearances.
-- The same prompt remains spatially coherent across camera views.
-- The hero silhouette and identity remain fixed.
+- The exact training geometry and camera reproduce documented validation renders using calibrated Three.js buffers.
+- Orbit, zoom, and alternate-mesh outputs can be generated and recorded, but are not required to be correct for v0.
 - Results outperform prompt-agnostic and nearest-material baselines.
 - A saved checkpoint can reproduce documented validation renders from a clean process.
 
 ## Non-goals
 
-- Arbitrary geometry or object generation
+- Generated geometry or object creation
+- Reliable arbitrary-view or arbitrary-geometry rendering in v0
 - Reusable PBR material export
 - Free-form unsupported natural-language understanding
 - User-controlled lighting or environment changes

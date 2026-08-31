@@ -1,12 +1,14 @@
 # Current project status
 
-- Last verified: 2026-08-28
-- Repository baseline inspected: `main` at `6036331`
+- Last verified: 2026-08-31
+- Repository baseline inspected: `main` at `8282e0c`
 - Current phase: **Phase 1 — finish and validate Houdini data generation**
 
 ## Current objective
 
-Finish the `neuromat` HDA, validate the eight-material stress set, and lock the render and manifest contract before building the camera/TOP automation or producing the complete dataset.
+Finish the `neuromat` HDA, validate the eight-material stress set, and lock the fixed-camera dataset-v0 contract before automating the complete first render.
+
+The accepted learning sequence is: train on one fixed view; test Three.js orbit, zoom, and alternate-mesh inputs as deliberately unsupported cases; add multi-view Houdini data and retrain; then add multi-geometry data and retrain. Improvement between versions is an experiment to measure, not an assumed capability.
 
 ## Verified working artifacts
 
@@ -139,11 +141,10 @@ There is no separate Alpha RenderVar; confirm that the beauty alpha is correct a
 | --- | --- | --- |
 | P0 | Watermarked/noncommercial development renders | Produce final training images through a suitable non-watermarked Houdini render path |
 | P0 | Bump look-dev not validated | Render and review stochastic, directional, and cellular stress materials before automation |
-| P0 | No dataset automation or manifest | Build and validate a small camera/material pilot before full scale |
+| P0 | No dataset automation or manifest | Build and validate a fixed-camera material pilot before the full v0 render |
 | P1 | Unresolved transmission-scatter policy | Verify or explicitly classify `transmission_scatter` behavior |
 | P1 | Label defect | Prevent duplicate words and regenerate/overwrite affected labels |
 | P1 | Render contract not frozen | Verify alpha, coordinate spaces, color management, naming, and metadata |
-| P2 | One camera only | Implement and validate the planned camera distribution after HDA lock |
 
 ## Next exact actions
 
@@ -153,9 +154,10 @@ There is no separate Alpha RenderVar; confirm that the beauty alpha is correct a
 4. Resolve `transmission_scatter` behavior and confirm the final RenderVars.
 5. Fix label duplicate-word QA and regenerate the stress labels with overwrite enabled.
 6. Freeze the HDA/scene as the approved material-render baseline.
-7. Build the camera dome and render a small stress-material × camera pilot.
-8. Validate view consistency, camera metadata, AOV alignment, and manifest structure.
-9. Only then automate and launch the full material × camera batch.
+7. Reproduce the Houdini training camera and hero buffers in Three.js and quantify `P`, `N`, `V`, alpha, silhouette, and projection differences.
+8. Render and validate the full fixed-camera material dataset, then train the first model.
+9. Build the experimental app controls and record exact-view, orbit/zoom, and alternate-mesh results.
+10. Only after the fixed-view baseline is understood, build a camera-dome pilot for the next dataset version.
 
 ## Phase 1 exit criteria
 
@@ -165,7 +167,7 @@ Phase 1 is complete only when:
 - UI material selection reliably cooks and applies the complete intended JSON record;
 - the stress set passes visual and data QA;
 - repeated renders are deterministic;
-- camera, color, AOV, file, and manifest contracts are frozen;
+- fixed camera, color, AOV, file, and manifest contracts are frozen;
 - final outputs contain no watermark;
-- a multi-camera pilot can be loaded by a minimal dataset validator;
-- the full material/camera batch can be resumed without manual per-frame intervention.
+- a fixed-camera pilot can be loaded by a minimal dataset validator;
+- the full fixed-camera material batch can be resumed without manual per-frame intervention.

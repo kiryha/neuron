@@ -19,11 +19,11 @@ Example prompts:
 - `black rubber polished scratched`
 - `clear glass clean`
 
-The current focus is deliberately narrow: many materials, one geometry, controlled cameras, and controlled studio lighting. This makes it possible to study text conditioning, neural rendering, multi-view consistency, dataset design, and deployment without first solving general text-to-3D generation.
+The first training release is deliberately narrow: many materials, one geometry, one fixed camera, and controlled studio lighting. The same model is then exercised with unsupported Three.js camera and mesh inputs before later datasets add multiple views and multiple geometries. This makes generalization something the project measures rather than assumes.
 
 ## Material Hero
 
-Material Hero uses a **Sculpted Rubber Toy** as its single fixed geometry. Houdini procedurally renders that object with many combinations of material base, finish, condition, and color. Each rendered view is linked to a canonical text description and the camera and geometry data required for training.
+Material Hero begins with a **Sculpted Rubber Toy** and one fixed training camera. Houdini procedurally renders that view with many combinations of material base, finish, condition, and color. Each image is linked to a canonical text description and aligned camera and geometry data.
 
 The trained model will directly predict the final rendered RGB appearance. It will **not** generate PBR shader parameters or texture maps.
 
@@ -33,14 +33,15 @@ Conceptually, the first model learns:
 RGB = F(surface position, surface normal, view direction, text description)
 ```
 
-The fixed geometry supplies the surface and silhouette; the prompt controls its appearance. As a result, every generation depicts the same Material Hero, while prompts change qualities such as material, color, finish, dirt, wear, and bump character.
+Rasterized geometry supplies the surface and silhouette; the prompt controls its appearance. Dataset v0 supports the hero at the fixed training view. Orbit, zoom, and alternate supplied meshes are deliberate out-of-distribution tests until later training releases add those variations.
 
 ### Initial constraints
 
 - One fixed hero geometry
 - Controlled material vocabulary
 - Fixed studio lighting and color-management configuration
-- Camera-conditioned, multi-view output
+- One fixed training camera for dataset v0
+- Experimental camera and supplied-mesh changes in the Three.js app
 - Direct RGB generation
 - Deterministic appearance for a given prompt in the first version
 - No arbitrary object or scene generation
@@ -55,7 +56,7 @@ These are intentional scope boundaries, not final limitations of the wider Neuro
 Houdini procedural materials
         |
         v
-Multi-view RGB images + prompts + camera/geometry metadata
+Versioned RGB images + prompts + camera/geometry buffers
         |
         v
 Text-conditioned neural appearance model
@@ -68,7 +69,7 @@ Neuron web viewport on Hugging Face Spaces
 
 SideFX Houdini and Karma generate the synthetic ground-truth dataset. The current material system includes procedural variation, dirt, wear, and bump signals and is being completed and validated before batch rendering.
 
-Each training record is expected to preserve at least:
+The fixed-view v0 release is expected to preserve at least:
 
 - material ID and canonical prompt;
 - camera ID, transform, and intrinsics;
@@ -80,13 +81,13 @@ Additional AOVs are useful for diagnostics and possible auxiliary supervision, b
 
 ### 2. Training
 
-The first training implementation will learn prompt-conditioned appearance on the fixed hero surface. All views of a material must remain in the same dataset split so validation measures generalization to unseen material combinations rather than memorization of alternate camera views.
+The first training implementation learns prompt-conditioned appearance on one fixed hero view. Later checkpoints use multi-view and then multi-geometry datasets while preserving material-level splits and standardized comparison cases.
 
 The training implementation has not been built yet. It begins after the Houdini dataset and manifest have been validated.
 
 ### 3. Application
 
-The intended application accepts a material prompt and displays the generated Material Hero from the active camera. The viewport camera supplies view information to the neural renderer.
+The intended application accepts a material prompt and sends Three.js-generated `P`, `N`, `V`, and alpha buffers to the neural renderer. It starts at the Houdini training pose, then permits orbit, zoom, and mesh switching so failures of each dataset/model version can be observed directly.
 
 The current React application is only a visual scaffold with a placeholder sphere. The FastAPI backend currently exposes a status endpoint and serves the built frontend; neural inference is not connected yet.
 
@@ -108,7 +109,7 @@ Final dataset renders must also be produced without the watermark present in the
 ### Phase 1 — Material dataset
 
 - Finish and validate the Houdini material HDA.
-- Confirm required RGB, alpha, geometry, camera, and metadata outputs.
+- Confirm required RGB, alpha, `P`, `N`, `V`, camera, and metadata outputs for the fixed training view.
 - Render the material stress set.
 - Automate and render the complete dataset.
 
@@ -116,14 +117,14 @@ Final dataset renders must also be produced without the watermark present in the
 
 - Implement the dataset loader and validation tools.
 - Establish a simple text-conditioned RGB baseline.
-- Train for consistent appearance across camera views.
+- Train the fixed-view baseline, then compare later multi-view and multi-geometry checkpoints.
 - Evaluate both seen materials and held-out material combinations.
 - Save a reproducible model artifact with its vocabulary and configuration.
 
 ### Phase 3 — Neuron application
 
 - Replace the placeholder sphere with the Material Hero viewport representation.
-- Connect prompt and camera input to model inference.
+- Connect prompt and Three.js geometry buffers to model inference.
 - Display generated RGB results interactively.
 - Package and deploy the application on Hugging Face Spaces.
 

@@ -12,6 +12,7 @@ Assign a dataset release candidate and preserve:
 - HDA path, version, timestamp, and hash;
 - material JSON snapshot and hash;
 - label-generator version and seed;
+- geometry or geometry-set snapshot and hash;
 - camera-set snapshot and hash;
 - renderer, samples, resolution, denoising, OCIO, and output settings.
 
@@ -25,17 +26,16 @@ Do not proceed unless:
 - all eight stress materials passed beauty and AOV review;
 - label validation passes with no duplicate words or contradictions;
 - repeated test renders are deterministic;
-- alpha, `P`, `Pz`, and `N` definitions are documented;
+- alpha, `P`, `Pz`, `N`, and `V` definitions or derivation are documented;
 - final rendering produces no watermark;
 - output storage and estimated render time are acceptable.
 
 ## 3. Create a pilot
 
-Render all eight stress materials through a small but representative camera subset.
+For dataset v0, render all eight stress materials through the one fixed production camera.
 
 The pilot must exercise:
 
-- frontal, profile, high, low, and rear views;
 - convex and concave geometry regions;
 - metal, dark dielectric, coat, transmission, SSS, and each bump family;
 - the exact production file-writing and manifest path.
@@ -51,9 +51,9 @@ Check:
 - image dimensions and channels match the contract;
 - matrices have expected shapes and finite values;
 - alpha overlaps beauty correctly;
-- `P`, `Pz`, and `N` are finite and aligned;
+- `P`, `Pz`, `N`, and stored or derived `V` are finite and aligned;
 - material and camera IDs are valid;
-- each expected material × camera pair appears exactly once;
+- each expected material appears exactly once at the fixed camera;
 - labels pass current QA;
 - no watermark or unexpected border is present.
 
@@ -70,13 +70,13 @@ Use measured pilot data to calculate:
 - temporary working-space requirement;
 - upload and training-read cost.
 
-The historical target of 1,806 materials × 200 cameras equals 361,200 frames. Reduce camera count or retained debug passes if the pilot shows that this scale is unnecessary or impractical.
+Dataset v0 contains approximately 1,806 beauty frames before exclusions or corrections. The historical 200-camera target is not part of v0; estimate camera count and retained passes separately when preparing the later multi-view release.
 
 ## 6. Assign splits
 
 Assign train/validation/test by material ID before final packaging:
 
-- keep all views of a material together;
+- keep all present or future views of a material together;
 - reserve exact combinations for compositional testing;
 - preserve category and attribute coverage across splits;
 - version the assignment;
@@ -97,7 +97,7 @@ Repeat pilot validation across the complete release and additionally check:
 - expected total counts;
 - missing or duplicated frame keys;
 - unexpected uniform/black/NaN images;
-- image statistics by material and camera;
+- image statistics by material and, for later releases, camera and geometry;
 - split leakage;
 - checksums;
 - representative contact sheets across every category and bump type.
@@ -107,7 +107,7 @@ Repeat pilot validation across the complete release and additionally check:
 The release is complete when it contains:
 
 - dataset-level metadata;
-- immutable material and camera snapshots;
+- immutable material, geometry, and camera snapshots;
 - frame manifest;
 - split assignment;
 - validation report;

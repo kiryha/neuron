@@ -33,3 +33,12 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Classified `k` and `metallic_flake` as unused metadata for Material Hero v1.
 - Kept both fields in JSON for compatibility, provenance, and possible future shader work, while explicitly excluding them from required HDA behavior.
 - Reduced the unresolved shader-schema work to `transmission_scatter` verification or classification.
+
+## 2026-08-31
+
+### Staged geometry-generalization experiment
+
+- Made the first training release a one-geometry, one-camera prompt-to-RGB baseline conditioned by `P`, `N`, `V`, and alpha.
+- Defined Three.js orbit, zoom, and alternate supplied meshes as deliberate out-of-distribution tests rather than promised first-model capabilities.
+- Sequenced later dataset/model versions as multi-view on the hero followed by multi-view and multi-geometry training.
+- Added Houdini-to-Three.js geometry-buffer calibration as a prerequisite so coordinate mismatch is not confused with model generalization failure.
