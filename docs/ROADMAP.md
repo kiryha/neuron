@@ -10,10 +10,10 @@ Goal: one deterministic JSON-driven material asset that renders every supported 
 
 Deliverables:
 
-- Correct direct bump routing for none, stochastic, directional, and cellular — implemented, visual validation pending
+- Correct direct bump routing for none, stochastic, directional, and cellular — implemented and visually approved
 - Standard Surface bindings for subsurface, subsurface color, and thin-wall — implemented, stress validation pending
 - Verified material-ID-driven HDA cook path suitable for interactive and batch operation
-- Tuned and approved stochastic, directional, and cellular bump
+- Tuned and approved stochastic, directional, and cellular bump — verified in fixed-camera stress renders
 - Full-library confirmation that every generated bump mode maps to the HDA — verified
 - Variation, dirt, and wear validation
 - Required shader parameters connected or explicitly classified; `k` and metallic flake are metadata-only, while transmission-scatter remains pending

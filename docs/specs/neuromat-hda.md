@@ -1,6 +1,6 @@
 # `neuromat` HDA specification
 
-Status: **Bump branches implemented; visual and full shader-contract validation pending**
+Status: **Bump branches visually approved; full shader-contract validation pending**
 
 Last reviewed: 2026-08-31
 
@@ -150,9 +150,9 @@ Inputs:
 | Type | Intended use | Required HDA state |
 | --- | --- | --- |
 | `none` | Intentionally smooth surface | Implemented; returns zero |
-| `stochastic` | Polished/matte/satin micro-breakup | Implemented; visual approval pending |
-| `directional` | Brushed grain and aligned scratches | Implemented; visual approval pending |
-| `cellular` | Hammered/pitted response | Implemented; visual approval pending |
+| `stochastic` | Polished/matte/satin micro-breakup | Implemented; stress renders approved |
+| `directional` | Brushed grain and aligned scratches | Implemented; stress renders approved |
+| `cellular` | Hammered/pitted response | Implemented; stress renders approved |
 
 The final selector must use one explicit mapping shared by JSON validation, HDA menu values, and shader switch inputs. The validated v1 contract contains only none, stochastic, directional, and cellular. Do not use an offset expression that relies on unconnected slots.
 
@@ -165,7 +165,7 @@ The live production switch now selects the direct integer mode with all four int
 - Cellular combines object-space cellular noise at `noise_scale × 18` with stochastic breakup at weights `0.85 / 0.15`.
 - The selected height is scaled by `bump_scale`, limited by `bump_cap`, and converted through MaterialX bump.
 
-Implementation does not equal approval. The next gate is a fixed-camera comparison of the stress materials, followed by the fixed-camera dataset-v0 pilot. Camera-dome work begins only after the first trained model and its Three.js out-of-distribution tests are understood.
+The fixed-camera stress comparison was visually approved on 2026-09-02. The next gate is the fixed-camera dataset-v0 pilot. Camera-dome work begins only after the first trained model and its Three.js out-of-distribution tests are understood.
 
 ## Shader integration
 

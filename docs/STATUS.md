@@ -1,12 +1,12 @@
 # Current project status
 
-- Last verified: 2026-08-31
-- Repository baseline inspected: `main` at `8282e0c`
+- Last verified: 2026-09-02
+- Repository baseline inspected: `main` at `d4bcf90`
 - Current phase: **Phase 1 — finish and validate Houdini data generation**
 
 ## Current objective
 
-Finish the `neuromat` HDA, validate the eight-material stress set, and lock the fixed-camera dataset-v0 contract before automating the complete first render.
+Lock the fixed-camera dataset-v0 contract and build a resumable material × geometry × camera render system whose first release uses one hero and one camera.
 
 The accepted learning sequence is: train on one fixed view; test Three.js orbit, zoom, and alternate-mesh inputs as deliberately unsupported cases; add multi-view Houdini data and retrain; then add multi-geometry data and retrain. Improvement between versions is an experiment to measure, not an assumed capability.
 
@@ -19,6 +19,7 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - Compatibility filtering produces **1,806** material records.
 - Current bump-type distribution is 1,143 stochastic, 396 directional, and 267 cellular records.
 - A full regeneration plus validation of all 1,806 records passes with no unsupported bump modes.
+- `datagen/data/neuron_library_prod.json` is the accepted render-system material source of truth.
 - The Houdini UI currently generates an eight-material stress subset by default.
 - `train/train_hero.py` and `train/loss.py` are empty.
 - `neuron/` contains only a package scaffold.
@@ -28,14 +29,15 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 ### External Houdini project
 
 - Project root: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D`
-- Active scene: `scenes\material_hero_004.hipnc`
-  - Modified: 2026-08-28 13:22
+- Active scene: `scenes\material_hero_005.hipnc`
+  - Modified: 2026-08-31 14:42
 - Active HDA: `hda\lop_KKO8.neuromat.1.2.hdanc`
   - Type: `KKO8::neuromat::1.2`
-  - Modified: 2026-08-28 13:20
+  - Modified: 2026-08-31 11:06
 - Generated JSON: `E:\Projects\neuron_data\neuron_library.json`
   - Current content: eight-material stress subset
   - Modified: 2026-04-16 15:39
+- The external stress JSON remains useful for look-dev, but it is not the production batch source.
 - Repository Houdini files under `datagen/hips/` are older copies and are not the active assets.
 
 ### Geometry and scene
@@ -82,7 +84,7 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - Inputs are connected as none `0`, stochastic `1`, directional `2`, and cellular `3`.
 - Stochastic, directional, and cellular networks are present in the production material graph.
 - The final selected height is scaled, capped, and passed through MaterialX bump before the Standard Surface normal input.
-- Structural implementation is complete for these four modes; visual validation across the stress set is still pending.
+- Structural implementation is complete for these four modes; the fixed-camera stress renders were visually approved by the user on 2026-09-02.
 - Asphalt is explicitly mapped to stochastic bump at scale `0.02`; the generator and checked-in production library no longer contain the unsupported `cracked` mode.
 
 ### Material application path
@@ -133,14 +135,13 @@ There is no separate Alpha RenderVar; confirm that the beauty alpha is correct a
 
 - The label engine is deterministic and uses controlled template families.
 - Existing stress JSON was generated before the latest validation work and is skipped by default because labels already exist.
-- At least one current label contains `with with` (`gold_polished_clean`). Duplicate-word validation must be added or labels must be corrected before dataset release.
+- The production material JSON currently contains 805 labels with the duplicated phrase `with with`. Labels must be regenerated or corrected before dataset release.
 
 ## Blockers before a full render
 
 | Priority | Blocker | Required resolution |
 | --- | --- | --- |
 | P0 | Watermarked/noncommercial development renders | Produce final training images through a suitable non-watermarked Houdini render path |
-| P0 | Bump look-dev not validated | Render and review stochastic, directional, and cellular stress materials before automation |
 | P0 | No dataset automation or manifest | Build and validate a fixed-camera material pilot before the full v0 render |
 | P1 | Unresolved transmission-scatter policy | Verify or explicitly classify `transmission_scatter` behavior |
 | P1 | Label defect | Prevent duplicate words and regenerate/overwrite affected labels |
@@ -148,16 +149,15 @@ There is no separate Alpha RenderVar; confirm that the beauty alpha is correct a
 
 ## Next exact actions
 
-1. Render all eight stress materials from the current fixed camera and lighting setup.
-2. Inspect beauty plus variation, dirt, wear, and bump/normal diagnostics for each material.
-3. Approve or retune stochastic, directional, and cellular bump from those comparisons.
-4. Resolve `transmission_scatter` behavior and confirm the final RenderVars.
-5. Fix label duplicate-word QA and regenerate the stress labels with overwrite enabled.
-6. Freeze the HDA/scene as the approved material-render baseline.
+1. Resolve the camera focal-length and RenderProduct-resolution discrepancies in scene 005.
+2. Point the batch system at `datagen/data/neuron_library_prod.json` and freeze its hash in the release metadata.
+3. Resolve `transmission_scatter`, alpha/coverage semantics, and the exact production RenderVars.
+4. Fix duplicate-word label QA and regenerate the 805 affected production labels.
+5. Build the resumable material × geometry × camera work-item graph and deterministic output contract.
+6. Render and validate a small fixed-camera v0 pilot before launching all 1,806 materials.
 7. Reproduce the Houdini training camera and hero buffers in Three.js and quantify `P`, `N`, `V`, alpha, silhouette, and projection differences.
-8. Render and validate the full fixed-camera material dataset, then train the first model.
-9. Build the experimental app controls and record exact-view, orbit/zoom, and alternate-mesh results.
-10. Only after the fixed-view baseline is understood, build a camera-dome pilot for the next dataset version.
+8. Train the first model and record exact-view, orbit/zoom, and alternate-mesh results.
+9. Only after the fixed-view baseline is understood, build a camera-dome pilot for the next dataset version.
 
 ## Phase 1 exit criteria
 

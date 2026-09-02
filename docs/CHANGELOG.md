@@ -42,3 +42,12 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Defined Three.js orbit, zoom, and alternate supplied meshes as deliberate out-of-distribution tests rather than promised first-model capabilities.
 - Sequenced later dataset/model versions as multi-view on the hero followed by multi-view and multi-geometry training.
 - Added Houdini-to-Three.js geometry-buffer calibration as a prerequisite so coordinate mismatch is not confused with model generalization failure.
+
+## 2026-09-02
+
+### Look-dev approval and batch preflight
+
+- Recorded user approval of the fixed-camera stress renders, including stochastic, directional, and cellular bump behavior.
+- Verified `material_hero_005.hipnc` and the updated `neuromat` 1.2 HDA as the current external Houdini artifacts.
+- Set the repository production material JSON as the planned batch source of truth.
+- Identified preflight issues before automation: development JSON still configured in the scene, 805 duplicate-word labels, and conflicting authored versus cooked camera/resolution values.
