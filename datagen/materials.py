@@ -1221,6 +1221,12 @@ def validate_material_entry(entry: dict[str, Any]) -> None:
             raise ValueError(f"{entry['id']}: semantic.semantic_label must be non-empty when present")
         if re.search(r"([,;])\s*\1", label) or ", ." in label or ".. " in label:
             raise ValueError(f"{entry['id']}: semantic.semantic_label has broken punctuation")
+        duplicate_word = re.search(r"\b([a-z][a-z'-]*)\s+\1\b", label, flags=re.IGNORECASE)
+        if duplicate_word:
+            raise ValueError(
+                f"{entry['id']}: semantic.semantic_label repeats adjacent word "
+                f"{duplicate_word.group(1)!r}"
+            )
         ll = label.lower()
         if "frosted" in sem["semantic_tags"] and "mirror" in ll:
             raise ValueError(f"{entry['id']}: semantic_label contradicts frosted material (mirror wording)")
@@ -1237,6 +1243,12 @@ def _assert_assembled_label_quality(entry_id: str, label: str, sem: dict[str, An
 
     if re.search(r"\.\s*\.+", label) or re.search(r"([,;])\s*\1", label):
         raise ValueError(f"{entry_id}: semantic_label has malformed punctuation")
+
+    duplicate_word = re.search(r"\b([a-z][a-z'-]*)\s+\1\b", label, flags=re.IGNORECASE)
+    if duplicate_word:
+        raise ValueError(
+            f"{entry_id}: semantic_label repeats adjacent word {duplicate_word.group(1)!r}"
+        )
 
     # Clause-level duplicate detection: splitting on comma/semicolon can miss repeats when a single
     # semantic phrase legitimately contains commas (chunks may fall under the length threshold).
@@ -1485,34 +1497,34 @@ class BuildPrompts:
     # Vocabulary stays within close-up / material study / texture study / photorealistic material study.
     _TEMPLATES_PRISTINE: tuple[str, ...] = (
         "Close-up of {base_phrase}, {finish_description}, {condition_phrase}.",
-        "Photorealistic material study of {base_phrase} with {finish_description}, {condition_phrase}.",
-        "Texture study of {base_phrase} with {finish_description}, {condition_phrase}.",
+        "Photorealistic material study of {base_phrase}, {finish_description}, {condition_phrase}.",
+        "Texture study of {base_phrase}, {finish_description}, {condition_phrase}.",
     )
     _TEMPLATES_ABRASION: tuple[str, ...] = (
         "Photorealistic material study of {base_phrase}, {finish_description}; {condition_phrase}.",
-        "Close-up of {base_phrase} with {finish_description}, {condition_phrase}.",
+        "Close-up of {base_phrase}, {finish_description}, {condition_phrase}.",
         "Texture study of {base_phrase}, {finish_description}; {condition_phrase}.",
     )
     _TEMPLATES_CONTAMINATION: tuple[str, ...] = (
         "Photorealistic material study of {base_phrase}, {finish_description}, {condition_phrase}.",
-        "Close-up of {base_phrase} with {finish_description}, {condition_phrase}.",
+        "Close-up of {base_phrase}, {finish_description}, {condition_phrase}.",
         "Texture study of {base_phrase}, {finish_description}, {condition_phrase}.",
     )
     _TEMPLATES_AGING: tuple[str, ...] = (
         "Weathered {base_phrase}: {finish_description}, {condition_phrase}.",
-        "Photorealistic material study of weathered {base_phrase} with {finish_description}, {condition_phrase}.",
+        "Photorealistic material study of weathered {base_phrase}, {finish_description}, {condition_phrase}.",
         "Close-up of weathered {base_phrase}, {finish_description}; {condition_phrase}.",
     )
     # Pristine + frosted glass: transmission wording stays in finish_description; shells stay neutral.
     _TEMPLATES_FROSTED_PRISTINE: tuple[str, ...] = (
         "Close-up of {base_phrase}, {finish_description}, {condition_phrase}.",
-        "Texture study of {base_phrase} with {finish_description}, {condition_phrase}.",
+        "Texture study of {base_phrase}, {finish_description}, {condition_phrase}.",
         "Photorealistic material study of {base_phrase}, {finish_description}; {condition_phrase}.",
     )
     # Pristine + transmissive (non-frosted): same slots; physics adjectives remain in authored phrases.
     _TEMPLATES_TRANSLUCENT_PRISTINE: tuple[str, ...] = (
         "Close-up of {base_phrase}, {finish_description}, {condition_phrase}.",
-        "Photorealistic material study of {base_phrase} with {finish_description}, {condition_phrase}.",
+        "Photorealistic material study of {base_phrase}, {finish_description}, {condition_phrase}.",
         "Material study of {base_phrase}, {finish_description}, {condition_phrase}.",
     )
 
@@ -1587,6 +1599,8 @@ class BuildPrompts:
             sem = entry.setdefault("semantic", {})
             template = self._select_template(sem, rng)
             if sem.get("semantic_label") and not self.overwrite:
+                validate_material_entry(entry)
+                _assert_assembled_label_quality(entry["id"], sem["semantic_label"], sem)
                 skipped += 1
                 continue
             sem["semantic_label"] = self._build_label(entry, template)
