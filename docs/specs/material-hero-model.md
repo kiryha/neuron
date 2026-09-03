@@ -2,7 +2,7 @@
 
 Status: **Planned; staged input/output experiment accepted, architecture open**
 
-Last reviewed: 2026-08-31
+Last reviewed: 2026-09-02
 
 ## Objective
 
@@ -38,7 +38,7 @@ The exact network may operate per surface sample or on rasterized image buffers.
 | Camera | One fixed training camera; runtime changes are deliberate out-of-distribution tests |
 | Lighting/HDRI | Fixed and baked into learned appearance |
 | Exposure and color management | Fixed and recorded |
-| Background | Fixed or composited using geometry alpha |
+| Background | Fixed or composited using geometry Coverage |
 | Random generation seed | Deferred; deterministic first release |
 
 ## Inputs
@@ -46,10 +46,10 @@ The exact network may operate per surface sample or on rasterized image buffers.
 ### Required logical inputs
 
 - Material prompt or its encoded representation
-- Camera intrinsics and pose, or equivalent view rays
-- Surface position
-- Surface normal
-- Foreground coverage/silhouette
+- World-space surface position `P`
+- Smooth, unbumped world-space surface normal `N`
+- World-space view direction `V`
+- Material-independent foreground Coverage
 
 Houdini provides the training buffers. The application is planned to rasterize corresponding buffers from supplied Three.js meshes and cameras. At the exact training geometry and camera, those buffers must be calibrated against Houdini before model behavior is judged. Orbit, zoom, and alternate meshes remain out of distribution until represented in a later training release.
 
@@ -67,7 +67,7 @@ Training records preserve both a compact prompt such as `gold brushed dirty` and
 ## Output
 
 - Final rendered RGB image or foreground RGB samples that assemble into that image
-- Display alpha comes from the supplied geometry coverage unless an experiment explicitly predicts it
+- Display alpha is derived from the supplied geometry Coverage unless an experiment explicitly predicts it
 
 PBR parameters, BaseColor maps, Roughness maps, normal maps, shader graphs, density, and geometry are not required model outputs.
 
@@ -75,11 +75,11 @@ PBR parameters, BaseColor maps, Roughness maps, normal maps, shader graphs, dens
 
 Begin with the smallest model that can prove the data path:
 
-1. Load the fixed Houdini `P`, `N`, view direction, and alpha buffers for foreground pixels.
+1. Load Beauty, `P`, smooth unbumped `N`, `V`, and Coverage from each 1024 × 1024 material EXR.
 2. Encode controlled material tokens with a small learned embedding.
 3. Use positional/Fourier features only where a simple MLP cannot reproduce spatial detail.
 4. Predict linear foreground RGB.
-5. Composite with alpha/background for display.
+5. Composite with Coverage/background for display.
 6. Reproduce the fixed training buffers in Three.js and compare inference against the Houdini-buffer baseline.
 
 This baseline is preferred over starting with a diffusion model because it is easier to implement, debug, overfit intentionally, and relate back to the known geometry. A diffusion or image-space refinement stage can be evaluated later if the baseline cannot represent the required detail.
@@ -89,7 +89,7 @@ This baseline is preferred over starting with a diffusion model because it is ea
 ### Dataset/model v0 — fixed-view baseline
 
 - One Sculpted Rubber Toy, one camera, and fixed lighting
-- One beauty target per material plus aligned `P`, `N`, `V`, and alpha
+- One 1024 × 1024 multilayer EXR per material containing Beauty plus aligned `P`, `N`, `V`, and Coverage
 - Smoke-test one material, overfit a small material subset, then train the approved material library
 - Confirm prompt conditioning and exact-view reconstruction before evaluating unsupported inputs
 
@@ -125,7 +125,7 @@ This baseline is preferred over starting with a diffusion model because it is ea
 - Do not randomly split frames across train and validation.
 - Keep a standard validation set for unseen material IDs.
 - Keep a compositional test set for combinations such as a base, finish, and condition not seen together during training.
-- Record split assignment in the dataset manifest so experiments use the same partition.
+- Store the split assignment with the training experiment rather than in the Houdini render dataset.
 
 ## Loss and color rules
 

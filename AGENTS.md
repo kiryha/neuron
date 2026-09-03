@@ -63,6 +63,6 @@ Treat repository copies under `datagen/hips/` as historical unless `docs/STATUS.
 - Generate final RGB appearance, not PBR maps or shader parameters.
 - Use one fixed Sculpted Rubber Toy geometry for Material Hero v1.
 - Keep lighting controlled and fixed for the first model.
-- Preserve camera and geometry metadata for multi-view training.
+- Preserve self-contained `P`, unbumped `N`, `V`, and Coverage buffers; separate camera and geometry metadata is not required for dataset v0.
 - Do not begin the general neural-asset engine while Material Hero is incomplete.
 - Keep implementation minimal and understandable for a solo learning project.

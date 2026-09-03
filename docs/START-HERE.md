@@ -1,6 +1,6 @@
 # Start here
 
-Last reviewed: 2026-08-31
+Last reviewed: 2026-09-02
 
 Neuron is currently focused on **Material Hero**: a text-conditioned image generator that first learns the appearance of one Sculpted Rubber Toy from one fixed camera and studio-lighting setup.
 
@@ -38,7 +38,7 @@ Material definitions and labels
 JSON-driven neuromat HDA
           |
           v
-Karma fixed-view RGB + alpha + geometry/camera metadata
+Karma 1024² Beauty + P/N/V/Coverage EXR per material
           |
           v
 Text-conditioned Material Hero model

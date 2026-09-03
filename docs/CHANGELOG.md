@@ -58,7 +58,7 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Confirmed that the RenderProduct's 2048 × 1080 value was an unauthored fallback and did not override the active RenderSettings resolution.
 - Backed up `material_hero_005.hipnc` and changed the active candidate dataset resolution from 1280 × 1280 to 512 × 512.
 - Removed template-level `with with` construction, added adjacent-word QA, and made skipped existing labels pass validation.
-- Regenerated all 1,806 production labels with seed `42`; zero adjacent duplicates remain and repeated generation produced SHA-256 `2d7bdcfe36ba06271b2b99d4c38530e3702a83f2abd40028ce1984654e314140`.
+- Regenerated all 1,806 production labels with seed `42`; zero adjacent duplicates remain and repeated generation produced identical labels.
 
 ### Dataset-v0 batch proposal
 
@@ -66,3 +66,13 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Proposed versioned release-candidate directories, deterministic material × geometry × camera paths, multilayer raw EXRs, JSON/JSONL metadata, and validate-before-skip crash recovery.
 - Recorded current camera and geometry entity metadata needed for later Houdini-to-Three.js calibration.
 - Clarified that the `.hipnc` scene and `.hdanc` HDA can downgrade an Indie session; converted or rebuilt `.hiplc`/`.hdalc` inputs and an unwatermarked pilot remain required.
+
+### Minimal dataset contract accepted
+
+- Replaced the initial production-style manifest and metadata proposal with a minimal folder-indexed dataset suitable for the solo learning project.
+- Set dataset v0 to 1024 × 1024 with DOF disabled and one multilayer EXR per material folder containing Beauty, world `P`, smooth unbumped world `N`, world `V`, and material-independent Coverage.
+- Excluded `Pz`, variation, dirt, wear, bump, BaseColor, Roughness, and other debug AOVs from dataset output while preserving their material effects in Beauty.
+- Kept the material snapshot name `neuron_library_prod.json` and dropped dataset hashes, renamed source copies, manifests, entity records, schemas, progress logs, and automatic validation reports.
+- Accepted `{geometry_id}/{camera_id}/{material_id}/render.exr` and folder-existence skipping, with manual folder deletion used to request a rerender.
+- Selected a sequential `datagen/datarender.py` script instead of TOPs/PDG; the implementation remains pending.
+- Verified that scene 005 already resolves to 1024 × 1024, while DOF is still active and must be disabled during the next Houdini implementation step.

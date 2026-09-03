@@ -35,14 +35,14 @@ Goal: define exactly what the fixed-view v0 training release contains and prove 
 
 Deliverables:
 
-- One fixed training camera and intrinsics
-- Beauty, alpha, `P`, `Pz`, and `N` definitions
-- Optional auxiliary/debug AOV definitions
-- Linear color and OCIO metadata
-- Dataset naming and logical manifest schema
-- Material-library snapshot and label validation
-- Dataset validator
-- Houdini-to-Three.js `P`/`N`/`V`/alpha convention and calibration plan
+- One fixed 28 mm training camera preserved in the versioned HIP scene
+- 1024 × 1024 Beauty, world `P`, smooth unbumped world `N`, world `V`, and material-independent Coverage definitions
+- Depth of field disabled
+- Debug AOVs excluded from dataset output
+- Fixed linear color and OCIO setup in the versioned HIP scene
+- Minimal `{geometry_id}/{camera_id}/{material_id}/render.exr` naming contract
+- Unchanged `neuron_library_prod.json` snapshot beside the renders
+- Houdini-to-Three.js `P`/`N`/`V`/Coverage convention and calibration plan
 - Render/storage/time estimate
 
 Exit gate:
@@ -56,21 +56,20 @@ Exit gate:
 
 Status: **Planned**
 
-Goal: generate the approved dataset without changing its material, lighting, camera, color, or metadata contract mid-run.
+Goal: generate the approved dataset without changing its material, lighting, camera, color, or output contract mid-run.
 
 Deliverables:
 
-- Automated fixed-camera material render graph
-- Resume/retry behavior
-- Complete manifests and material snapshot
-- Validation report and checksums
-- Train/validation/test assignment by material ID
+- Sequential `datagen/datarender.py` fixed-camera renderer
+- Folder-existence skip behavior and manual folder-deletion rerender workflow
+- Complete material folders and copied material-library snapshot
+- Manual count and representative visual checks
 
 Exit gate:
 
-- Every manifest row resolves to valid files and metadata.
-- No material IDs are missing or duplicated.
-- Train, validation, and test sets have no material-ID leakage.
+- The number of rendered material folders matches the production JSON.
+- Representative outputs are manually approved.
+- The training loader can scan folders and join each material ID to the copied JSON.
 
 ## Phase 2A — Establish a learning baseline
 
@@ -102,7 +101,7 @@ Goal: reproduce the v0 training pose from Three.js, then observe what the fixed-
 
 Deliverables:
 
-- Three.js float-buffer rendering for `P`, `N`, and alpha plus deterministic `V` derivation
+- Three.js float-buffer rendering for `P`, smooth unbumped `N`, and Coverage plus deterministic `V` derivation
 - Exact hero/camera calibration against Houdini
 - Prompt inference and generated-RGB display
 - Orbit, zoom, and alternate-mesh controls marked out of distribution

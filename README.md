@@ -67,27 +67,27 @@ Neuron web viewport on Hugging Face Spaces
 
 ### 1. Data generation
 
-SideFX Houdini and Karma generate the synthetic ground-truth dataset. The current material system includes procedural variation, dirt, wear, and bump signals and is being completed and validated before batch rendering.
+SideFX Houdini and Karma generate the synthetic ground-truth dataset. The material system includes procedural variation, dirt, wear, and bump signals; the fixed-camera stress renders have been approved and the minimal batch renderer is the next implementation step.
 
-The fixed-view v0 release is expected to preserve at least:
+Each fixed-view v0 material folder contains one 1024 × 1024 multilayer EXR with:
 
-- material ID and canonical prompt;
-- camera ID, transform, and intrinsics;
-- beauty RGB image and alpha;
-- world-space position and surface normal data;
-- the render configuration needed for reproducibility.
+- Beauty RGB;
+- world-space position `P`;
+- smooth unbumped world-space normal `N`;
+- world-space view direction `V`;
+- material-independent Coverage.
 
-Additional AOVs are useful for diagnostics and possible auxiliary supervision, but RGB remains the generated result.
+The copied `neuron_library_prod.json` supplies material IDs and prompts. Debug AOVs and separate camera/geometry metadata are intentionally omitted from dataset v0.
 
 ### 2. Training
 
 The first training implementation learns prompt-conditioned appearance on one fixed hero view. Later checkpoints use multi-view and then multi-geometry datasets while preserving material-level splits and standardized comparison cases.
 
-The training implementation has not been built yet. It begins after the Houdini dataset and manifest have been validated.
+The training implementation has not been built yet. It begins after the Houdini dataset pilot and full material-folder batch have been checked.
 
 ### 3. Application
 
-The intended application accepts a material prompt and sends Three.js-generated `P`, `N`, `V`, and alpha buffers to the neural renderer. It starts at the Houdini training pose, then permits orbit, zoom, and mesh switching so failures of each dataset/model version can be observed directly.
+The intended application accepts a material prompt and sends Three.js-generated `P`, `N`, `V`, and Coverage buffers to the neural renderer. It starts at the Houdini training pose, then permits orbit, zoom, and mesh switching so failures of each dataset/model version can be observed directly.
 
 The current React application is only a visual scaffold with a placeholder sphere. The FastAPI backend currently exposes a status endpoint and serves the built frontend; neural inference is not connected yet.
 
@@ -98,7 +98,7 @@ The project is currently finishing **Phase 1: Houdini data generation**.
 - The procedural material library and semantic label generator exist.
 - A small stress-test material set is used to validate shader behavior.
 - Variation, dirt, and wear systems are implemented in the Houdini material HDA.
-- Stochastic, directional, and cellular bump branches are implemented; fixed-camera stress validation is the current Houdini work area.
+- Stochastic, directional, and cellular bump branches are implemented and approved in fixed-camera stress renders.
 - Dataset batching, final renders, training, and neural inference remain to be implemented.
 - The browser UI and backend are scaffolds, not a functioning model demo.
 
@@ -109,7 +109,7 @@ Final dataset renders must also be produced without the watermark present in the
 ### Phase 1 — Material dataset
 
 - Finish and validate the Houdini material HDA.
-- Confirm required RGB, alpha, `P`, `N`, `V`, camera, and metadata outputs for the fixed training view.
+- Confirm 1024 × 1024 Beauty, `P`, unbumped `N`, `V`, and material-independent Coverage outputs for the fixed training view.
 - Render the material stress set.
 - Automate and render the complete dataset.
 

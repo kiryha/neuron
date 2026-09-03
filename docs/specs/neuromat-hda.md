@@ -186,7 +186,7 @@ Current coverage and exclusions:
 
 Any unsupported JSON parameter must be connected, explicitly removed from the v1 schema, or documented as metadata-only. Silent no-op parameters are not acceptable in the final library.
 
-## Current RenderVars
+## Current RenderVars before dataset cleanup
 
 - Beauty
 - `P`
@@ -197,12 +197,15 @@ Any unsupported JSON parameter must be connected, explicitly removed from the v1
 - Wear mask
 - Bump debug signal
 
-Required checks before lock:
+Accepted dataset-v0 replacement:
 
-- confirm beauty alpha rather than assuming a separate Alpha RenderVar;
-- document coordinate space and normalization for `P`, `Pz`, and `N`;
-- identify bump output as scalar height or altered normal;
-- decide whether BaseColor and Roughness are retained as auxiliary outputs.
+- Beauty RGB;
+- world-space `P`;
+- smooth, unbumped world-space `N`;
+- normalized world-space `V` from surface toward camera;
+- material-independent Coverage.
+
+Disable `Pz`, variation, dirt, wear, bump, BaseColor, Roughness, and other debug RenderVars for dataset output. The procedural effects remain active in Beauty.
 
 ## Stress-set expectations
 

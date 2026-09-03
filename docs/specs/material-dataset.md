@@ -1,14 +1,16 @@
 # Material dataset specification
 
-Status: **Partially implemented; fixed-view v0 batch contract proposed and pilot not yet rendered**
+Status: **Minimal dataset-v0 contract accepted; Houdini outputs and automation not yet updated**
 
 Last reviewed: 2026-09-02
 
 ## Purpose
 
-Dataset v0 teaches a model to generate the fixed Material Hero's RGB appearance from material text and one fixed camera/surface context. Later versioned releases add multiple cameras and then multiple geometries. Every release must be deterministic, traceable, comparable with earlier releases, and free of watermarks or undocumented changes.
+Dataset v0 teaches a model to generate the fixed Material Hero's RGB appearance from material text and one fixed camera/surface context. The first implementation is intentionally a small solo-learning pipeline, not a production asset-management system.
 
-## Current material catalog
+Later datasets add multiple cameras and then multiple geometries without changing the basic directory hierarchy or render loop.
+
+## Material catalog
 
 The canonical generator is `datagen/materials.py`.
 
@@ -21,31 +23,15 @@ The canonical generator is `datagen/materials.py`.
 | Categories | 4 |
 | Valid combinations after filtering | 1,806 |
 
-Finishes:
+The repository authoring source is:
 
-- `polished`
-- `matte`
-- `satin`
-- `brushed`
-- `hammered`
+```text
+datagen/data/neuron_library_prod.json
+```
 
-Conditions:
+At dataset creation, copy that file unchanged into the dataset root using the same filename. The copied JSON is the material and label snapshot used by the render and later by the training loader. No checksum, renamed copy, material manifest, or duplicate material record is required.
 
-- `clean`
-- `dusty`
-- `rusted`
-- `scratched`
-
-Categories:
-
-- `metal`
-- `dielectric`
-- `organic`
-- `translucent`
-
-The production render-system source is `datagen/data/neuron_library_prod.json`. It contains all 1,806 records and its current SHA-256 is `2d7bdcfe36ba06271b2b99d4c38530e3702a83f2abd40028ce1984654e314140`.
-
-The external `E:\Projects\neuron_data\neuron_library.json` remains the interactive stress subset. It is not the production batch source. At the start of a release candidate, copy the repository production JSON into the release's `inputs` directory, verify its hash, and point `neuromat.dataset_path` at that frozen snapshot for the entire render.
+The external `E:\Projects\neuron_data\neuron_library.json` remains the interactive eight-material stress subset and is not the production batch source.
 
 ## Stress set
 
@@ -60,299 +46,158 @@ The following eight materials cover the major material, transmission, coating, d
 7. `concrete_hammered_clean`
 8. `rubber_black_polished_scratched`
 
-The stress set is a QA tool. Passing it does not prove that every full-library record is supported, so the complete generated library must also pass schema validation. Asphalt uses the supported stochastic bump mode.
+Use these eight materials for the first automation pilot before rendering all 1,806 records.
 
-## Material record contract
+## Dataset-v0 render contract
 
-Each material JSON record contains:
+Every material render is one 1024 × 1024 multilayer EXR containing:
 
-```text
-id
-metadata
-  base
-  category
-  finish
-  condition
-  color_name?
-shader_parameters
-procedural_parameters
-semantic
-```
-
-The complete parameter contract is documented in [`neuromat-hda.md`](neuromat-hda.md), while label semantics are documented in [`label-engine.md`](label-engine.md).
-
-The material library used for a render must be copied or hashed into the dataset release. A mutable external JSON path is not sufficient provenance.
-
-## Frame contract
-
-### Core training data
-
-| Data | Purpose | Requirement |
+| Output | Meaning | Use |
 | --- | --- | --- |
-| Beauty RGB | Model target | Required |
-| Alpha/coverage | Fixed silhouette and valid-pixel mask | Required |
-| World position `P` | Surface coordinate input/debugging | Required for the planned baseline |
-| Surface normal `N` | Orientation input | Required for the planned baseline |
-| View direction `V` | Camera-relative surface direction | Required; may be stored or deterministically derived from `P` and camera metadata |
-| Camera depth `Pz` | Geometry and projection validation | Required |
-| Camera transform | Reproduce rays and view direction | Required |
-| Camera intrinsics | Reproduce projection | Required |
-| Material ID | Join frame to material record | Required |
-| Compact prompt | Support application-style input | Required |
-| Semantic label | Descriptive text conditioning/augmentation | Required |
+| Beauty RGB | Final material appearance | Model target |
+| `P` | World-space surface position | Model geometry input |
+| `N` | Smooth, unbumped world-space surface normal | Model orientation input |
+| `V` | Normalized world-space direction from the surface point toward the camera | Model view input |
+| Coverage | Material-independent object coverage/silhouette, ignoring transmission or opacity | Valid-pixel mask |
 
-### Recommended auxiliary data
+The EXR does not include `Pz`, variation, dirt, wear, bump, BaseColor, Roughness, or other diagnostic AOVs. Variation, dirt, wear, and bump continue to affect Beauty; only their separate debug outputs are disabled.
 
-- Raw BaseColor
-- Raw Roughness
-- Material category and token fields
+`N` should match the smooth/interpolated geometry normal that can later be reproduced in Three.js. Do not use the normal after MaterialX bump. Do not switch to faceted `Ng` unless comparison with Three.js demonstrates that it is the intended convention.
 
-These can help debugging or auxiliary supervision but are not generated products and are not required for the direct-RGB objective.
+Coverage must describe geometry visibility, not the optical alpha of glass or another transmissive material.
 
-### Look-dev/debug data
+For one geometry and camera, `P`, `N`, `V`, and Coverage are identical for every material. Repeating them in every EXR is intentional: it keeps each training example self-contained and avoids a separate shared-buffer system. At 1024 × 1024, simplicity is more important than eliminating this disk duplication.
 
-- Variation mask
-- Dirt mask
-- Wear mask
-- Scalar bump height or altered normal, explicitly named
-- AO and curvature when useful
+Because these buffers are constant across dataset v0, the first model may learn to ignore them. They become informative when later datasets introduce camera and geometry variation.
 
-Debug data may be excluded from the final training package after the pilot proves it is unnecessary.
+## Fixed scene rules
 
-## Render rules
+- Geometry: Sculpted Rubber Toy at `/GEO/material_hero`.
+- Camera: `cam_0000`, using the existing `/cameras/camera` 28 mm perspective view.
+- Resolution: 1024 × 1024.
+- Aspect policy: the existing square-image `expandAperture` policy.
+- Depth of field: disabled.
+- Lighting, geometry transform, camera, samples, color configuration, and background remain fixed across every material.
+- Material bump affects shading only and does not alter `N` or Coverage.
+- Final renders must not contain the Houdini Apprentice watermark.
 
-- Use one fixed Sculpted Rubber Toy and transform for v0.
-- Use one frozen studio-lighting setup.
-- Keep HDRI, light intensity, exposure, render engine, samples, color management, and background identical across materials.
-- Use deterministic material seeds.
-- Do not use camera-dependent material projection.
-- Preserve linear render data and record the OCIO/color-space interpretation.
-- Do not use watermarked Houdini Apprentice renders in the released training set.
-- Freeze the HDA, scene, material JSON, and render configuration before the full run.
+Scene 005 already resolves to 1024 × 1024. At the latest inspection, DOF was still active through camera f-stop `1.2`; disabling it is an accepted scene change that remains to be applied before the pilot.
 
-## Camera and geometry sequence
+## Dataset location and layout
 
-### Dataset v0 — fixed view
-
-- One Sculpted Rubber Toy and one fixed camera
-- Approximately 1,806 beauty frames before exclusions or corrections
-- Candidate raw render resolution: 512 × 512
-- Camera: `/cameras/camera`, perspective 28 mm, with the active square-image `expandAperture` conform policy; the effective square-view field of view is approximately 41.03°
-- One aligned geometry-buffer set may be shared by every material because `P`, `N`, `V`, and alpha are invariant across material changes
-- Camera transform, intrinsics, geometry hash, and buffer conventions remain recorded even though they are constant
-
-### Dataset v1 — multi-view hero
-
-- The same hero rendered under a controlled camera dome
-- Camera count, resolution, and storage budget remain open until a small pilot is measured
-- Historical planning mentioned roughly 200 cameras, but that is not an accepted requirement
-- Cameras use stable IDs and remain identical for every material
-
-### Dataset v2 — multi-view, multi-geometry
-
-- Several normalized geometries rendered across the approved camera set
-- Geometry IDs, hashes, transforms, scale rules, and normal-generation rules become required metadata
-- The geometry suite and position-normalization convention must be accepted before rendering
-
-Each release must preserve the earlier evaluation cases so improvements from view diversity and then geometry diversity can be compared without changing every other variable at once.
-
-## Houdini-to-Three.js calibration
-
-Before judging model output from the application, reproduce the v0 hero and camera in Three.js and compare its `P`, `N`, `V`, alpha, projection, and silhouette against Houdini. Record coordinate handedness, space, units, object transform, camera convention, pixel origin, normal interpolation, edge coverage, and vertical image orientation. A mismatch here is an input-pipeline defect, not evidence about learned generalization.
-
-## Dataset root and release identity
-
-The accepted external dataset root is:
+Dataset root:
 
 ```text
 E:\Projects\neuron_data\datasets
 ```
 
-Never render directly into an unversioned `images` directory. Every attempt uses a release-candidate ID such as `material_hero_v0_rc001`. A release candidate remains mutable only while it is marked `in_progress`; a completed release is immutable and corrections create a new ID.
-
-## Proposed v0 raw-render layout
+Dataset v0 layout:
 
 ```text
 E:\Projects\neuron_data\datasets\
-  material_hero_v0_rc001\
-    dataset.json
-    inputs\
-      materials.json
-      scene.hipnc-or-hiplc
-      neuromat.hdanc-or-hdalc
-      source_hashes.json
-    entities\
-      materials.json
-      geometries.json
-      cameras.json
-      lights.json
-    jobs\
-      expected.jsonl
-      progress.jsonl
-      failures.jsonl
-    renders\
-      sculpted_rubber_toy\
-        cam_0000\
-          gold_polished_clean.exr
-          ...
-    previews\
-    reports\
-      validation_report.json
-      checksums.txt
+  material_hero_v0\
+    neuron_library_prod.json
+    sculpted_rubber_toy\
+      cam_0000\
+        gold_polished_clean\
+          render.exr
+        iron_brushed_scratched\
+          render.exr
+        ...
 ```
 
-This layout is ready for later cameras and meshes: they add sibling camera and geometry directories without changing the work-item key or manifest schema. It avoids creating 1,806 tiny material directories.
-
-The raw pilot should use one multilayer EXR per material × geometry × camera tuple. This matches the current Karma product and keeps beauty and AOVs atomically aligned. After the pilot, release packaging may extract training-friendly beauty images and deduplicate invariant fixed-view geometry buffers; raw source renders remain unchanged.
-
-## Work-item and file naming
-
-The logical work-item key is:
+Path meanings:
 
 ```text
-(material_id, geometry_id, camera_id)
+{dataset}/{geometry_id}/{camera_id}/{material_id}/render.exr
 ```
 
-The frame ID is `{material_id}__{geometry_id}__{camera_id}`. The physical raw path is derived deterministically as `renders/{geometry_id}/{camera_id}/{material_id}.exr`.
+- `sculpted_rubber_toy` is a `geometry_id`.
+- `cam_0000` is a `camera_id`.
+- `gold_polished_clean` is a `material_id`.
+- IDs, rather than semantic labels, are used in paths.
 
-For v0 this produces 1,806 expected work items from:
+The JSON snapshot and path structure are the dataset index. Dataset v0 has no `dataset.json`, frame manifest, camera record, geometry record, light record, schema record, checksum file, or validation report.
+
+The versioned HIP scene and HDA remain in the Houdini project rather than being copied into the dataset. They must not be changed after the full render starts. If the scene, HDA, output contract, or material library changes, create a new dataset directory such as `material_hero_v0_1` instead of mixing incompatible renders.
+
+## Render automation
+
+The planned implementation is `datagen/datarender.py`. It uses ordinary Python rather than TOPs/PDG.
+
+The script contains small explicit geometry and camera lists so later datasets can add entries without changing the nesting model:
+
+```python
+GEOMETRIES = [("sculpted_rubber_toy", "/GEO/material_hero")]
+CAMERAS = [("cam_0000", "/cameras/camera")]
+```
+
+It will:
+
+1. Load the copied `neuron_library_prod.json`.
+2. Iterate geometry IDs, camera IDs, and sorted material IDs.
+3. Select the geometry and camera.
+4. Set `/stage/neuromat.material_id`; the HDA cook loads and applies that JSON record.
+5. Set the output path to `{geometry_id}/{camera_id}/{material_id}/render.exr`.
+6. Render the frame.
+
+The first implementation is sequential and has no job database, manifest, retry manager, checksum generation, or automatic image validation.
+
+## Resume after interruption
+
+Before rendering a material, check whether its material folder exists:
 
 ```text
-1,806 materials × 1 geometry × 1 camera
+{dataset}/{geometry_id}/{camera_id}/{material_id}/
 ```
 
-IDs may contain lowercase ASCII letters, digits, and underscores only. Do not derive filenames from free-form labels.
+- Folder exists: skip it.
+- Folder does not exist: render it.
+- To rerender a material: manually delete that material folder and run the script again.
 
-## Resumable rendering
+This intentionally accepts the possibility that a crash leaves an incomplete folder that is skipped later. The user will inspect and correct those cases manually.
 
-File existence alone is not a sufficient success check. For every expected work item:
+## Training lookup
 
-1. Render to a temporary name such as `{material_id}.partial.exr`.
-2. Open the result and validate resolution, required subimages/channels, finite values, and nonzero file size.
-3. Rename the validated file to its final `.exr` name.
-4. Append a completion record with file size, checksum, duration, attempt number, and source hashes to `progress.jsonl`.
+The training loader does not need a frame manifest:
 
-On restart, derive the expected work-item list again. Skip a final EXR only after it passes the same lightweight validation; rerender missing, partial, unreadable, or contract-mismatched files. Append failures rather than overwriting history. This makes the folder scan useful without mistaking a truncated crash output for a completed frame.
+1. Scan the geometry/camera/material folders for `render.exr`.
+2. Read `material_id` from the folder name.
+3. Look up the compact prompt and semantic label in the copied `neuron_library_prod.json`.
+4. Read Beauty, `P`, `N`, `V`, and Coverage from that EXR.
 
-## Dataset and entity metadata
+Train/validation/test splits are created and stored by the training implementation, not by Houdini render automation.
 
-`dataset.json` records the release ID and state, creation time, Houdini and Karma versions, render engine, resolution, samples, denoising, pixel filter, color configuration, AOV contract, coordinate conventions, and hashes of every frozen input.
+## Dataset sequence
 
-`cameras.json` records for every `camera_id`:
+### Dataset v0 — fixed view
 
-- USD prim path and frame/time code;
-- projection, focal length, horizontal and vertical aperture;
-- image resolution, pixel aspect, and aspect-ratio conform policy;
-- clipping range, focus distance, f-stop, shutter, and any lens shift;
-- complete camera-to-world and world-to-camera matrices;
-- the final pixel-space intrinsic matrix after resolution and conform policy are applied.
+- 1,806 materials.
+- One Sculpted Rubber Toy.
+- One fixed camera.
+- 1024 × 1024.
 
-The current v0 entity is `/cameras/camera` at frame `1`: a 28 mm perspective camera. The Camera LOP authors millimeter UI values in USD's camera-unit convention, so raw USD values must not be relabeled as millimeters without conversion.
+### Dataset v1 — multi-view hero
 
-`geometries.json` records for every `geometry_id`:
+- Add camera folders beside `cam_0000`.
+- Keep the same material-folder and EXR contract.
+- Camera count is chosen after the v0 model and a small multi-view pilot.
 
-- USD prim path, source path or embedded-scene identity, and content hash;
-- object-to-world transform, stage units, up axis, and bounds;
-- topology counts, normal interpolation, UV set, subdivision state, and relevant primvars.
+### Dataset v2 — multi-view and multi-geometry
 
-The current v0 entity is `/GEO/material_hero` with identity transform, 1,611,108 points, and 3,239,506 faces on a Y-up stage with `metersPerUnit = 1`.
+- Add geometry folders beside `sculpted_rubber_toy`.
+- Keep the same camera/material nesting and EXR contract.
+- Geometry normalization and the test-geometry set are decided before that render.
 
-`lights.json` records each light prim, transforms, HDRI path and hash, color, intensity, exposure, and any renderer-specific settings. `materials.json` is the frozen production-library snapshot indexed by material ID.
+## Manual acceptance checks
 
-Every progress/final frame row also records render duration, attempt, output size and checksum, and the hashes or IDs of the material, geometry, camera, lighting, scene, HDA, and render configuration that produced it.
+Before the full v0 batch:
 
-## Logical manifest schema
+- Render the eight-material stress set through `datarender.py`.
+- Open representative EXRs and confirm 1024 × 1024 Beauty, `P`, `N`, `V`, and Coverage.
+- Confirm `N` is unbumped and Coverage is material-independent.
+- Confirm DOF is absent.
+- Confirm the output has no watermark.
+- Interrupt and restart the pilot once to verify folder-based skipping.
 
-The serialization format remains open, but each frame must logically provide:
-
-```json
-{
-  "frame_id": "gold_polished_clean_hero_cam_0000",
-  "material_id": "gold_polished_clean",
-  "geometry_id": "sculpted_rubber_toy",
-  "camera_id": "cam_0000",
-  "split": "train",
-  "compact_prompt": "gold polished clean",
-  "semantic_label": "...",
-  "camera_to_world": [[0, 0, 0, 0]],
-  "intrinsics": [[0, 0, 0], [0, 0, 0], [0, 0, 1]],
-  "paths": {
-    "beauty": "...",
-    "alpha": "...",
-    "position": "...",
-    "normal": "...",
-    "view_direction": "...",
-    "depth": "..."
-  }
-}
-```
-
-The example matrices are placeholders for shape only. Real matrices must contain full validated values and documented conventions.
-
-The `view_direction` path may be omitted when the release contract specifies a deterministic derivation from `P` and camera metadata. The validator must reproduce and check that derivation.
-
-Use JSONL for expected work items, render progress, failures, and the final frame manifest. Use ordinary JSON for dataset-level and entity metadata. The pilot must validate this serialization before decision O-003 is closed.
-
-## Proposed packaged-release layout
-
-```text
-dataset_release/
-  dataset.json
-  materials.json
-  cameras.json
-  frames.jsonl
-  splits.json
-  images/
-    beauty/
-    alpha/
-    position/
-    normal/
-    view_direction/       optional when derived deterministically
-    depth/
-  debug/                 optional
-  validation_report.json
-  checksums.txt
-```
-
-Do not organize the only copy exclusively as thousands of material folders if that makes validation and sequential loading difficult. The manifest is the authoritative index regardless of physical layout.
-
-## Split policy
-
-- Assign splits by `material_id` before rendering or packaging.
-- Keep every camera view of a material in the same split.
-- For multi-geometry releases, define separate seen-geometry and held-out-geometry evaluations without weakening the material-ID split.
-- Include a compositional holdout where base, finish, color, or condition concepts are individually represented in training but an exact combination is not.
-- Do not tune against the final test split.
-- Store the split assignment as versioned data.
-
-## Validation requirements
-
-Before release, automatically verify:
-
-- every manifest path exists;
-- image dimensions and channel types match the contract;
-- values are finite and ranges are plausible;
-- alpha and geometry AOVs align with beauty;
-- IDs are unique;
-- material and camera foreign keys resolve;
-- all views of one material share one split;
-- no watermark is present;
-- no unexpected lighting, exposure, or color changes occurred;
-- repeated pilot renders are deterministic within a defined tolerance.
-
-Visual QA for v0 must hold the camera constant across materials. Multi-view releases additionally hold material constant across cameras; multi-geometry releases also hold prompt and camera constant across geometries.
-
-## Release identity
-
-Every dataset release should record:
-
-- release version and timestamp;
-- Git commit;
-- active scene and HDA versions plus hashes;
-- Houdini and renderer versions;
-- material library hash;
-- geometry or geometry-set hashes;
-- camera-set hash;
-- render settings and color configuration;
-- manifest and split hashes;
-- known limitations.
+After the full render, manually check the expected material count and inspect representative materials before starting training.

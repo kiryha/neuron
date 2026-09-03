@@ -110,7 +110,7 @@ Run validation against both newly generated labels and existing labels. Skipping
 
 The production library was regenerated with seed `42` and `overwrite=True` on 2026-09-02. The generator templates no longer add a connector before `finish_description`, because every authored finish description already begins with `with`.
 
-All 1,806 production records pass adjacent-duplicate QA, including zero occurrences of `with with`. Repeating the full regeneration produced the same SHA-256 hash: `2d7bdcfe36ba06271b2b99d4c38530e3702a83f2abd40028ce1984654e314140`.
+All 1,806 production records pass adjacent-duplicate QA, including zero occurrences of `with with`. Repeating the full regeneration produced identical labels.
 
 ## Prompt aliases
 

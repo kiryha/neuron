@@ -6,7 +6,7 @@
 
 ## Current objective
 
-Lock the fixed-camera dataset-v0 contract and build a resumable material × geometry × camera render system whose first release uses one hero and one camera.
+Apply the accepted minimal fixed-camera dataset-v0 contract and build `datagen/datarender.py`, whose first run uses one hero and one camera.
 
 The accepted learning sequence is: train on one fixed view; test Three.js orbit, zoom, and alternate-mesh inputs as deliberately unsupported cases; add multi-view Houdini data and retrain; then add multi-geometry data and retrain. Improvement between versions is an experiment to measure, not an assumed capability.
 
@@ -30,7 +30,7 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 
 - Project root: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D`
 - Active scene: `scenes\material_hero_005.hipnc`
-  - Modified: 2026-09-02 14:16
+  - Modified: 2026-09-02 20:51
   - Pre-resolution-change backup: `scenes\material_hero_005_before_512_20260902.hipnc`
 - Active HDA: `hda\lop_KKO8.neuromat.1.2.hdanc`
   - Type: `KKO8::neuromat::1.2`
@@ -50,10 +50,11 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - Camera: `/cameras/camera`, one 28 mm perspective camera at frame 1; the apparent USD `50` value was the no-time schema fallback, not the cooked lens
 - Dome light: `studio_kontrast_04_2k.hdr`, intensity `1.0`, exposure `-0.5`
 - Karma engine: XPU
-- Current candidate dataset resolution: 512 × 512
+- Current candidate dataset resolution: 1024 × 1024
 - Current path-traced samples: 128
 - Denoiser: off
-- The active `/Render/rendersettings` prim resolves to 512 × 512. `/Render/Products/renderproduct` reports 2048 × 1080 only as an unauthored USD fallback, so it does not override the active resolution.
+- The active `/Render/rendersettings` prim resolves to 1024 × 1024. `/Render/Products/renderproduct` reports 2048 × 1080 only as an unauthored USD fallback, so it does not override the active resolution.
+- DOF is accepted as disabled for dataset v0, but the current scene still authors camera f-stop `1.2` and Render Settings `disableDepthOfField = false`.
 
 ### Material system
 
@@ -116,7 +117,7 @@ These are implemented values, not yet approved final look-dev values. Judge them
 - `subsurface`, `subsurface_color`, and `thin_walled` are now linked from the HDA interface to the live Standard Surface parameters.
 - `k` and `metallic_flake` are explicitly classified as unused metadata for v1. They remain in JSON for provenance/future work but are intentionally ignored by the production graph and do not affect pixels.
 - The intended Karma/MaterialX treatment of `transmission_scatter` still requires explicit verification.
-- The current bump AOV is derived after `mtlxbump`; its meaning should be documented as altered normal versus scalar height before training use.
+- The current bump AOV is derived after `mtlxbump`, but it is no longer part of the accepted dataset output and will be disabled before the pilot.
 
 ### Render outputs
 
@@ -131,7 +132,17 @@ Current RenderVars:
 - Wear mask
 - Bump debug output
 
-There is no separate Alpha RenderVar; confirm that the beauty alpha is correct and stable. BaseColor and Roughness RenderVars are not implemented. They are optional auxiliary/diagnostic outputs for the direct-RGB model, not generated products.
+The current scene has no separate material-independent Coverage RenderVar. Beauty alpha is not the accepted replacement because transmissive materials must not change the geometry mask. BaseColor and Roughness are not implemented and are not required.
+
+Accepted dataset-v0 outputs, not yet applied to the scene:
+
+- Beauty RGB
+- World position `P`
+- Smooth, unbumped world normal `N`
+- Normalized world view direction `V`, from surface toward camera
+- Material-independent Coverage
+
+`Pz`, variation, dirt, wear, bump, BaseColor, Roughness, and other diagnostic outputs are excluded from the dataset. Their underlying material effects remain visible in Beauty.
 
 ### Labels
 
@@ -139,33 +150,34 @@ There is no separate Alpha RenderVar; confirm that the beauty alpha is correct a
 - Templates no longer insert a second `with` before finish descriptions, and adjacent duplicate words are rejected by both entry and assembled-label validation.
 - Existing labels are validated even when overwrite is disabled.
 - All 1,806 production labels were regenerated with seed `42`; zero adjacent duplicates remain.
-- Production JSON SHA-256: `2d7bdcfe36ba06271b2b99d4c38530e3702a83f2abd40028ce1984654e314140`.
 
 ### Dataset batch design
 
 - Accepted external root: `E:\Projects\neuron_data\datasets`.
-- The proposed release candidate uses one multilayer EXR for each material × geometry × camera tuple.
-- Proposed physical path: `renders/{geometry_id}/{camera_id}/{material_id}.exr`.
-- Resume logic validates a final EXR before skipping it; partial, unreadable, or contract-mismatched files are rerendered.
-- JSONL is proposed for expected jobs, progress, failures, and frames; the pilot must validate this choice before the manifest decision is closed.
+- Dataset directory: `material_hero_v0`.
+- Copy `neuron_library_prod.json` unchanged into the dataset root; no checksum or renamed copy is required.
+- One multilayer EXR is stored at `{geometry_id}/{camera_id}/{material_id}/render.exr`.
+- The JSON snapshot and folder names are the dataset index; no manifest or camera/geometry/dataset records are required.
+- Planned automation: sequential `datagen/datarender.py` with explicit geometry and camera lists.
+- Resume behavior: skip when the material folder exists; delete the folder manually to request a rerender.
 
 ## Blockers before a full render
 
 | Priority | Blocker | Required resolution |
 | --- | --- | --- |
 | P0 | Current scene and HDA are `.hipnc`/`.hdanc` | Convert or rebuild them as Indie `.hiplc`/`.hdalc`; merely installing Indie can still downgrade when noncommercial assets are loaded. Prove the final path with an unwatermarked pilot. |
-| P0 | No dataset automation or manifest | Build and validate a fixed-camera material pilot before the full v0 render |
+| P0 | No dataset automation | Implement `datagen/datarender.py` and run the eight-material fixed-camera pilot |
 | P1 | Unresolved transmission-scatter policy | Verify or explicitly classify `transmission_scatter` behavior |
-| P1 | Render contract not frozen | Verify alpha, coordinate spaces, color management, naming, and metadata |
+| P1 | Scene does not yet match accepted output contract | Disable DOF; replace current debug RenderVars with Beauty, world `P`, unbumped world `N`, world `V`, and material-independent Coverage |
 
 ## Next exact actions
 
-1. Decide whether depth of field remains part of the fixed training look; the current camera uses f-stop `1.2` and focus distance `2.2105`.
-2. Resolve `transmission_scatter`, alpha/coverage semantics, coordinate spaces, color management, and the exact production RenderVars.
-3. Build the resumable material × geometry × camera work-item graph under `E:\Projects\neuron_data\datasets` and freeze the production material snapshot by hash.
+1. Update scene 005 to disable DOF and output only Beauty, world `P`, smooth unbumped world `N`, world `V`, and material-independent Coverage at 1024 × 1024.
+2. Resolve or explicitly classify `transmission_scatter` behavior.
+3. Implement the minimal sequential `datagen/datarender.py` renderer and folder-existence skip behavior.
 4. Convert or rebuild the scene and HDA for Indie, then prove that the exact batch path writes an unwatermarked output.
-5. Render and validate the eight-material fixed-camera v0 pilot before launching all 1,806 materials.
-6. Reproduce the Houdini training camera and hero buffers in Three.js and quantify `P`, `N`, `V`, alpha, silhouette, and projection differences.
+5. Render and manually inspect the eight-material fixed-camera v0 pilot before launching all 1,806 materials.
+6. Reproduce the Houdini training camera and hero buffers in Three.js and compare `P`, `N`, `V`, Coverage, silhouette, and projection.
 7. Train the first model and record exact-view, orbit/zoom, and alternate-mesh results.
 8. Only after the fixed-view baseline is understood, build a camera-dome pilot for the next dataset version.
 
@@ -177,7 +189,7 @@ Phase 1 is complete only when:
 - UI material selection reliably cooks and applies the complete intended JSON record;
 - the stress set passes visual and data QA;
 - repeated renders are deterministic;
-- fixed camera, color, AOV, file, and manifest contracts are frozen;
+- fixed camera, color, AOV, and file contracts are frozen;
 - final outputs contain no watermark;
-- a fixed-camera pilot can be loaded by a minimal dataset validator;
-- the full fixed-camera material batch can be resumed without manual per-frame intervention.
+- a fixed-camera pilot can be loaded by the training-data reader;
+- rerunning the full batch skips existing material folders, with incomplete folders handled manually.

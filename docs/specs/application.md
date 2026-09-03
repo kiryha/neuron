@@ -2,7 +2,7 @@
 
 Status: **Scaffold only**
 
-Last reviewed: 2026-08-31
+Last reviewed: 2026-09-02
 
 ## Objective
 
@@ -22,7 +22,7 @@ Provide a small web application where a user enters a supported material prompt 
 1. The application loads the neural model, the training-hero proxy, and several additional test meshes.
 2. The user enters a compact prompt such as `gold brushed dirty`.
 3. The application validates or normalizes the prompt against the supported vocabulary.
-4. Three.js rasterizes `P`, `N`, and alpha for the active supplied mesh and camera, then derives `V` from position and camera state.
+4. Three.js rasterizes `P`, smooth unbumped `N`, and material-independent Coverage for the active supplied mesh and camera, then derives `V` from position and camera state.
 5. The backend or client inference path generates final RGB.
 6. The generated image is displayed from the requested camera.
 7. Prompt, camera, or mesh changes request a new image; v0 results outside the exact training pose are labeled experimental and may be broken.
@@ -60,15 +60,11 @@ The final binary transport is not frozen, but a render request must logically co
 {
   "prompt": "gold brushed dirty",
   "geometry_id": "sculpted_rubber_toy",
-  "camera": {
-    "camera_to_world": [[0, 0, 0, 0]],
-    "intrinsics": [[0, 0, 0], [0, 0, 0], [0, 0, 1]]
-  },
   "geometry_buffers": {
     "position": "binary-reference",
     "normal": "binary-reference",
     "view_direction": "binary-reference",
-    "alpha": "binary-reference"
+    "coverage": "binary-reference"
   },
   "width": 512,
   "height": 512,
@@ -76,7 +72,7 @@ The final binary transport is not frozen, but a render request must logically co
 }
 ```
 
-The matrices and buffer references above illustrate required structure only. Large floating-point buffers should use an appropriate binary transport rather than JSON arrays. Their conventions must match the dataset specification.
+The buffer references above illustrate required structure only. The model receives `V` directly, so separate camera matrices are not required by the inference request. Large floating-point buffers should use an appropriate binary transport rather than JSON arrays. Their conventions must match the dataset specification.
 
 ## Logical render response
 

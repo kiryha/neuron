@@ -42,9 +42,10 @@ Expected baseline:
 - 28 mm test camera
 - studio HDRI at exposure `-0.5`
 - Karma XPU
-- 512 × 512 candidate dataset render
+- 1024 × 1024 candidate dataset render
 - 128 path-traced samples
 - denoiser off
+- depth of field disabled for dataset renders
 
 If these differ intentionally, update the status and dataset specification before using the result as a new baseline.
 
@@ -117,9 +118,8 @@ Use one fixed camera and lighting setup:
 For every material inspect:
 
 - beauty;
-- alpha/coverage;
-- `P`, `Pz`, and `N`;
-- variation, dirt, wear, and bump diagnostics;
+- material-independent Coverage;
+- world `P`, smooth unbumped world `N`, and world `V`;
 - expected branch selection;
 - prompt/visual agreement.
 
@@ -129,11 +129,10 @@ Use a contact sheet when possible so differences are judged under the same view 
 
 Before camera automation:
 
-- confirm beauty alpha is usable or add an explicit alpha output;
-- document the coordinate spaces of `P`, `Pz`, and `N`;
-- rename bump output so its data meaning is unambiguous;
-- decide whether BaseColor and Roughness are retained;
-- record OCIO configuration, beauty color space, output channel types, and display-only transforms.
+- disable camera depth of field;
+- keep only Beauty, world `P`, smooth unbumped world `N`, world `V`, and material-independent Coverage;
+- remove `Pz`, variation, dirt, wear, bump, BaseColor, Roughness, and other debug RenderVars from dataset output;
+- confirm the EXR channels and display interpretation manually with the eight-material pilot.
 
 Do not change these definitions after starting the full dataset.
 
