@@ -154,7 +154,7 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 - Copy `neuron_library_prod.json` unchanged into the dataset root; no checksum or renamed copy is required.
 - One multilayer EXR is stored at `{geometry_id}/{camera_id}/{material_id}/render.exr`.
 - The JSON snapshot and folder names are the dataset index; no manifest or camera/geometry/dataset records are required.
-- Implemented camera stage: `datarender.py` creates an unconnected `/stage/camera_dome` subnet containing sequential Camera LOPs that author `/cameras/cam_####` prims. The user connects the subnet manually.
+- Implemented camera stage: `datarender.py` creates an unconnected `/stage/camera_dome` subnet containing sequential Camera LOPs that author `/cameras/cam_###` prims. The user connects the subnet manually.
 - Camera positions use a full-sphere Fibonacci distribution, look at world origin, and share a distance derived from the UI focal length, approximate object size, and margin multiplier; no geometry bounds are read.
 - Planned render stage: sequential material/camera rendering will be implemented in later user-defined stages.
 - Resume behavior: skip when the material folder exists; delete the folder manually to request a rerender.

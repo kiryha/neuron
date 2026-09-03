@@ -47,7 +47,7 @@ def create_camera_dome(camera_count, focal_length, object_size, frame_margin):
     previous = camera_dome.indirectInputs()[0]
 
     for index, position in enumerate(_camera_positions(camera_count, distance)):
-        camera_name = f"cam_{index:04d}"
+        camera_name = f"cam_{index:03d}"
         camera = camera_dome.createNode("camera", camera_name)
         camera.setInput(0, previous)
         camera.parm("primpath").set(f"/cameras/{camera_name}")

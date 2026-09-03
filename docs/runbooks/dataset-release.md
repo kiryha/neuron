@@ -36,7 +36,7 @@ After the tool is implemented and scene preflight passes, run the eight-material
 Expected path example:
 
 ```text
-material_hero_v0\sculpted_rubber_toy\cam_0000\gold_polished_clean\render.exr
+material_hero_v0\sculpted_rubber_toy\cam_000\gold_polished_clean\render.exr
 ```
 
 Manually open representative EXRs and confirm resolution, channels, prompt/material agreement, unbumped `Nb`, material-independent `C.A` Coverage, absence of DOF, and absence of a watermark. Compare opaque and strongly transmissive alpha images at the same camera.

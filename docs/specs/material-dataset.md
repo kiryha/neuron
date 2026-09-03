@@ -73,7 +73,7 @@ Because these buffers are constant across dataset v0, the first model may learn 
 ## Fixed scene rules
 
 - Geometry: Sculpted Rubber Toy at `/GEO/material_hero`.
-- Camera: `cam_0000`, using the existing `/cameras/camera` 28 mm perspective view.
+- Camera: `cam_000`, using the existing `/cameras/camera` 28 mm perspective view.
 - Resolution: 1024 × 1024.
 - Aspect policy: the existing square-image `expandAperture` policy.
 - Depth of field: disabled.
@@ -98,7 +98,7 @@ E:\Projects\neuron_data\datasets\
   material_hero_v0\
     neuron_library_prod.json
     sculpted_rubber_toy\
-      cam_0000\
+      cam_000\
         gold_polished_clean\
           render.exr
         iron_brushed_scratched\
@@ -113,7 +113,7 @@ Path meanings:
 ```
 
 - `sculpted_rubber_toy` is a `geometry_id`.
-- `cam_0000` is a `camera_id`.
+- `cam_000` is a `camera_id`.
 - `gold_polished_clean` is a `material_id`.
 - IDs, rather than semantic labels, are used in paths.
 
@@ -129,7 +129,7 @@ The implementation is being built in user-directed stages in `datagen/datarender
 
 The user-authored `datagen/ui/ui_datarender.ui` provides camera count, focal length in millimeters, approximate object size in meters, and a frame-margin multiplier. Its **Create Camera Dome** button creates an unconnected Camera Dome subnet in `/stage`; the user connects the subnet manually.
 
-Inside the subnet, Camera LOPs are connected sequentially between the subnet input and output. They author `/cameras/cam_0000`, `/cameras/cam_0001`, and so on. Positions use a full-sphere Fibonacci distribution, every camera looks at world origin, and every camera uses the requested focal length.
+Inside the subnet, Camera LOPs are connected sequentially between the subnet input and output. They author `/cameras/cam_000`, `/cameras/cam_001`, and so on. Positions use a full-sphere Fibonacci distribution, every camera looks at world origin, and every camera uses the requested focal length.
 
 Object size is a simple framing input, not measured geometry. Camera distance uses the fixed 20.955 mm aperture and is multiplied by the UI frame margin: `1.0` adds no extra space and the default `1.25` moves cameras 25% farther away. Values below `1.0` are rejected. The tool does not inspect geometry bounds, find or update existing cameras, connect itself to the root network, change Karma Render Settings, or render images.
 
@@ -139,7 +139,7 @@ The script will contain small explicit geometry and camera lists so later datase
 
 ```python
 GEOMETRIES = [("sculpted_rubber_toy", "/GEO/material_hero")]
-CAMERAS = [("cam_0000", "/cameras/camera")]
+CAMERAS = [("cam_000", "/cameras/camera")]
 ```
 
 The final minimal renderer is expected to:
@@ -189,7 +189,7 @@ Train/validation/test splits are created and stored by the training implementati
 
 ### Dataset v1 — multi-view hero
 
-- Add camera folders beside `cam_0000`.
+- Add camera folders beside `cam_000`.
 - Keep the same material-folder and EXR contract.
 - Camera count is chosen after the v0 model and a small multi-view pilot.
 
