@@ -123,7 +123,17 @@ The versioned HIP scene and HDA remain in the Houdini project rather than being 
 
 ## Render automation
 
-The planned implementation is `datagen/datarender.py`. It will run with Houdini's `hython` interpreter and use ordinary sequential Python rather than TOPs/PDG. It must never save the loaded HIP file. The user will define its functionality and CLI in stages before implementation.
+The implementation is being built in user-directed stages in `datagen/datarender.py`. It uses ordinary sequential Python rather than TOPs/PDG and must never save the loaded HIP file. Only camera-dome creation is implemented so far; dataset rendering is still planned.
+
+### Camera-dome stage
+
+The user-authored `datagen/ui/ui_datarender.ui` provides camera count, focal length in millimeters, and approximate object size in meters. Its **Create Camera Dome** button creates an unconnected Camera Dome subnet in `/stage`; the user connects the subnet manually.
+
+Inside the subnet, Camera LOPs are connected sequentially between the subnet input and output. They author `/cameras/cam_0000`, `/cameras/cam_0001`, and so on. Positions are distributed evenly over the upper hemisphere, every camera looks at world origin, and every camera uses the requested focal length.
+
+Object size is a simple framing input, not measured geometry. Camera distance uses the fixed 20.955 mm aperture and a 10% margin. The tool does not inspect geometry bounds, find or update existing cameras, connect itself to the root network, change Karma Render Settings, or render images.
+
+### Planned render stage
 
 The script will contain small explicit geometry and camera lists so later datasets can add entries without changing the nesting model:
 

@@ -1,14 +1,14 @@
 # Current project status
 
 - Last verified: 2026-09-03
-- Repository baseline inspected: `main` at `eecc83e`
+- Repository baseline inspected: `main` at `5aa6db8`
 - Current phase: **Phase 1 data generation, with an accepted early Phase 2B frontend slice**
 
 ## Current objective
 
-Implement a local-only Three.js viewer that loads the reduced Material Hero GLB and displays its smooth world-space normal pass. The camera is orbitable and a reset control restores a stable app-authored reference position, target, and field of view. Prompt UI, model inference, the remaining geometry passes, FastAPI changes, and Hugging Face deployment are deferred.
+Validate the first `datarender` stage in Houdini: create an unconnected Solaris camera-dome subnet from the UI, connect it manually, and confirm that its generated cameras frame the hero. The render loop remains a later user-directed stage. Depth of field is already disabled in scene 006.
 
-After this isolated frontend slice, return to `datagen/datarender.py` in user-directed stages and the eight-material, one-hero, one-camera pilot. Depth of field is already disabled in scene 006.
+The accepted local Three.js normal-viewer slice remains planned but is not the active task.
 
 The accepted learning sequence is: train on one fixed view; test Three.js orbit, zoom, and alternate-mesh inputs as deliberately unsupported cases; add multi-view Houdini data and retrain; then add multi-geometry data and retrain. Improvement between versions is an experiment to measure, not an assumed capability.
 
@@ -17,7 +17,8 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 ### Repository
 
 - `datagen/materials.py` is the current material and label generator.
-- `datagen/datarender.py` is planned but not implemented. Its functionality and CLI will be defined by the user in stages; the accepted design remains sequential hython rendering with no HIP save operation.
+- `datagen/datarender.py` now implements the first UI stage: it creates an unconnected Solaris camera-dome subnet from camera count, focal length, and approximate object size. Dataset rendering is not implemented yet.
+- `datagen/ui/ui_datarender.py` is generated from the user-authored `ui_datarender.ui`.
 - The generator defines 56 bases, 5 finishes, 4 conditions, 10 colors, and 4 categories.
 - Compatibility filtering produces **1,806** material records.
 - Current bump-type distribution is 1,143 stochastic, 396 directional, and 267 cellular records.
@@ -151,29 +152,32 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 - Copy `neuron_library_prod.json` unchanged into the dataset root; no checksum or renamed copy is required.
 - One multilayer EXR is stored at `{geometry_id}/{camera_id}/{material_id}/render.exr`.
 - The JSON snapshot and folder names are the dataset index; no manifest or camera/geometry/dataset records are required.
-- Planned automation: sequential `datagen/datarender.py` with explicit geometry and camera lists; implementation will proceed in user-defined stages.
+- Implemented camera stage: `datarender.py` creates an unconnected `/stage/camera_dome` subnet containing sequential Camera LOPs that author `/cameras/cam_####` prims. The user connects the subnet manually.
+- Camera positions use an upper-hemisphere Fibonacci distribution, look at world origin, and share a distance derived from the UI focal length and approximate object size; no geometry bounds are read.
+- Planned render stage: sequential material/camera rendering will be implemented in later user-defined stages.
 - Resume behavior: skip when the material folder exists; delete the folder manually to request a rerender.
 
 ## Blockers before a full render
 
 | Priority | Blocker | Required resolution |
 | --- | --- | --- |
-| P0 | Render automation not implemented | User defines the first `datarender` stage, then implement and verify it before the automated pilot |
+| P0 | Camera-dome stage not yet checked in the active Houdini scene | User creates and manually connects the subnet, then checks camera framing |
+| P0 | Dataset render loop not implemented | User defines the next `datarender` stage after the camera dome is approved |
 | P1 | Unresolved transmission-scatter policy | Verify or explicitly classify `transmission_scatter` behavior |
 | P1 | Karma XPU reported one critical error and used only Embree CPU | Inspect Houdini's Log Viewer and decide whether GPU rendering must be restored before the full 1,806-material run |
 
 ## Next exact actions
 
-1. Replace the placeholder sphere with `public/models/material_hero/sculpted-rubber-toy.glb` in the local React app.
-2. Render smooth world-space normals to a 1024 x 1024 floating-point target and display them with `N * 0.5 + 0.5` on black.
-3. Keep OrbitControls and add reset to a stable app-authored camera position, target, and field of view.
-4. Verify the local Vite app and production frontend build; do not add prompt, inference, backend, or deployment work yet.
-5. Return to the user-directed `datarender.py` stages and prepare the eight-material pilot without editing or saving the HIP file.
+1. Run the `datarender` UI in Houdini and create a camera dome using the intended camera count, focal length, and object size.
+2. Manually connect the new subnet into the Solaris chain before Karma Render Settings.
+3. Look through representative generated cameras and confirm that the hero fits in frame; adjust the UI object size if more framing margin is needed.
+4. User defines the next `datarender` stage.
+5. Implement sequential dataset rendering without editing or saving the HIP file.
 6. Inspect the Karma critical error and CPU-only XPU device state before estimating the full render.
 7. Manually inspect the pilot, including an opaque-versus-glass `C.A` comparison and restart/skip test.
 8. Resolve or explicitly classify `transmission_scatter` behavior before the full batch.
 9. Run the full material batch only after the pilot is approved.
-10. Train the first model and later extend the web buffer path with `P`, `V`, and Coverage.
+10. Return to the accepted local Three.js normal-viewer slice, then train the first model and extend the web buffer path with `P`, `V`, and Coverage.
 
 ## Phase 1 exit criteria
 

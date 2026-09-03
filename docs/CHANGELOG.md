@@ -117,3 +117,10 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Set the normal data convention to float `[-1, 1]` with `N * 0.5 + 0.5` used only for RGB display.
 - Kept the camera orbitable and required reset to a stable app-authored reference position, target, and field of view.
 - Deferred prompt UI, model inference, `P`/`V`/Coverage passes, FastAPI changes, and Hugging Face deployment.
+
+### Datarender camera-dome stage
+
+- Generated `datagen/ui/ui_datarender.py` from the user-authored UI containing camera-count, focal-length, and object-size inputs.
+- Implemented `datagen/datarender.py` camera-dome creation using an upper-hemisphere Fibonacci distribution, world-origin look-at, and simple size/focal-length framing.
+- Kept the created `/stage/camera_dome` subnet unconnected for manual Solaris wiring; the tool does not inspect geometry bounds, find existing cameras, change Karma Render Settings, or render images.
+- Verified the implementation in a fresh unsaved Houdini scene with eight 28 mm cameras and a 2 m object-size input.
