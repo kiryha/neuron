@@ -160,3 +160,4 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Verified eight expected `cam_001` material folders, eight readable finite multipart EXRs, the DEV JSON snapshot, and the required `C`, `P`, `V`, and `Nb` channels.
 - Confirmed consistent framing and visibly distinct material responses; glass remains too noisy for final-quality approval at the test settings.
 - Recorded that PROD must use a clean output directory after a low-resolution pilot because the simple folder-existence resume rule would otherwise retain and mix the eight test renders.
+- Added explicit `Dataset Render Started...` and successful `Dataset Render Complete!` console messages around the render loop.

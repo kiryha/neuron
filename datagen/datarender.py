@@ -137,6 +137,8 @@ def render_dataset(dataset_root, dataset_name, geometry_name, cameras, material_
     skipped = 0
     frame = hou.intFrame()
 
+    print("Dataset Render Started...")
+
     for camera_name, camera_path in cameras:
         render_settings.parm("camera").set(camera_path)
 
@@ -157,6 +159,7 @@ def render_dataset(dataset_root, dataset_name, geometry_name, cameras, material_
             render_rop.render(frame_range=(frame, frame), verbose=True)
             rendered += 1
 
+    print("Dataset Render Complete!")
     return rendered, skipped
 
 

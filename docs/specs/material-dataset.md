@@ -157,6 +157,8 @@ For every selected camera and sorted material ID, the tool:
 3. Sets the output path to `{geometry_id}/{camera_id}/{material_id}/render.exr`.
 4. Invokes `/stage/usdrender_rop1` for the current frame.
 
+The console prints `Dataset Render Started...` before iteration begins and `Dataset Render Complete!` only after every selected item has rendered or been skipped successfully.
+
 No separate camera transform is stored. `P`, `Nb`, `V`, and `C.A` already contain the geometry and view context required for training; folder IDs and the copied material JSON complete the minimal lookup contract. The implementation has no job database, manifest, retry manager, checksum generation, or automatic image validation.
 
 ## Resume after interruption
