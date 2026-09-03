@@ -41,9 +41,9 @@ Adopted or confirmed:
 - validation should detect repetition, punctuation problems, and contradictions;
 - same source and seed should generate the same labels.
 
-Current discrepancy:
+Discrepancy at import time (resolved 2026-09-02):
 
-- The current stress JSON still contains `with with`, showing that adjacent duplicate-word validation remains incomplete and existing skipped labels need QA.
+- The imported stress JSON contained `with with`, showing that adjacent duplicate-word validation and existing-label QA were incomplete at the time. The production generator and library have since been corrected; see the canonical label specification.
 
 ## [Gemini — Material Generator](<chats/gemini [ N ] Material Generator.pdf>)
 

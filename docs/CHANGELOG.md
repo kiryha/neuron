@@ -50,4 +50,19 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Recorded user approval of the fixed-camera stress renders, including stochastic, directional, and cellular bump behavior.
 - Verified `material_hero_005.hipnc` and the updated `neuromat` 1.2 HDA as the current external Houdini artifacts.
 - Set the repository production material JSON as the planned batch source of truth.
-- Identified preflight issues before automation: development JSON still configured in the scene, 805 duplicate-word labels, and conflicting authored versus cooked camera/resolution values.
+- Identified preflight issues before automation: development JSON still configured in the scene, 805 duplicate-word labels, and apparent camera/resolution discrepancies that required USD-time/fallback inspection.
+
+### Scene and label preflight fixes
+
+- Confirmed that the apparent 50 mm camera value was the USD no-time fallback; frame 1 correctly resolves to the Camera LOP's 28 mm lens.
+- Confirmed that the RenderProduct's 2048 × 1080 value was an unauthored fallback and did not override the active RenderSettings resolution.
+- Backed up `material_hero_005.hipnc` and changed the active candidate dataset resolution from 1280 × 1280 to 512 × 512.
+- Removed template-level `with with` construction, added adjacent-word QA, and made skipped existing labels pass validation.
+- Regenerated all 1,806 production labels with seed `42`; zero adjacent duplicates remain and repeated generation produced SHA-256 `2d7bdcfe36ba06271b2b99d4c38530e3702a83f2abd40028ce1984654e314140`.
+
+### Dataset-v0 batch proposal
+
+- Set `E:\Projects\neuron_data\datasets` as the external dataset root.
+- Proposed versioned release-candidate directories, deterministic material × geometry × camera paths, multilayer raw EXRs, JSON/JSONL metadata, and validate-before-skip crash recovery.
+- Recorded current camera and geometry entity metadata needed for later Houdini-to-Three.js calibration.
+- Clarified that the `.hipnc` scene and `.hdanc` HDA can downgrade an Indie session; converted or rebuilt `.hiplc`/`.hdalc` inputs and an unwatermarked pilot remain required.

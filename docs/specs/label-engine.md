@@ -1,8 +1,8 @@
 # Label engine specification
 
-Status: **Implemented; stress labels require regeneration and additional QA**
+Status: **Implemented and full-library duplicate-word QA verified**
 
-Last reviewed: 2026-08-26
+Last reviewed: 2026-09-02
 
 ## Purpose
 
@@ -58,6 +58,7 @@ The structured fields are the meaning. Templates provide shallow wording variati
 - Label templates use a fixed random seed of `42` by default.
 - Entries are processed in sorted material-ID order.
 - Existing labels are skipped unless overwrite is explicitly enabled.
+- Existing labels are still validated when overwrite is disabled.
 
 Changing the template list, sort order, seed, or overwrite behavior can change labels and therefore requires a new material-library/dataset version.
 
@@ -105,15 +106,11 @@ For every generated label:
 
 Run validation against both newly generated labels and existing labels. Skipping an existing label must not skip QA.
 
-## Current defect
+## Verified full-library result
 
-The stress JSON contains:
+The production library was regenerated with seed `42` and `overwrite=True` on 2026-09-02. The generator templates no longer add a connector before `finish_description`, because every authored finish description already begins with `with`.
 
-```text
-Photorealistic material study of precious 24k gold metal with with a mirror-like smooth reflectance, in pristine condition.
-```
-
-The present validator does not catch this adjacent duplicate. Fix validation, then regenerate the stress labels with `overwrite=True` or correct and validate them through an equivalent deterministic path.
+All 1,806 production records pass adjacent-duplicate QA, including zero occurrences of `with with`. Repeating the full regeneration produced the same SHA-256 hash: `2d7bdcfe36ba06271b2b99d4c38530e3702a83f2abd40028ce1984654e314140`.
 
 ## Prompt aliases
 

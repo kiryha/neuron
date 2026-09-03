@@ -4,6 +4,8 @@ Use this runbook after the HDA passes the stress set. A full batch is not the fi
 
 ## 1. Freeze release inputs
 
+Create a versioned release-candidate directory under `E:\Projects\neuron_data\datasets`, for example `material_hero_v0_rc001`. Never mix corrected renders into an already completed release.
+
 Assign a dataset release candidate and preserve:
 
 - Git commit;
@@ -17,6 +19,8 @@ Assign a dataset release candidate and preserve:
 - renderer, samples, resolution, denoising, OCIO, and output settings.
 
 Copy mutable JSON/configuration into the release metadata. External paths alone are not reproducible records.
+
+For the current v0 candidate, copy `datagen/data/neuron_library_prod.json` to `inputs/materials.json`, verify SHA-256 `2d7bdcfe36ba06271b2b99d4c38530e3702a83f2abd40028ce1984654e314140`, and drive the HDA from that frozen snapshot for the whole run.
 
 ## 2. Pass preflight gates
 
@@ -85,7 +89,9 @@ Assign train/validation/test by material ID before final packaging:
 ## 7. Run the production batch
 
 - Use frozen inputs only.
-- Write progress and failures to a resumable job record.
+- Write expected jobs, progress, and failures as append-safe JSONL records.
+- Render each tuple to a `.partial.exr`, validate it, then rename it to `renders/{geometry_id}/{camera_id}/{material_id}.exr`.
+- On restart, skip only final EXRs that still pass the lightweight resolution/channel/readability checks.
 - Retry failed frames without rewriting verified frames unless the renderer cannot guarantee equivalent output.
 - Do not change lighting, HDA, labels, camera definitions, or color configuration mid-release.
 - If a critical defect is found, stop and create a new release candidate rather than mixing revisions.

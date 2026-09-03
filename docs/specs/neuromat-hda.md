@@ -2,7 +2,7 @@
 
 Status: **Bump branches visually approved; full shader-contract validation pending**
 
-Last reviewed: 2026-08-31
+Last reviewed: 2026-09-02
 
 ## Purpose
 
@@ -12,11 +12,12 @@ It is intentionally a controlled dataset shader, not a universal material-author
 
 ## Active artifacts
 
-- Scene: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D\scenes\material_hero_004.hipnc`
+- Scene: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D\scenes\material_hero_005.hipnc`
 - HDA: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D\hda\lop_KKO8.neuromat.1.2.hdanc`
 - Node: `/stage/neuromat`
 - Type: `KKO8::neuromat::1.2`
-- JSON: `E:\Projects\neuron_data\neuron_library.json`
+- Interactive stress JSON: `E:\Projects\neuron_data\neuron_library.json`
+- Production batch source: `datagen/data/neuron_library_prod.json`, copied into each release as a frozen snapshot
 
 Repository files under `datagen/hips/` are older references, not the active definitions.
 

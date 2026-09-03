@@ -1,8 +1,8 @@
 # Material dataset specification
 
-Status: **Partially implemented; fixed-view v0 render and manifest contract not frozen**
+Status: **Partially implemented; fixed-view v0 batch contract proposed and pilot not yet rendered**
 
-Last reviewed: 2026-08-31
+Last reviewed: 2026-09-02
 
 ## Purpose
 
@@ -43,7 +43,9 @@ Categories:
 - `organic`
 - `translucent`
 
-The generated library currently lives at `E:\Projects\neuron_data\neuron_library.json`. At the latest verification it contained the stress subset, not all 1,806 records.
+The production render-system source is `datagen/data/neuron_library_prod.json`. It contains all 1,806 records and its current SHA-256 is `2d7bdcfe36ba06271b2b99d4c38530e3702a83f2abd40028ce1984654e314140`.
+
+The external `E:\Projects\neuron_data\neuron_library.json` remains the interactive stress subset. It is not the production batch source. At the start of a release candidate, copy the repository production JSON into the release's `inputs` directory, verify its hash, and point `neuromat.dataset_path` at that frozen snapshot for the entire render.
 
 ## Stress set
 
@@ -134,6 +136,8 @@ Debug data may be excluded from the final training package after the pilot prove
 
 - One Sculpted Rubber Toy and one fixed camera
 - Approximately 1,806 beauty frames before exclusions or corrections
+- Candidate raw render resolution: 512 × 512
+- Camera: `/cameras/camera`, perspective 28 mm, with the active square-image `expandAperture` conform policy; the effective square-view field of view is approximately 41.03°
 - One aligned geometry-buffer set may be shared by every material because `P`, `N`, `V`, and alpha are invariant across material changes
 - Camera transform, intrinsics, geometry hash, and buffer conventions remain recorded even though they are constant
 
@@ -155,6 +159,107 @@ Each release must preserve the earlier evaluation cases so improvements from vie
 ## Houdini-to-Three.js calibration
 
 Before judging model output from the application, reproduce the v0 hero and camera in Three.js and compare its `P`, `N`, `V`, alpha, projection, and silhouette against Houdini. Record coordinate handedness, space, units, object transform, camera convention, pixel origin, normal interpolation, edge coverage, and vertical image orientation. A mismatch here is an input-pipeline defect, not evidence about learned generalization.
+
+## Dataset root and release identity
+
+The accepted external dataset root is:
+
+```text
+E:\Projects\neuron_data\datasets
+```
+
+Never render directly into an unversioned `images` directory. Every attempt uses a release-candidate ID such as `material_hero_v0_rc001`. A release candidate remains mutable only while it is marked `in_progress`; a completed release is immutable and corrections create a new ID.
+
+## Proposed v0 raw-render layout
+
+```text
+E:\Projects\neuron_data\datasets\
+  material_hero_v0_rc001\
+    dataset.json
+    inputs\
+      materials.json
+      scene.hipnc-or-hiplc
+      neuromat.hdanc-or-hdalc
+      source_hashes.json
+    entities\
+      materials.json
+      geometries.json
+      cameras.json
+      lights.json
+    jobs\
+      expected.jsonl
+      progress.jsonl
+      failures.jsonl
+    renders\
+      sculpted_rubber_toy\
+        cam_0000\
+          gold_polished_clean.exr
+          ...
+    previews\
+    reports\
+      validation_report.json
+      checksums.txt
+```
+
+This layout is ready for later cameras and meshes: they add sibling camera and geometry directories without changing the work-item key or manifest schema. It avoids creating 1,806 tiny material directories.
+
+The raw pilot should use one multilayer EXR per material × geometry × camera tuple. This matches the current Karma product and keeps beauty and AOVs atomically aligned. After the pilot, release packaging may extract training-friendly beauty images and deduplicate invariant fixed-view geometry buffers; raw source renders remain unchanged.
+
+## Work-item and file naming
+
+The logical work-item key is:
+
+```text
+(material_id, geometry_id, camera_id)
+```
+
+The frame ID is `{material_id}__{geometry_id}__{camera_id}`. The physical raw path is derived deterministically as `renders/{geometry_id}/{camera_id}/{material_id}.exr`.
+
+For v0 this produces 1,806 expected work items from:
+
+```text
+1,806 materials × 1 geometry × 1 camera
+```
+
+IDs may contain lowercase ASCII letters, digits, and underscores only. Do not derive filenames from free-form labels.
+
+## Resumable rendering
+
+File existence alone is not a sufficient success check. For every expected work item:
+
+1. Render to a temporary name such as `{material_id}.partial.exr`.
+2. Open the result and validate resolution, required subimages/channels, finite values, and nonzero file size.
+3. Rename the validated file to its final `.exr` name.
+4. Append a completion record with file size, checksum, duration, attempt number, and source hashes to `progress.jsonl`.
+
+On restart, derive the expected work-item list again. Skip a final EXR only after it passes the same lightweight validation; rerender missing, partial, unreadable, or contract-mismatched files. Append failures rather than overwriting history. This makes the folder scan useful without mistaking a truncated crash output for a completed frame.
+
+## Dataset and entity metadata
+
+`dataset.json` records the release ID and state, creation time, Houdini and Karma versions, render engine, resolution, samples, denoising, pixel filter, color configuration, AOV contract, coordinate conventions, and hashes of every frozen input.
+
+`cameras.json` records for every `camera_id`:
+
+- USD prim path and frame/time code;
+- projection, focal length, horizontal and vertical aperture;
+- image resolution, pixel aspect, and aspect-ratio conform policy;
+- clipping range, focus distance, f-stop, shutter, and any lens shift;
+- complete camera-to-world and world-to-camera matrices;
+- the final pixel-space intrinsic matrix after resolution and conform policy are applied.
+
+The current v0 entity is `/cameras/camera` at frame `1`: a 28 mm perspective camera. The Camera LOP authors millimeter UI values in USD's camera-unit convention, so raw USD values must not be relabeled as millimeters without conversion.
+
+`geometries.json` records for every `geometry_id`:
+
+- USD prim path, source path or embedded-scene identity, and content hash;
+- object-to-world transform, stage units, up axis, and bounds;
+- topology counts, normal interpolation, UV set, subdivision state, and relevant primvars.
+
+The current v0 entity is `/GEO/material_hero` with identity transform, 1,611,108 points, and 3,239,506 faces on a Y-up stage with `metersPerUnit = 1`.
+
+`lights.json` records each light prim, transforms, HDRI path and hash, color, intensity, exposure, and any renderer-specific settings. `materials.json` is the frozen production-library snapshot indexed by material ID.
+
+Every progress/final frame row also records render duration, attempt, output size and checksum, and the hashes or IDs of the material, geometry, camera, lighting, scene, HDA, and render configuration that produced it.
 
 ## Logical manifest schema
 
@@ -186,9 +291,9 @@ The example matrices are placeholders for shape only. Real matrices must contain
 
 The `view_direction` path may be omitted when the release contract specifies a deterministic derivation from `P` and camera metadata. The validator must reproduce and check that derivation.
 
-For scale, a JSONL frame manifest plus separate dataset-level and material-level metadata is recommended, but this remains open decision O-003.
+Use JSONL for expected work items, render progress, failures, and the final frame manifest. Use ordinary JSON for dataset-level and entity metadata. The pilot must validate this serialization before decision O-003 is closed.
 
-## Proposed release layout
+## Proposed packaged-release layout
 
 ```text
 dataset_release/

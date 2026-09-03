@@ -20,6 +20,8 @@ This file records accepted choices that should survive individual chats. Impleme
 | D-014 | Accepted | 2026-08-28 | Remove the unsupported `cracked` bump type and map asphalt to `stochastic` at bump scale `0.02`. | Houdini needs only the existing none, stochastic, directional, and cellular modes; asphalt must be judged during stochastic bump validation. |
 | D-015 | Accepted | 2026-08-28 | Treat `k` and `metallic_flake` as unused metadata for Material Hero v1. | Keep their values in JSON for provenance and possible future shader work, but they have no render effect and require no `neuromat` implementation. |
 | D-016 | Accepted | 2026-08-31 | Develop geometry generalization as a staged experiment: fixed camera and one hero first; Three.js out-of-distribution orbit, zoom, and mesh tests; then a multi-view dataset; then a multi-view, multi-geometry dataset. | Every stage keeps prompt-to-RGB and `P`/`N`/`V`/alpha conditioning, measures the failures of the previous dataset, and does not claim unsupported views or meshes as working product features. |
+| D-017 | Accepted | 2026-09-02 | Store versioned dataset releases under `E:\Projects\neuron_data\datasets`. | Raw renders, frozen inputs, manifests, progress, and validation reports remain outside OneDrive and are grouped by explicit release-candidate ID. |
+| D-018 | Accepted | 2026-09-02 | Use 512 × 512 as the dataset-v0 pilot resolution with the existing 28 mm Houdini camera. | Scene 005 now authors 512 × 512; raise it only if the fixed-camera pilot demonstrates material detail that is materially lost at the model's planned 512 × 512 output size. |
 
 ## Open decisions
 

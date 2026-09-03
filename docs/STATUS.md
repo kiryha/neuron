@@ -1,7 +1,7 @@
 # Current project status
 
 - Last verified: 2026-09-02
-- Repository baseline inspected: `main` at `d4bcf90`
+- Repository baseline inspected: `main` at `b7d51dd`
 - Current phase: **Phase 1 — finish and validate Houdini data generation**
 
 ## Current objective
@@ -30,7 +30,8 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 
 - Project root: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D`
 - Active scene: `scenes\material_hero_005.hipnc`
-  - Modified: 2026-08-31 14:42
+  - Modified: 2026-09-02 14:16
+  - Pre-resolution-change backup: `scenes\material_hero_005_before_512_20260902.hipnc`
 - Active HDA: `hda\lop_KKO8.neuromat.1.2.hdanc`
   - Type: `KKO8::neuromat::1.2`
   - Modified: 2026-08-31 11:06
@@ -46,12 +47,13 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - Final displayed geometry: 1,611,108 points and 3,239,506 primitives
 - Point attributes: `P`, `ao`, `convex_macro`, `concave_macro`, `convex_micro`, `concave_micro`
 - Vertex attribute: `uv`
-- Camera: one 28 mm camera
+- Camera: `/cameras/camera`, one 28 mm perspective camera at frame 1; the apparent USD `50` value was the no-time schema fallback, not the cooked lens
 - Dome light: `studio_kontrast_04_2k.hdr`, intensity `1.0`, exposure `-0.5`
 - Karma engine: XPU
-- Current test resolution: 1280 × 1280
-- Current path-traced samples: 64
+- Current candidate dataset resolution: 512 × 512
+- Current path-traced samples: 128
 - Denoiser: off
+- The active `/Render/rendersettings` prim resolves to 512 × 512. `/Render/Products/renderproduct` reports 2048 × 1080 only as an unauthored USD fallback, so it does not override the active resolution.
 
 ### Material system
 
@@ -134,30 +136,38 @@ There is no separate Alpha RenderVar; confirm that the beauty alpha is correct a
 ### Labels
 
 - The label engine is deterministic and uses controlled template families.
-- Existing stress JSON was generated before the latest validation work and is skipped by default because labels already exist.
-- The production material JSON currently contains 805 labels with the duplicated phrase `with with`. Labels must be regenerated or corrected before dataset release.
+- Templates no longer insert a second `with` before finish descriptions, and adjacent duplicate words are rejected by both entry and assembled-label validation.
+- Existing labels are validated even when overwrite is disabled.
+- All 1,806 production labels were regenerated with seed `42`; zero adjacent duplicates remain.
+- Production JSON SHA-256: `2d7bdcfe36ba06271b2b99d4c38530e3702a83f2abd40028ce1984654e314140`.
+
+### Dataset batch design
+
+- Accepted external root: `E:\Projects\neuron_data\datasets`.
+- The proposed release candidate uses one multilayer EXR for each material × geometry × camera tuple.
+- Proposed physical path: `renders/{geometry_id}/{camera_id}/{material_id}.exr`.
+- Resume logic validates a final EXR before skipping it; partial, unreadable, or contract-mismatched files are rerendered.
+- JSONL is proposed for expected jobs, progress, failures, and frames; the pilot must validate this choice before the manifest decision is closed.
 
 ## Blockers before a full render
 
 | Priority | Blocker | Required resolution |
 | --- | --- | --- |
-| P0 | Watermarked/noncommercial development renders | Produce final training images through a suitable non-watermarked Houdini render path |
+| P0 | Current scene and HDA are `.hipnc`/`.hdanc` | Convert or rebuild them as Indie `.hiplc`/`.hdalc`; merely installing Indie can still downgrade when noncommercial assets are loaded. Prove the final path with an unwatermarked pilot. |
 | P0 | No dataset automation or manifest | Build and validate a fixed-camera material pilot before the full v0 render |
 | P1 | Unresolved transmission-scatter policy | Verify or explicitly classify `transmission_scatter` behavior |
-| P1 | Label defect | Prevent duplicate words and regenerate/overwrite affected labels |
 | P1 | Render contract not frozen | Verify alpha, coordinate spaces, color management, naming, and metadata |
 
 ## Next exact actions
 
-1. Resolve the camera focal-length and RenderProduct-resolution discrepancies in scene 005.
-2. Point the batch system at `datagen/data/neuron_library_prod.json` and freeze its hash in the release metadata.
-3. Resolve `transmission_scatter`, alpha/coverage semantics, and the exact production RenderVars.
-4. Fix duplicate-word label QA and regenerate the 805 affected production labels.
-5. Build the resumable material × geometry × camera work-item graph and deterministic output contract.
-6. Render and validate a small fixed-camera v0 pilot before launching all 1,806 materials.
-7. Reproduce the Houdini training camera and hero buffers in Three.js and quantify `P`, `N`, `V`, alpha, silhouette, and projection differences.
-8. Train the first model and record exact-view, orbit/zoom, and alternate-mesh results.
-9. Only after the fixed-view baseline is understood, build a camera-dome pilot for the next dataset version.
+1. Decide whether depth of field remains part of the fixed training look; the current camera uses f-stop `1.2` and focus distance `2.2105`.
+2. Resolve `transmission_scatter`, alpha/coverage semantics, coordinate spaces, color management, and the exact production RenderVars.
+3. Build the resumable material × geometry × camera work-item graph under `E:\Projects\neuron_data\datasets` and freeze the production material snapshot by hash.
+4. Convert or rebuild the scene and HDA for Indie, then prove that the exact batch path writes an unwatermarked output.
+5. Render and validate the eight-material fixed-camera v0 pilot before launching all 1,806 materials.
+6. Reproduce the Houdini training camera and hero buffers in Three.js and quantify `P`, `N`, `V`, alpha, silhouette, and projection differences.
+7. Train the first model and record exact-view, orbit/zoom, and alternate-mesh results.
+8. Only after the fixed-view baseline is understood, build a camera-dome pilot for the next dataset version.
 
 ## Phase 1 exit criteria
 

@@ -7,7 +7,7 @@ Use this runbook when returning to Material Hero look-dev after a break. The cur
 Do not begin from the older files stored in the repository.
 
 - Project root: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D`
-- Active scene: `scenes\material_hero_004.hipnc`
+- Active scene: `scenes\material_hero_005.hipnc`
 - Active HDA: `hda\lop_KKO8.neuromat.1.2.hdanc`
 - Material JSON: `E:\Projects\neuron_data\neuron_library.json`
 
@@ -30,7 +30,7 @@ Expected top-level LOP nodes include:
 
 - `GEO`
 - `domelight2`
-- `camera2`
+- `camera`
 - `karmarendersettings`
 - `usdrender_rop1`
 - `neuromat`
@@ -42,8 +42,8 @@ Expected baseline:
 - 28 mm test camera
 - studio HDRI at exposure `-0.5`
 - Karma XPU
-- 1280 × 1280 test render
-- 64 path-traced samples
+- 512 × 512 candidate dataset render
+- 128 path-traced samples
 - denoiser off
 
 If these differ intentionally, update the status and dataset specification before using the result as a new baseline.
@@ -150,4 +150,4 @@ Before closing Houdini:
 
 ## Final-render warning
 
-Current `.hipnc`/`.hdanc` development assets and observed Apprentice renders are noncommercial/watermarked. Do not launch the final training batch until a suitable non-watermarked render path has been proven with the pilot.
+Current `.hipnc`/`.hdanc` development assets and observed Apprentice renders are noncommercial/watermarked. Installing an Indie license is not sufficient by itself: loading a noncommercial scene or HDA can downgrade an Indie session. Convert or rebuild the active files as `.hiplc`/`.hdalc`, restart in Indie mode, and prove the exact batch path with an unwatermarked pilot before launching final training renders.
