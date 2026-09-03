@@ -1,0 +1,140 @@
+:root {
+  color: #f7f7f5;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #050505;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.app-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  min-height: 420px;
+  overflow: hidden;
+  background: #050505;
+}
+
+.app-shell canvas {
+  display: block;
+}
+
+.brand,
+.reset-camera,
+.prompt-dock {
+  position: absolute;
+  z-index: 10;
+}
+
+.brand {
+  top: 22px;
+  left: 22px;
+  color: rgba(255, 255, 255, 0.92);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.38em;
+  pointer-events: none;
+  user-select: none;
+}
+
+.reset-camera {
+  top: 18px;
+  right: 20px;
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.86);
+  background: rgba(8, 8, 8, 0.72);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
+}
+
+.reset-camera:hover {
+  border-color: rgba(255, 255, 255, 0.46);
+  color: #ffffff;
+  background: rgba(24, 24, 24, 0.86);
+}
+
+.reset-camera:focus-visible,
+.prompt-input:focus-visible {
+  outline: 2px solid #8ff8ff;
+  outline-offset: 3px;
+}
+
+.prompt-dock {
+  bottom: 28px;
+  left: 50%;
+  width: min(620px, calc(100vw - 40px));
+  transform: translateX(-50%);
+}
+
+.prompt-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(8, 8, 8, 0.78);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(12px);
+  caret-color: #a6fbff;
+}
+
+.prompt-input::placeholder {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.prompt-input:hover {
+  border-color: rgba(255, 255, 255, 0.34);
+}
+
+@media (max-width: 640px) {
+  .brand {
+    top: 18px;
+    left: 16px;
+    max-width: 52vw;
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  .reset-camera {
+    top: 14px;
+    right: 14px;
+    padding: 0 12px;
+    font-size: 10px;
+  }
+
+  .prompt-dock {
+    bottom: 18px;
+    width: calc(100vw - 28px);
+  }
+}

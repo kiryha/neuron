@@ -1,6 +1,6 @@
 # Material Hero application specification
 
-Status: **Scaffold only; local normal-viewer slice specified**
+Status: **Local normal viewer implemented; model integration open**
 
 Last reviewed: 2026-09-03
 
@@ -13,14 +13,16 @@ Provide a small web application where a user enters a supported material prompt 
 - Frontend: React 18, Three.js, React Three Fiber, Drei, Vite
 - Backend: FastAPI
 - Deployment target: Docker-based Hugging Face Space on port `7860`
-- Current viewport: cyan emissive sphere with orbit controls and grid
-- Web geometry: `public/models/material_hero/sculpted-rubber-toy.glb`, a verified 12,253,888-byte binary glTF exported from Houdini; it is present but not yet loaded by the viewport
+- Current viewport: exported Sculpted Rubber Toy rendered with smooth world-space normals, orbit controls, and grid
+- Web geometry: `public/models/material_hero/sculpted-rubber-toy.glb`, a verified 12,253,276-byte binary glTF exported from Houdini
+- Normal capture: square 1024 x 1024 half-float target containing raw world-space normals
+- UI: `Reset Camera` at top right and an editable but non-submitting prompt field at bottom center
 - Current API: `/api/status`
 - Training/model inference: not implemented
 
-## Next implementation slice: local normal viewer
+## Implemented local normal viewer
 
-Before prompt or model integration, replace the placeholder sphere with a local-only Three.js normal-pass viewer:
+Before prompt or model integration, the placeholder sphere was replaced with a local-only Three.js normal-pass viewer:
 
 - load `public/models/material_hero/sculpted-rubber-toy.glb`;
 - render the GLB's smooth normals explicitly in world space;
@@ -33,9 +35,9 @@ Before prompt or model integration, replace the placeholder sphere with a local-
 
 The reference view is stored directly in application code. It does not require a geometry metadata file and is not a formal pixel-precise match to the Houdini training camera. The implementation must explicitly output world-space normals rather than relying on a generic visualization material with an implicit coordinate convention.
 
-This slice runs through the local Vite development server. It does not include prompt input, generated RGB, model inference, `P`, `V`, or Coverage rendering, FastAPI changes, or Hugging Face deployment.
+This slice runs through the local Vite development server. It includes a visual prompt field that accepts text but does not submit or affect rendering. Generated RGB, prompt processing, model inference, `P`, `V`, or Coverage rendering, FastAPI changes, and Hugging Face deployment remain deferred.
 
-Acceptance for this slice:
+Verified on 2026-09-03:
 
 - the GLB loads without console or runtime errors;
 - the viewport displays the world-space normal visualization rather than shaded material output;

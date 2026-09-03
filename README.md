@@ -90,9 +90,9 @@ The training implementation has not been built yet. It begins after the Houdini 
 
 The intended application accepts a material prompt and sends Three.js-generated `P`, `N`, `V`, and Coverage buffers to the neural renderer. It starts at the Houdini training pose, then permits orbit, zoom, and mesh switching so failures of each dataset/model version can be observed directly.
 
-The current React application is only a visual scaffold with a placeholder sphere. A reduced Houdini export is available at `public/models/material_hero/sculpted-rubber-toy.glb` as the single web hero geometry; it is not yet connected to the viewport. The FastAPI backend currently exposes a status endpoint and serves the built frontend; neural inference is not connected yet.
+The React application now loads `public/models/material_hero/sculpted-rubber-toy.glb` and displays its smooth world-space normal pass. The camera can orbit and reset to a stable reference view. A bottom-center prompt field accepts text but does not trigger rendering yet. The FastAPI backend still exposes only a status endpoint; neural inference is not connected.
 
-The next frontend slice is local only: display the hero's smooth world-space normal pass, allow orbiting, and provide a reset to a stable reference view. Prompt input, model inference, the remaining geometry passes, backend changes, and Hugging Face deployment are deferred.
+This frontend slice runs locally. Prompt processing, model inference, the remaining geometry passes, backend changes, and Hugging Face deployment are deferred.
 
 ## Current status
 
@@ -103,7 +103,7 @@ The project is currently finishing **Phase 1: Houdini data generation**.
 - Variation, dirt, and wear systems are implemented in the Houdini material HDA.
 - Stochastic, directional, and cellular bump branches are implemented and approved in fixed-camera stress renders.
 - Dataset batching is designed but not yet implemented; final renders, training, and neural inference remain pending.
-- The browser UI and backend are scaffolds, not a functioning model demo.
+- The browser UI loads the hero and provides an orbitable normal-pass viewer, camera reset, and inactive prompt field; the backend remains a scaffold and no model is connected.
 
 An Indie scene/HDA and an unwatermarked 1024 × 1024 pilot render are now verified. Dataset automation and the full stress-set pilot remain pending.
 
@@ -126,7 +126,7 @@ An Indie scene/HDA and an unwatermarked 1024 × 1024 pilot render are now verifi
 
 ### Phase 3 — Neuron application
 
-- Replace the placeholder sphere with the Material Hero viewport representation.
+- Extend the implemented Material Hero normal viewer with the remaining geometry buffers.
 - Connect prompt and Three.js geometry buffers to model inference.
 - Display generated RGB results interactively.
 - Package and deploy the application on Hugging Face Spaces.
@@ -154,16 +154,22 @@ Start with [docs/START-HERE.md](docs/START-HERE.md) for the current status, deci
 
 Files in `docs/sources/` preserve project history and rationale. They may contain outdated or speculative advice and are not, by themselves, the current specification.
 
-## Run the current scaffold
+## Run the app locally
+
+### Development launcher
+
+Double-click `neuron_dev.bat` to open the app at [http://127.0.0.1:5173](http://127.0.0.1:5173) with Vite hot reload. Install the JavaScript dependencies once with `npm ci` before using the launcher.
 
 ### Frontend development
+
+Install the JavaScript dependencies and start the Vite development server:
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Vite serves the development frontend on port `5173`.
+Open [http://localhost:5173](http://localhost:5173). This local frontend run loads the GLB directly from `public/models/` and does not require FastAPI.
 
 ### Production-style local run
 

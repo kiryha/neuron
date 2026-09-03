@@ -4,7 +4,7 @@ Last reviewed: 2026-09-03
 
 Neuron is currently focused on **Material Hero**: a text-conditioned image generator that first learns the appearance of one Sculpted Rubber Toy from one fixed camera and studio-lighting setup.
 
-The overall phase remains Houdini data generation. The immediate implementation slice is an intentionally isolated local Three.js viewer that loads the exported hero GLB, displays its world-space normal pass, supports orbit, and resets to a stable reference view. Prompt/model integration and deployment remain later work, as does the broader neural-asset engine.
+The overall phase remains Houdini data generation. An isolated local Three.js slice is now implemented: it loads the exported hero GLB, displays its world-space normal pass, supports orbit, resets to a stable reference view, and includes an inactive prompt field. Prompt-driven model integration and deployment remain later work, as does the broader neural-asset engine.
 
 ## Reading order
 

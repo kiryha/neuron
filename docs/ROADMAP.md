@@ -95,21 +95,20 @@ Exit gate:
 
 ## Phase 2B — Three.js out-of-distribution laboratory
 
-Status: **Planned; local normal-viewer slice accepted for early implementation**
+Status: **Implemented in part; local normal-viewer slice verified**
 
 Goal: run the v0 model from the exported hero GLB at the training-camera reference pose, then observe what the fixed-view model does under unsupported camera and supplied-mesh changes.
 
-The first slice may be implemented before model training: a local-only, orbitable world-space normal-pass viewer with a reset to a stable app-authored reference camera. This validates mesh loading and the first geometry-buffer path without adding prompt, inference, backend, or deployment work.
+The first slice was implemented before model training: a local-only, orbitable world-space normal-pass viewer with a reset to a stable app-authored reference camera and a visual prompt field that does not yet drive rendering. This validates mesh loading and the first geometry-buffer path without adding inference, backend, or deployment work.
 
 Deliverables:
 
-- Local 1024 x 1024 world-space normal-pass viewer using `public/models/material_hero/sculpted-rubber-toy.glb`
-- Orbit controls and reset to the app-authored reference camera and target
-- Three.js float-buffer rendering for `P`, smooth unbumped `N`, and Coverage plus deterministic `V` derivation
-- Load `public/models/material_hero/sculpted-rubber-toy.glb` as the single v0 web geometry
-- Prompt inference and generated-RGB display
-- Orbit, zoom, and alternate-mesh controls marked out of distribution
-- Repeatable evaluation scenes, prompts, captures, and measurements
+- **Verified:** Local 1024 x 1024 world-space normal-pass viewer using `public/models/material_hero/sculpted-rubber-toy.glb`
+- **Verified:** Orbit controls, top-right camera reset, and bottom-center inactive prompt field
+- **Planned:** Three.js float-buffer rendering for `P` and Coverage plus deterministic `V` derivation
+- **Planned:** Prompt inference and generated-RGB display
+- **Planned:** Orbit, zoom, and alternate-mesh controls marked out of distribution
+- **Planned:** Repeatable evaluation scenes, prompts, captures, and measurements
 
 Exit gate:
 

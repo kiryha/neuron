@@ -126,3 +126,12 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Verified the implementation in a fresh unsaved Houdini scene with eight 28 mm cameras and a 2 m object-size input.
 - Extended the UI with a frame-margin multiplier, changed camera placement from an upper hemisphere to a full Fibonacci sphere, and used the margin directly in the camera-distance calculation.
 - Verified eight 28 mm cameras with a 2 m object and margin `1.25`; the resulting common camera distance is approximately `3.567 m`, with cameras present above and below the object.
+
+### Local normal-viewer implementation
+
+- Replaced the placeholder sphere with the current 12,253,276-byte Sculpted Rubber Toy GLB.
+- Added an explicit world-space normal shader, RGB display encoding, and a 1024 x 1024 half-float normal render target.
+- Kept OrbitControls and added a verified top-right `Reset Camera` control that restores the app-authored reference view.
+- Added a bottom-center prompt field that accepts text but intentionally has no submission or inference behavior.
+- Kept the implementation local-only, confirmed a clean Vite production build, and visually verified the app with no browser warnings or errors.
+- Added `neuron_dev.bat` as the double-click Vite hot-reload launcher on `127.0.0.1:5173`, leaving `neuron.bat` as the built FastAPI launcher.

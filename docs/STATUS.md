@@ -8,7 +8,7 @@
 
 Validate the first `datarender` stage in Houdini: create an unconnected Solaris camera-dome subnet from the UI, connect it manually, and confirm that its generated cameras frame the hero. The render loop remains a later user-directed stage. Depth of field is already disabled in scene 006.
 
-The accepted local Three.js normal-viewer slice remains planned but is not the active task.
+The accepted local Three.js normal-viewer slice is implemented and verified. The active work returns to the Houdini camera-dome stage.
 
 The accepted learning sequence is: train on one fixed view; test Three.js orbit, zoom, and alternate-mesh inputs as deliberately unsupported cases; add multi-view Houdini data and retrain; then add multi-geometry data and retrain. Improvement between versions is an experiment to measure, not an assumed capability.
 
@@ -27,8 +27,10 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - The Houdini UI currently generates an eight-material stress subset by default.
 - `train/train_hero.py` and `train/loss.py` are empty.
 - `neuron/` contains only a package scaffold.
-- The React app displays a cyan emissive placeholder sphere.
-- `public/models/material_hero/sculpted-rubber-toy.glb` is the accepted single web geometry. It is a valid 12,253,888-byte binary glTF exported from Houdini and is not yet loaded by the React app.
+- The React app loads the Sculpted Rubber Toy and displays its smooth world-space normal pass with OrbitControls and a dark grid.
+- `neuron_dev.bat` launches the local Vite server at `http://127.0.0.1:5173` with hot reload; `neuron.bat` continues to serve the latest production build through FastAPI.
+- `public/models/material_hero/sculpted-rubber-toy.glb` is the accepted single web geometry. The current export is a valid 12,253,276-byte binary glTF.
+- The app maintains a 1024 x 1024 half-float normal target, maps normals to RGB for display, resets to an app-authored reference camera, and provides a bottom-center prompt field that does not yet trigger inference.
 - No geometry metadata file, separate proxy/calibration LODs, geometry hash, or formal pixel-precise Houdini-to-Three.js calibration is required for v0.
 - `main.py` serves the built frontend and exposes only `/api/status`.
 
@@ -177,7 +179,7 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 7. Manually inspect the pilot, including an opaque-versus-glass `C.A` comparison and restart/skip test.
 8. Resolve or explicitly classify `transmission_scatter` behavior before the full batch.
 9. Run the full material batch only after the pilot is approved.
-10. Return to the accepted local Three.js normal-viewer slice, then train the first model and extend the web buffer path with `P`, `V`, and Coverage.
+10. After the dataset is ready, train the first model and extend the verified web normal-buffer path with `P`, `V`, Coverage, and prompt-driven inference.
 
 ## Phase 1 exit criteria
 
