@@ -95,12 +95,16 @@ Exit gate:
 
 ## Phase 2B — Three.js out-of-distribution laboratory
 
-Status: **Planned**
+Status: **Planned; local normal-viewer slice accepted for early implementation**
 
 Goal: run the v0 model from the exported hero GLB at the training-camera reference pose, then observe what the fixed-view model does under unsupported camera and supplied-mesh changes.
 
+The first slice may be implemented before model training: a local-only, orbitable world-space normal-pass viewer with a reset to a stable app-authored reference camera. This validates mesh loading and the first geometry-buffer path without adding prompt, inference, backend, or deployment work.
+
 Deliverables:
 
+- Local 1024 x 1024 world-space normal-pass viewer using `public/models/material_hero/sculpted-rubber-toy.glb`
+- Orbit controls and reset to the app-authored reference camera and target
 - Three.js float-buffer rendering for `P`, smooth unbumped `N`, and Coverage plus deterministic `V` derivation
 - Load `public/models/material_hero/sculpted-rubber-toy.glb` as the single v0 web geometry
 - Prompt inference and generated-RGB display

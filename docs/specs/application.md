@@ -1,6 +1,6 @@
 # Material Hero application specification
 
-Status: **Scaffold only**
+Status: **Scaffold only; local normal-viewer slice specified**
 
 Last reviewed: 2026-09-03
 
@@ -17,6 +17,32 @@ Provide a small web application where a user enters a supported material prompt 
 - Web geometry: `public/models/material_hero/sculpted-rubber-toy.glb`, a verified 12,253,888-byte binary glTF exported from Houdini; it is present but not yet loaded by the viewport
 - Current API: `/api/status`
 - Training/model inference: not implemented
+
+## Next implementation slice: local normal viewer
+
+Before prompt or model integration, replace the placeholder sphere with a local-only Three.js normal-pass viewer:
+
+- load `public/models/material_hero/sculpted-rubber-toy.glb`;
+- render the GLB's smooth normals explicitly in world space;
+- retain the normal data as floating-point components in `[-1, 1]` for later model input;
+- display that data as RGB using `display = N * 0.5 + 0.5`;
+- use a black display background;
+- keep the camera orbitable;
+- provide a reset control that restores a stable app-authored reference camera position, target, and field of view;
+- use a square 1024 x 1024 internal normal render target, independent of the responsive display size.
+
+The reference view is stored directly in application code. It does not require a geometry metadata file and is not a formal pixel-precise match to the Houdini training camera. The implementation must explicitly output world-space normals rather than relying on a generic visualization material with an implicit coordinate convention.
+
+This slice runs through the local Vite development server. It does not include prompt input, generated RGB, model inference, `P`, `V`, or Coverage rendering, FastAPI changes, or Hugging Face deployment.
+
+Acceptance for this slice:
+
+- the GLB loads without console or runtime errors;
+- the viewport displays the world-space normal visualization rather than shaded material output;
+- orbiting updates the visible surface continuously;
+- reset restores the same reference camera position, target, and field of view;
+- the internal normal target remains 1024 x 1024 as the browser window changes;
+- `npm run build` completes successfully.
 
 ## Intended user flow
 
@@ -42,6 +68,8 @@ A practical interaction pattern is:
 - show clear loading, unsupported-prompt, and inference-error states.
 
 Exact real-time behavior depends on measured inference performance and remains open.
+
+For the local normal-viewer slice, the normal visualization updates continuously while the user orbits. Deferred neural-output behavior does not apply yet.
 
 ## Prompt behavior
 

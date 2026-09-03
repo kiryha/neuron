@@ -2,11 +2,13 @@
 
 - Last verified: 2026-09-03
 - Repository baseline inspected: `main` at `eecc83e`
-- Current phase: **Phase 1 — finish and validate Houdini data generation**
+- Current phase: **Phase 1 data generation, with an accepted early Phase 2B frontend slice**
 
 ## Current objective
 
-Specify and implement `datagen/datarender.py` in user-directed stages, then run an eight-material, one-hero, one-camera pilot. Depth of field is already disabled in scene 006.
+Implement a local-only Three.js viewer that loads the reduced Material Hero GLB and displays its smooth world-space normal pass. The camera is orbitable and a reset control restores a stable app-authored reference position, target, and field of view. Prompt UI, model inference, the remaining geometry passes, FastAPI changes, and Hugging Face deployment are deferred.
+
+After this isolated frontend slice, return to `datagen/datarender.py` in user-directed stages and the eight-material, one-hero, one-camera pilot. Depth of field is already disabled in scene 006.
 
 The accepted learning sequence is: train on one fixed view; test Three.js orbit, zoom, and alternate-mesh inputs as deliberately unsupported cases; add multi-view Houdini data and retrain; then add multi-geometry data and retrain. Improvement between versions is an experiment to measure, not an assumed capability.
 
@@ -162,16 +164,16 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 
 ## Next exact actions
 
-1. User describes the first required `datarender` stage.
-2. Implement and verify that stage without editing or saving the HIP file.
-3. Continue the user-defined stages until the minimal renderer is ready for an eight-material pilot.
-4. Inspect the Karma critical error and CPU-only XPU device state before estimating the full render.
-5. Manually inspect the pilot, including an opaque-versus-glass `C.A` comparison and restart/skip test.
-6. Resolve or explicitly classify `transmission_scatter` behavior before the full batch.
-7. Run the full material batch only after the pilot is approved.
-8. Load the exported hero GLB in Three.js, implement `P`, smooth unbumped `N`, `V`, and Coverage generation, and use the training-camera pose as the reference case.
-9. Train the first model and record exact-view, orbit/zoom, and alternate-mesh results.
-10. Only after the fixed-view baseline is understood, build a camera-dome pilot for the next dataset version.
+1. Replace the placeholder sphere with `public/models/material_hero/sculpted-rubber-toy.glb` in the local React app.
+2. Render smooth world-space normals to a 1024 x 1024 floating-point target and display them with `N * 0.5 + 0.5` on black.
+3. Keep OrbitControls and add reset to a stable app-authored camera position, target, and field of view.
+4. Verify the local Vite app and production frontend build; do not add prompt, inference, backend, or deployment work yet.
+5. Return to the user-directed `datarender.py` stages and prepare the eight-material pilot without editing or saving the HIP file.
+6. Inspect the Karma critical error and CPU-only XPU device state before estimating the full render.
+7. Manually inspect the pilot, including an opaque-versus-glass `C.A` comparison and restart/skip test.
+8. Resolve or explicitly classify `transmission_scatter` behavior before the full batch.
+9. Run the full material batch only after the pilot is approved.
+10. Train the first model and later extend the web buffer path with `P`, `V`, and Coverage.
 
 ## Phase 1 exit criteria
 

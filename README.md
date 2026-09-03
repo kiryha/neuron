@@ -92,6 +92,8 @@ The intended application accepts a material prompt and sends Three.js-generated 
 
 The current React application is only a visual scaffold with a placeholder sphere. A reduced Houdini export is available at `public/models/material_hero/sculpted-rubber-toy.glb` as the single web hero geometry; it is not yet connected to the viewport. The FastAPI backend currently exposes a status endpoint and serves the built frontend; neural inference is not connected yet.
 
+The next frontend slice is local only: display the hero's smooth world-space normal pass, allow orbiting, and provide a reset to a stable reference view. Prompt input, model inference, the remaining geometry passes, backend changes, and Hugging Face deployment are deferred.
+
 ## Current status
 
 The project is currently finishing **Phase 1: Houdini data generation**.

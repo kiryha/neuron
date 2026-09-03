@@ -101,8 +101,19 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Corrected the earlier inference from camera f-stop and the confusing internal `disableDepthOfField` value. An authored f-stop does not turn DOF on while the master checkbox is off.
 - Removed the premature untracked `datagen/datarender.py` draft. Render automation is again planned and will be implemented in stages from the user's forthcoming functionality description.
 
+### Project-wide simplicity rule
+
+- Made minimal, learning-focused implementation an explicit project decision: add only required core functionality and defer production-style metadata, hashes, manifests, validation frameworks, and abstraction layers until a concrete need appears.
+
 ### Web geometry simplification
 
 - Verified the user-exported `public/models/material_hero/sculpted-rubber-toy.glb` as a 12,253,888-byte binary glTF and accepted it as the single Material Hero web geometry.
 - Dropped the proposed geometry metadata file, separate proxy/calibration LODs, geometry hash requirement, and formal pixel-precise Houdini-to-Three.js calibration gate for v0.
 - Retained the application contract to rasterize `P`, smooth unbumped `N`, Coverage, and derived `V` from the exported mesh, with the training-camera pose used as a practical reference rather than a numerical cross-renderer acceptance test.
+
+### Local normal-viewer milestone
+
+- Accepted an early, local-only frontend slice that replaces the placeholder with the exported hero GLB and displays its smooth world-space normal pass.
+- Set the normal data convention to float `[-1, 1]` with `N * 0.5 + 0.5` used only for RGB display.
+- Kept the camera orbitable and required reset to a stable app-authored reference position, target, and field of view.
+- Deferred prompt UI, model inference, `P`/`V`/Coverage passes, FastAPI changes, and Hugging Face deployment.
