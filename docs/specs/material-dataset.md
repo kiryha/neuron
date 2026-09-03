@@ -1,6 +1,6 @@
 # Material dataset specification
 
-Status: **Dataset-v0 EXR contract validated; render automation and stress-set pilot pending**
+Status: **Dataset-v0 EXR contract and render automation implemented; live stress-set pilot pending**
 
 Last reviewed: 2026-09-03
 
@@ -28,6 +28,15 @@ The repository authoring source is:
 ```text
 datagen/data/neuron_library_prod.json
 ```
+
+The Houdini tools offer two explicit material-library choices:
+
+| UI name | File | Contents |
+| --- | --- | ---: |
+| `neuron_library_dev` | `datagen/data/neuron_library_dev.json` | Eight-material stress set |
+| `neuron_library_prod` | `datagen/data/neuron_library_prod.json` | Full 1,806-material library |
+
+DEV is listed first and is the default when either tool opens. In Datagen, **Build Materials Data** writes the stress subset for DEV and the full library for PROD; **Build Material Prompts** and **Reload Data** operate on the selected file. Applying a listed material sets `neuromat.dataset_path` to that file before setting `material_id`.
 
 At dataset creation, copy that file unchanged into the dataset root using the same filename. The copied JSON is the material and label snapshot used by the render and later by the training loader. No checksum, renamed copy, material manifest, or duplicate material record is required.
 
@@ -123,7 +132,7 @@ The versioned HIP scene and HDA remain in the Houdini project rather than being 
 
 ## Render automation
 
-The implementation is being built in user-directed stages in `datagen/datarender.py`. It uses ordinary sequential Python rather than TOPs/PDG and must never save the loaded HIP file. Only camera-dome creation is implemented so far; dataset rendering is still planned.
+The implementation is `datagen/datarender.py`. It uses ordinary sequential Python rather than TOPs/PDG and never saves the loaded HIP file. Camera-dome creation and the minimal dataset render loop are implemented.
 
 ### Camera-dome stage
 
@@ -133,25 +142,22 @@ Inside the subnet, Camera LOPs are connected sequentially between the subnet inp
 
 Object size is a simple framing input, not measured geometry. Camera distance uses the fixed 20.955 mm aperture and is multiplied by the UI frame margin: `1.0` adds no extra space and the default `1.25` moves cameras 25% farther away. Values below `1.0` are rejected. The tool does not inspect geometry bounds, find or update existing cameras, connect itself to the root network, change Karma Render Settings, or render images.
 
-### Planned render stage
+### Dataset render stage
 
-The script will contain small explicit geometry and camera lists so later datasets can add entries without changing the nesting model:
+The **Material Library JSON** combo offers `neuron_library_dev` and `neuron_library_prod`, with DEV selected by default. When **Render Dataset** is pressed, the tool sets `/stage/neuromat.dataset_path` to the selected repository JSON, reads every material ID from it, and copies that JSON into the selected dataset directory if a same-named snapshot is not already present.
 
-```python
-GEOMETRIES = [("sculpted_rubber_toy", "/GEO/material_hero")]
-CAMERAS = [("cam_000", "/cameras/camera")]
-```
+When **Single Camera** is enabled, the camera-name field supplies a bare name such as `cam_001`, which resolves to `/cameras/cam_001`. When it is disabled, the tool dynamically reads and sorts every Camera LOP directly inside `/stage/camera_dome` and uses each node's authored primitive path.
 
-The final minimal renderer is expected to:
+Multiple geometry switching is not implemented. The tool always renders whatever geometry is currently connected to `neuromat`; the geometry-name field is used only as the output folder ID, regardless of the Single Geometry checkbox.
 
-1. Load the copied `neuron_library_prod.json`.
-2. Iterate geometry IDs, camera IDs, and sorted material IDs.
-3. Select the geometry and camera.
-4. Set `/stage/neuromat.material_id`; the HDA cook loads and applies that JSON record.
-5. Set the output path to `{geometry_id}/{camera_id}/{material_id}/render.exr`.
-6. Render the frame.
+For every selected camera and sorted material ID, the tool:
 
-Exact commands and selection options are not yet specified. The implementation will remain minimal: no job database, manifest, retry manager, checksum generation, or automatic image validation.
+1. Sets the Karma Render Settings camera.
+2. Sets `/stage/neuromat.material_id`.
+3. Sets the output path to `{geometry_id}/{camera_id}/{material_id}/render.exr`.
+4. Invokes `/stage/usdrender_rop1` for the current frame.
+
+No separate camera transform is stored. `P`, `Nb`, `V`, and `C.A` already contain the geometry and view context required for training; folder IDs and the copied material JSON complete the minimal lookup contract. The implementation has no job database, manifest, retry manager, checksum generation, or automatic image validation.
 
 ## Resume after interruption
 
@@ -203,7 +209,7 @@ Train/validation/test splits are created and stored by the training implementati
 
 Before the full v0 batch:
 
-- After `datarender.py` is implemented, render the eight-material stress set through it.
+- Render the eight-material stress set through `datarender.py`.
 - Open representative EXRs and confirm 1024 × 1024 Beauty RGBA, `P`, `Nb`, and `V`.
 - Confirm `Nb` is unbumped and `C.A` Coverage is identical for opaque and transmissive stress materials.
 - Confirm DOF is absent.

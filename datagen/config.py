@@ -3,7 +3,13 @@ from pathlib import Path
 DATA_ROOT = Path(__file__).parent / "data"
 
 # Material library manifest
-LIBRARY_JSON = DATA_ROOT / "neuron_library_dev.json"
+LIBRARY_JSON_DEV = DATA_ROOT / "neuron_library_dev.json"
+LIBRARY_JSON_PROD = DATA_ROOT / "neuron_library_prod.json"
+
+LIBRARY_JSONS = {
+    LIBRARY_JSON_DEV.stem: LIBRARY_JSON_DEV,
+    LIBRARY_JSON_PROD.stem: LIBRARY_JSON_PROD,
+}
 
 # Synthetic dataset renders
 DATASET_DIR = DATA_ROOT / "dataset"

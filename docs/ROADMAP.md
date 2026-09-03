@@ -60,8 +60,8 @@ Goal: generate the approved dataset without changing its material, lighting, cam
 
 Deliverables:
 
-- Sequential `datagen/datarender.py` fixed-camera renderer — planned for staged implementation
-- Folder-existence skip behavior and manual folder-deletion rerender workflow — accepted design, not implemented
+- Sequential `datagen/datarender.py` single- and multi-camera renderer — implemented, live pilot pending
+- Folder-existence skip behavior and manual folder-deletion rerender workflow — implemented and smoke-tested without rendering
 - Complete material folders and copied material-library snapshot
 - Manual count and representative visual checks
 

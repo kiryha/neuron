@@ -136,3 +136,20 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Added a bottom-center prompt field that accepts text but intentionally has no submission or inference behavior.
 - Kept the implementation local-only, confirmed a clean Vite production build, and visually verified the app with no browser warnings or errors.
 - Added `neuron_dev.bat` as the double-click Vite hot-reload launcher on `127.0.0.1:5173`, leaving `neuron.bat` as the built FastAPI launcher.
+
+### Datarender dataset loop
+
+- Added UI controls for dataset root/name, single or dome-camera rendering, and a geometry folder name; regenerated the PySide binding.
+- Implemented sequential rendering of the material JSON configured on `neuromat.dataset_path`, including one-time JSON snapshot copying and existing-material-folder skipping.
+- Single-camera mode resolves the entered name under `/cameras`; multi-camera mode dynamically reads Camera LOPs from `/stage/camera_dome`.
+- Deferred geometry switching: the connected `neuromat` geometry is rendered and the UI geometry name is used only as its folder ID.
+- Kept the dataset metadata minimal: no camera transform or geometry record is written because the EXR already contains `P`, `Nb`, `V`, and `C.A`.
+- Smoke-tested camera discovery, JSON copying, and folder skipping without launching Karma; a live pilot remains pending.
+
+### Explicit DEV/PROD library selection
+
+- Replaced the single material-library configuration path with named DEV and PROD paths mapped to `neuron_library_dev.json` and `neuron_library_prod.json`.
+- Added the user-authored **Material Library JSON** combo to Datagen and Datarender and regenerated both PySide UI bindings.
+- Made DEV the safe default: Datagen builds its eight-material stress subset, while PROD builds the full 1,806-material library; reload and prompt generation use the selected file.
+- Made material application and dataset rendering set `neuromat.dataset_path` to the selected JSON before applying or rendering materials.
+- Smoke-tested both generator counts and Datarender's selected-path, snapshot-copy, render, and restart-skip behavior without launching Karma.

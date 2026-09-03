@@ -1,15 +1,23 @@
 """Houdini UI for Material Hero dataset rendering."""
 
+import json
 import math
+import shutil
+from pathlib import Path
 
 import hou
 from PySide6 import QtCore, QtWidgets
 
+from datagen import config
 from datagen.ui import ui_datarender
 
 
 CAMERA_APERTURE_MM = 20.955
 STAGE_PATH = "/stage"
+CAMERA_DOME_PATH = "/stage/camera_dome"
+NEUROMAT_PATH = "/stage/neuromat"
+RENDER_SETTINGS_PATH = "/stage/karmarendersettings"
+RENDER_ROP_PATH = "/stage/usdrender_rop1"
 
 
 def _camera_positions(camera_count, distance):
@@ -70,13 +78,97 @@ def create_camera_dome(camera_count, focal_length, object_size, frame_margin):
     return camera_dome, distance
 
 
+def _camera_list(single_camera, single_camera_name):
+    """Return camera IDs and USD primitive paths for this render."""
+
+    if single_camera:
+        camera_name = single_camera_name.strip()
+        if not camera_name:
+            raise RuntimeError("Single camera name is empty.")
+        return [(camera_name, f"/cameras/{camera_name}")]
+
+    camera_dome = hou.node(CAMERA_DOME_PATH)
+    if camera_dome is None:
+        raise RuntimeError(f"Node not found: {CAMERA_DOME_PATH}")
+
+    cameras = []
+    for node in camera_dome.children():
+        if node.type().name() == "camera":
+            cameras.append((node.name(), node.evalParm("primpath")))
+
+    if not cameras:
+        raise RuntimeError(f"No cameras found in {CAMERA_DOME_PATH}")
+
+    return sorted(cameras)
+
+
+def render_dataset(dataset_root, dataset_name, geometry_name, cameras, material_json):
+    """Set the selected material library on neuromat and render every record."""
+
+    neuromat = hou.node(NEUROMAT_PATH)
+    render_settings = hou.node(RENDER_SETTINGS_PATH)
+    render_rop = hou.node(RENDER_ROP_PATH)
+
+    for node_path, node in (
+        (NEUROMAT_PATH, neuromat),
+        (RENDER_SETTINGS_PATH, render_settings),
+        (RENDER_ROP_PATH, render_rop),
+    ):
+        if node is None:
+            raise RuntimeError(f"Node not found: {node_path}")
+
+    material_json = Path(material_json).resolve()
+    if not material_json.is_file():
+        raise RuntimeError(f"Material JSON not found: {material_json}")
+
+    neuromat.parm("dataset_path").set(str(material_json))
+
+    with material_json.open("r", encoding="utf-8") as file:
+        materials = json.load(file)
+
+    dataset_dir = Path(dataset_root).expanduser() / dataset_name
+    dataset_dir.mkdir(parents=True, exist_ok=True)
+
+    json_snapshot = dataset_dir / material_json.name
+    if not json_snapshot.exists():
+        shutil.copy2(material_json, json_snapshot)
+
+    rendered = 0
+    skipped = 0
+    frame = hou.intFrame()
+
+    for camera_name, camera_path in cameras:
+        render_settings.parm("camera").set(camera_path)
+
+        for material_id in sorted(materials):
+            material_dir = dataset_dir / geometry_name / camera_name / material_id
+            if material_dir.exists():
+                skipped += 1
+                print(f"SKIP {camera_name}/{material_id}")
+                continue
+
+            material_dir.mkdir(parents=True)
+            output_path = material_dir / "render.exr"
+
+            neuromat.parm("material_id").set(material_id)
+            render_settings.parm("picture").set(output_path.as_posix())
+
+            print(f"RENDER {camera_name}/{material_id}")
+            render_rop.render(frame_range=(frame, frame), verbose=True)
+            rendered += 1
+
+    return rendered, skipped
+
+
 class Datarender(QtWidgets.QDialog, ui_datarender.Ui_Datarender):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
         self.setParent(hou.ui.mainQtWindow(), QtCore.Qt.Window)
 
+        self.boxJSONName.addItems(config.LIBRARY_JSONS)
         self.btnCameraDome.clicked.connect(self.create_camera_dome)
+        self.btnRenderDataset.clicked.connect(self.render_dataset)
 
     def create_camera_dome(self):
         try:
@@ -116,6 +208,40 @@ class Datarender(QtWidgets.QDialog, ui_datarender.Ui_Datarender):
         hou.ui.displayMessage(
             f"Created {camera_count} cameras in {camera_dome.path()}.\n"
             f"Camera distance: {distance:.3f} m",
+        )
+
+    def render_dataset(self):
+        try:
+            dataset_root = self.linDatasetRoot.text().strip()
+            dataset_name = self.linDatasetName.text().strip()
+            geometry_name = self.linSingleGeometryName.text().strip()
+
+            if not dataset_root or not dataset_name or not geometry_name:
+                raise RuntimeError(
+                    "Dataset root, dataset name, and geometry name are required."
+                )
+
+            cameras = _camera_list(
+                self.chbSingleCamera_2.isChecked(),
+                self.linSingleCameraName.text(),
+            )
+            material_json = config.LIBRARY_JSONS[self.boxJSONName.currentText()]
+            rendered, skipped = render_dataset(
+                dataset_root,
+                dataset_name,
+                geometry_name,
+                cameras,
+                material_json,
+            )
+        except (RuntimeError, OSError, json.JSONDecodeError, hou.Error) as error:
+            hou.ui.displayMessage(
+                str(error),
+                severity=hou.severityType.Error,
+            )
+            return
+
+        hou.ui.displayMessage(
+            f"Dataset render finished.\nRendered: {rendered}\nSkipped: {skipped}",
         )
 
 

@@ -12,7 +12,7 @@ Create:
 E:\Projects\neuron_data\datasets\material_hero_v0
 ```
 
-Copy `datagen/data/neuron_library_prod.json` unchanged to the dataset root as `neuron_library_prod.json`. Point `neuromat.dataset_path` at this copied snapshot for the render. No checksum or renamed source copy is required.
+Confirm that `datagen/data/neuron_library_prod.json` is the intended production library. Datarender points `neuromat.dataset_path` at the selected repository JSON and copies it unchanged into the dataset root when rendering starts. No manual copy, checksum, or renamed source copy is required.
 
 ## 2. Confirm the scene contract
 
@@ -27,11 +27,11 @@ Before rendering, confirm:
 - no `Pz`, variation, dirt, wear, bump, BaseColor, Roughness, or other debug AOVs;
 - the active Indie `.hiplc` scene and `.otllc` HDA produce no watermark.
 
-## 3. Implement and run the eight-material pilot
+## 3. Run the eight-material pilot
 
-`datagen/datarender.py` is not implemented yet. Define and implement its functionality in the user-directed stages before adding concrete commands to this runbook. The tool must use Houdini's `hython`, render sequentially, and never edit or save the HIP file.
+Open the `datarender` UI in Houdini. Select `neuron_library_dev`, enter the dataset root/name and `sculpted_rubber_toy` geometry name, enable **Single Camera**, and enter one generated camera name such as `cam_001`.
 
-After the tool is implemented and scene preflight passes, run the eight-material pilot using the documented command. Do not run the complete 1,806-material batch until the pilot is approved.
+Press **Render Dataset**. The render loop runs synchronously at the current frame and prints each render or skip to the Houdini console. Do not use all cameras or the complete 1,806-material JSON until the single-camera pilot is approved.
 
 Expected path example:
 
@@ -49,8 +49,8 @@ Use the pilot to estimate approximate time per material and total disk usage for
 
 ## 5. Run the complete dataset
 
-- Use the copied `neuron_library_prod.json`.
-- Run the complete sequential batch with the command established during staged `datarender.py` implementation.
+- Confirm that the production library and pilot are approved; Datarender copies the selected JSON automatically.
+- Select `neuron_library_prod`, select the intended camera mode in the UI, and press **Render Dataset**.
 - Existing `{geometry_id}/{camera_id}/{material_id}` folders are skipped.
 - To rerender a material, delete its folder manually and rerun the script.
 - Do not change the scene, HDA, JSON snapshot, camera, lighting, render settings, or output channels during the run.

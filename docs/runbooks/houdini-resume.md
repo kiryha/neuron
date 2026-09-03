@@ -63,19 +63,18 @@ Inspect masks on the final render geometry, not only on a lower-resolution inter
 
 ## 5. Confirm the material library mode
 
-The current Houdini UI method `build_materials_data()` writes the eight-material stress subset. Calling `BuildMaterialsData().generate()` without a subset writes the full 1,806-record library to the same external JSON path.
+Both Datagen and Datarender have a **Material Library JSON** selector:
 
-Before pressing either action:
+- `neuron_library_dev` contains the eight-material stress subset and is selected by default;
+- `neuron_library_prod` contains the full 1,806-record library.
 
-- know which library size is intended;
-- preserve the previous JSON if it is needed for comparison;
-- do not assume the file contains the full library merely because it is named `neuron_library.json`.
+In Datagen, **Build Materials Data**, **Build Material Prompts**, and **Reload Data** operate on the selected file. DEV generation builds only the stress set; PROD generation builds the complete library. Confirm the combo selection before rebuilding either file.
 
 After generation, build labels and validate every record. Existing labels are skipped unless overwrite is enabled.
 
-Selecting an item in the Houdini UI intentionally changes only `material_id`. Cooking the HDA runs its internal `read_JSON_data`, `set_bump_type`, and `set_bump_cap` Python Script LOPs, which update the material parameters. This is the expected interactive path and the planned basis for batching.
+Selecting an item in Datagen sets the HDA `dataset_path` to the selected repository JSON and then changes `material_id`. Cooking the HDA runs its internal `read_JSON_data`, `set_bump_type`, and `set_bump_cap` Python Script LOPs, which update the material parameters.
 
-The UI helper `Datagen.set_material()` lives in `datagen/datagen.py` and only changes the HDA `material_id`. The obsolete partial `datagen/tools.py` module has been removed.
+The UI helper `Datagen.set_material()` lives in `datagen/datagen.py`. The obsolete partial `datagen/tools.py` module has been removed.
 
 ## 6. Validate the current bump implementation
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>415</width>
-    <height>315</height>
+    <width>414</width>
+    <height>339</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -144,7 +144,7 @@
      <item row="1" column="0">
       <widget class="QLineEdit" name="linSingleCameraName">
        <property name="text">
-        <string>cam_003</string>
+        <string>cam_001</string>
        </property>
       </widget>
      </item>
@@ -156,6 +156,19 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <widget class="QLabel" name="label_9">
+      <property name="text">
+       <string>Material Library JSON</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="boxJSONName"/>
+    </widget>
    </item>
    <item>
     <widget class="QPushButton" name="btnRenderDataset">

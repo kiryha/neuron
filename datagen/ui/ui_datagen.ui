@@ -7,13 +7,26 @@
     <x>0</x>
     <y>0</y>
     <width>402</width>
-    <height>399</height>
+    <height>413</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>D A T A G E N</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Material Library JSON</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="boxJSONName"/>
+    </widget>
+   </item>
    <item>
     <widget class="QPushButton" name="btnBuildData">
      <property name="minimumSize">

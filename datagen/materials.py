@@ -26,7 +26,6 @@ from typing import Any
 
 from . import config
 reload(config)
-LIBRARY_JSON = config.LIBRARY_JSON
 
 
 logger = logging.getLogger(__name__)
@@ -1448,6 +1447,9 @@ def build_material_entry(
 class BuildMaterialsData:
     """Deterministic generator for neuron_library.json material records."""
 
+    def __init__(self, json_path: Path | str | None = None):
+        self.json_path = Path(json_path) if json_path else config.LIBRARY_JSON_DEV
+
     def generate(self, subset_ids: set[str] | frozenset[str] | list[str] | None = None) -> dict[str, dict[str, Any]]:
         print(">> Building materials data...")
         if subset_ids is not None:
@@ -1478,8 +1480,8 @@ class BuildMaterialsData:
                     tech_id, b_name, f_name, c_name, None, None, token_map
                 )
 
-        LIBRARY_JSON.parent.mkdir(parents=True, exist_ok=True)
-        with open(LIBRARY_JSON, "w", encoding="utf-8") as f:
+        self.json_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.json_path, "w", encoding="utf-8") as f:
             json.dump(library, f, indent=4)
 
         print(">> Materials data built")
@@ -1529,7 +1531,7 @@ class BuildPrompts:
     )
 
     def __init__(self, json_path: Path | str | None = None, seed: int | None = None, overwrite: bool = False):
-        self.json_path = Path(json_path) if json_path else LIBRARY_JSON
+        self.json_path = Path(json_path) if json_path else config.LIBRARY_JSON_DEV
         self.seed = seed if seed is not None else self.DEFAULT_SEED
         self.overwrite = overwrite
 

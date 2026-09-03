@@ -68,7 +68,7 @@ Neuron web viewport on Hugging Face Spaces
 
 ### 1. Data generation
 
-SideFX Houdini and Karma generate the synthetic ground-truth dataset. The material system includes procedural variation, dirt, wear, and bump signals; the fixed-camera stress renders have been approved and depth of field is disabled. The sequential `datarender` tool will be specified and implemented in stages before the eight-material automated pilot.
+SideFX Houdini and Karma generate the synthetic ground-truth dataset. The material system includes procedural variation, dirt, wear, and bump signals; the fixed-camera stress renders have been approved and depth of field is disabled. The sequential `datarender` tool now creates the camera dome and drives single- or multi-camera dataset renders; the automated pilot is next.
 
 Each fixed-view v0 material folder contains one 1024 × 1024 multilayer EXR with:
 

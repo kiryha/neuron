@@ -1,12 +1,12 @@
 # Current project status
 
 - Last verified: 2026-09-03
-- Repository baseline inspected: `main` at `5aa6db8`
+- Repository baseline inspected: `main` at `72d903a`
 - Current phase: **Phase 1 data generation, with an accepted early Phase 2B frontend slice**
 
 ## Current objective
 
-Validate the first `datarender` stage in Houdini: create an unconnected Solaris camera-dome subnet from the UI, connect it manually, and confirm that its generated cameras frame the hero. The render loop remains a later user-directed stage. Depth of field is already disabled in scene 006.
+Run a small live pilot through the implemented `datarender` UI, first with one camera and the currently connected hero geometry. Confirm render paths, material changes, EXR output, and restart skipping before attempting all dome cameras. Depth of field is already disabled in scene 006.
 
 The accepted local Three.js normal-viewer slice is implemented and verified. The active work returns to the Houdini camera-dome stage.
 
@@ -17,14 +17,18 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 ### Repository
 
 - `datagen/materials.py` is the current material and label generator.
-- `datagen/datarender.py` now implements the first UI stage: it creates an unconnected Solaris camera-dome subnet from camera count, focal length, approximate object size, and frame margin. Dataset rendering is not implemented yet.
+- `datagen/datarender.py` creates the camera dome and implements sequential dataset rendering from the DEV or PROD material library selected in its UI.
+- Single-camera mode renders the named `/cameras/cam_###` prim; multi-camera mode dynamically reads Camera LOPs inside `/stage/camera_dome`.
+- Geometry switching is not implemented. The currently connected `neuromat` geometry is rendered, and the geometry-name field supplies only its dataset folder name.
 - `datagen/ui/ui_datarender.py` is generated from the user-authored `ui_datarender.ui`.
 - The generator defines 56 bases, 5 finishes, 4 conditions, 10 colors, and 4 categories.
 - Compatibility filtering produces **1,806** material records.
 - Current bump-type distribution is 1,143 stochastic, 396 directional, and 267 cellular records.
 - A full regeneration plus validation of all 1,806 records passes with no unsupported bump modes.
 - `datagen/data/neuron_library_prod.json` is the accepted render-system material source of truth.
-- The Houdini UI currently generates an eight-material stress subset by default.
+- Both Houdini tools expose `neuron_library_dev` and `neuron_library_prod` selectors, with DEV first and selected by default.
+- In Datagen, reload, material generation, prompt generation, and material application use the selected library. DEV generation writes the eight-material stress set; PROD generation writes all 1,806 records.
+- Applying a material also sets `neuromat.dataset_path` to the selected repository JSON before setting `material_id`.
 - `train/train_hero.py` and `train/loss.py` are empty.
 - `neuron/` contains only a package scaffold.
 - The React app loads the Sculpted Rubber Toy and displays its smooth world-space normal pass with OrbitControls and a dark grid.
@@ -81,7 +85,7 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 **Current selected material:**
 
 - The saved scene currently has `material_id = iron_brushed_scratched`.
-- Interactive selections are transient; the planned batch renderer will override `dataset_path` and `material_id` in memory for every batch item.
+- Interactive selections are transient; Datagen and Datarender set `dataset_path` in memory, and the batch renderer overrides `material_id` for every batch item.
 
 ## Current incomplete or incorrect state
 
@@ -96,7 +100,7 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 
 ### Material application path
 
-- The Houdini UI intentionally changes only the HDA `material_id` string.
+- Datagen sets the HDA `dataset_path` from its **Material Library JSON** selection and then changes the HDA `material_id` string.
 - During the HDA cook, `/stage/neuromat/read_JSON_data` loads the record from the configured `dataset_path` and applies metadata, procedural values, base/specular/coat/transmission values, sheen, SSS, and thin-wall values to the HDA.
 - `/stage/neuromat/set_bump_type` maps none, stochastic, directional, and cellular to integer modes; an unknown value currently defaults to stochastic mode `1`.
 - `/stage/neuromat/set_bump_cap` derives the internal safety cap from finish and condition.
@@ -156,30 +160,28 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 - The JSON snapshot and folder names are the dataset index; no manifest or camera/geometry/dataset records are required.
 - Implemented camera stage: `datarender.py` creates an unconnected `/stage/camera_dome` subnet containing sequential Camera LOPs that author `/cameras/cam_###` prims. The user connects the subnet manually.
 - Camera positions use a full-sphere Fibonacci distribution, look at world origin, and share a distance derived from the UI focal length, approximate object size, and margin multiplier; no geometry bounds are read.
-- Planned render stage: sequential material/camera rendering will be implemented in later user-defined stages.
+- Implemented render stage: for every selected camera and JSON material ID, set the Karma camera, set `neuromat.material_id`, write `render.exr`, and invoke `/stage/usdrender_rop1` at the current frame.
+- When rendering starts, Datarender sets `neuromat.dataset_path` to the selected repository JSON, renders every record in it, and copies that JSON once into the dataset root. No separate camera transform or geometry metadata is written; `P`, `Nb`, `V`, `C.A`, folder IDs, and the JSON snapshot remain the complete v0 data contract.
 - Resume behavior: skip when the material folder exists; delete the folder manually to request a rerender.
 
 ## Blockers before a full render
 
 | Priority | Blocker | Required resolution |
 | --- | --- | --- |
-| P0 | Camera-dome stage not yet checked in the active Houdini scene | User creates and manually connects the subnet, then checks camera framing |
-| P0 | Dataset render loop not implemented | User defines the next `datarender` stage after the camera dome is approved |
+| P0 | Automated dataset pilot not yet run | Render a small single-camera subset, inspect its EXRs, then test multi-camera mode and restart skipping |
 | P1 | Unresolved transmission-scatter policy | Verify or explicitly classify `transmission_scatter` behavior |
 | P1 | Karma XPU reported one critical error and used only Embree CPU | Inspect Houdini's Log Viewer and decide whether GPU rendering must be restored before the full 1,806-material run |
 
 ## Next exact actions
 
-1. Run the `datarender` UI in Houdini and create a camera dome using the intended camera count, focal length, object size, and frame margin.
-2. Manually connect the new subnet into the Solaris chain before Karma Render Settings.
-3. Look through representative generated cameras and confirm that the hero fits in frame; adjust the UI object size if more framing margin is needed.
-4. User defines the next `datarender` stage.
-5. Implement sequential dataset rendering without editing or saving the HIP file.
-6. Inspect the Karma critical error and CPU-only XPU device state before estimating the full render.
-7. Manually inspect the pilot, including an opaque-versus-glass `C.A` comparison and restart/skip test.
-8. Resolve or explicitly classify `transmission_scatter` behavior before the full batch.
-9. Run the full material batch only after the pilot is approved.
-10. After the dataset is ready, train the first model and extend the verified web normal-buffer path with `P`, `V`, Coverage, and prompt-driven inference.
+1. Select `neuron_library_dev` and one camera in the `datarender` UI.
+2. Render the pilot and inspect material changes, `{geometry}/{camera}/{material}/render.exr` paths, channels, framing, and watermark state.
+3. Delete one completed material folder, rerun, and confirm that other existing folders are skipped.
+4. Uncheck Single Camera and repeat with the cameras dynamically read from `/stage/camera_dome`.
+5. Inspect the Karma critical error and CPU-only XPU device state before estimating the full render.
+6. Resolve or explicitly classify `transmission_scatter` behavior before the full batch.
+7. Run the full material batch only after the pilot is approved.
+8. After the dataset is ready, train the first model and extend the verified web normal-buffer path with `P`, `V`, Coverage, and prompt-driven inference.
 
 ## Phase 1 exit criteria
 
