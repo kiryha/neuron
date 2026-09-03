@@ -6,7 +6,7 @@
 
 ## Current objective
 
-Run a small live pilot through the implemented `datarender` UI, first with one camera and the currently connected hero geometry. Confirm render paths, material changes, EXR output, and restart skipping before attempting all dome cameras. Depth of field is already disabled in scene 006.
+Run the eight-material DEV pilot once more at the intended final render settings, using a clean output directory. The first live pilot validated the render loop and EXR structure at 512 × 512 with low sampling, but it must not be mixed into the final 1024 × 1024 dataset. Depth of field is already disabled in scene 006.
 
 The accepted local Three.js normal-viewer slice is implemented and verified. The active work returns to the Houdini camera-dome stage.
 
@@ -129,6 +129,14 @@ These are implemented values, not yet approved final look-dev values. Judge them
 
 ### Render outputs
 
+**Verified in the live Datarender DEV pilot at `E:\Projects\neuron_data\datasets\material_hero_v0` on 2026-09-03:**
+
+- One `sculpted_rubber_toy/cam_001/{material_id}/render.exr` file for each of the eight DEV records, with no missing or unexpected material folders.
+- Every EXR is readable, 512 × 512, finite, and contains multipart Beauty RGBA (`C`), `P`, `V`, and `Nb` with the expected channel names.
+- Beauty alpha ranges from `0` to `1`; all materials share the same underlying silhouette, with small stochastic antialiasing differences at low sampling.
+- The beauty previews are framed consistently and show distinct intended materials. Transmissive glass is visibly noisy at these test settings, so this pilot validates automation rather than final image quality.
+- This pilot directory cannot be continued directly as the 1024 × 1024 production dataset: folder-existence skipping would retain the eight low-quality images.
+
 **Verified in `concrete_hammered_clean.exr` rendered from scene 006 on 2026-09-03:**
 
 - 1024 × 1024 Beauty RGBA (`C`)
@@ -174,13 +182,13 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 
 ## Next exact actions
 
-1. Select `neuron_library_dev` and one camera in the `datarender` UI.
-2. Render the pilot and inspect material changes, `{geometry}/{camera}/{material}/render.exr` paths, channels, framing, and watermark state.
-3. Delete one completed material folder, rerun, and confirm that other existing folders are skipped.
-4. Uncheck Single Camera and repeat with the cameras dynamically read from `/stage/camera_dome`.
+1. Preserve the low-quality pilot under a test name or remove it manually; do not leave its eight material folders inside the final dataset directory.
+2. Set the intended final resolution and sampling, select `neuron_library_dev`, keep **Single Camera** enabled with `cam_001`, and render all eight materials into a clean dataset directory.
+3. Visually approve the production-quality glass, dark rubber, highlights, framing, and watermark state.
+4. Rerun once and confirm that Datarender reports eight skips, or delete one folder and confirm that only it rerenders.
 5. Inspect the Karma critical error and CPU-only XPU device state before estimating the full render.
-6. Resolve or explicitly classify `transmission_scatter` behavior before the full batch.
-7. Run the full material batch only after the pilot is approved.
+6. Resolve or explicitly classify `transmission_scatter` behavior.
+7. Select `neuron_library_prod` and render into a clean final dataset directory with the same camera and render settings.
 8. After the dataset is ready, train the first model and extend the verified web normal-buffer path with `P`, `V`, Coverage, and prompt-driven inference.
 
 ## Phase 1 exit criteria

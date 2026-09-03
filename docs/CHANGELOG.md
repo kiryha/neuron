@@ -153,3 +153,10 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Made DEV the safe default: Datagen builds its eight-material stress subset, while PROD builds the full 1,806-material library; reload and prompt generation use the selected file.
 - Made material application and dataset rendering set `neuromat.dataset_path` to the selected JSON before applying or rendering materials.
 - Smoke-tested both generator counts and Datarender's selected-path, snapshot-copy, render, and restart-skip behavior without launching Karma.
+
+### First live Datarender pilot
+
+- Inspected the first eight-material DEV dataset rendered through Datarender at 512 × 512 under low-quality settings.
+- Verified eight expected `cam_001` material folders, eight readable finite multipart EXRs, the DEV JSON snapshot, and the required `C`, `P`, `V`, and `Nb` channels.
+- Confirmed consistent framing and visibly distinct material responses; glass remains too noisy for final-quality approval at the test settings.
+- Recorded that PROD must use a clean output directory after a low-resolution pilot because the simple folder-existence resume rule would otherwise retain and mix the eight test renders.

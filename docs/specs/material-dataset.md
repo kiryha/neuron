@@ -75,7 +75,7 @@ The EXR does not include `Pz`, variation, dirt, wear, bump, BaseColor, Roughness
 
 Coverage is read from `C.A`; there is no separate Coverage AOV. MaterialX transmission is allowed to vary, but Standard Surface opacity remains `1`, so alpha describes geometry visibility rather than optical transmission. Do not introduce opacity maps, cutouts, holdouts, shadow-catcher alpha, or another feature that changes Beauty alpha without revisiting this contract. Fractional silhouette pixels are intentional antialiased coverage.
 
-For one geometry and camera, `P`, `Nb`, `V`, and `C.A` are identical for every material. Repeating them in every EXR is intentional: it keeps each training example self-contained and avoids a separate shared-buffer system. At 1024 × 1024, simplicity is more important than eliminating this disk duplication.
+For one geometry and camera, the underlying `P`, `Nb`, `V`, and `C.A` fields are material-independent. Separately rendered pixels need not be bit-identical because stochastic subpixel sampling and antialiasing can differ, especially at silhouettes and fine visibility boundaries. Repeating the buffers in every EXR is intentional: it keeps each training example self-contained and avoids a separate shared-buffer system. At 1024 × 1024, simplicity is more important than eliminating this disk duplication.
 
 Because these buffers are constant across dataset v0, the first model may learn to ignore them. They become informative when later datasets introduce camera and geometry variation.
 
@@ -210,10 +210,12 @@ Train/validation/test splits are created and stored by the training implementati
 Before the full v0 batch:
 
 - Render the eight-material stress set through `datarender.py`.
+- Run the final approval pilot with the exact production resolution, samples, camera, lighting, and AOV settings; a low-quality automation test is not sufficient for look approval.
 - Open representative EXRs and confirm 1024 × 1024 Beauty RGBA, `P`, `Nb`, and `V`.
 - Confirm `Nb` is unbumped and `C.A` Coverage is identical for opaque and transmissive stress materials.
 - Confirm DOF is absent.
 - Confirm the output has no watermark.
 - Interrupt and restart the pilot once to verify folder-based skipping.
+- Do not reuse low-resolution pilot material folders for the production render because folder-existence skipping will preserve them.
 
 After the full render, manually check the expected material count and inspect representative materials before starting training.
