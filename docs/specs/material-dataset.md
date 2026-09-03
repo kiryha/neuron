@@ -1,6 +1,6 @@
 # Material dataset specification
 
-Status: **Dataset-v0 EXR contract validated and automation implemented; stress-set pilot pending**
+Status: **Dataset-v0 EXR contract validated; render automation and stress-set pilot pending**
 
 Last reviewed: 2026-09-03
 
@@ -81,7 +81,7 @@ Because these buffers are constant across dataset v0, the first model may learn 
 - Material bump affects shading only and does not alter `Nb` or `C.A` Coverage.
 - Final renders must not contain the Houdini Apprentice watermark.
 
-Scene 006 resolves to 1024 × 1024 and its Indie pilot is unwatermarked. A read-only inspection on 2026-09-03 still found camera f-stop `1.2` and `disableDepthOfField = off`; disabling DOF remains a required user-operated scene change before the automated pilot.
+Scene 006 resolves to 1024 × 1024 and its Indie pilot is unwatermarked. The visible `Enable Depth of Field` parameter is off, and read-only inspection confirms its underlying `enabledof` value is `0`. The authored camera f-stop `1.2` does not enable DOF while this master toggle is off.
 
 ## Dataset location and layout
 
@@ -123,16 +123,16 @@ The versioned HIP scene and HDA remain in the Houdini project rather than being 
 
 ## Render automation
 
-The implementation is `datagen/datarender.py`. It runs with Houdini's `hython` interpreter and uses ordinary sequential Python rather than TOPs/PDG. It never saves the loaded HIP file.
+The planned implementation is `datagen/datarender.py`. It will run with Houdini's `hython` interpreter and use ordinary sequential Python rather than TOPs/PDG. It must never save the loaded HIP file. The user will define its functionality and CLI in stages before implementation.
 
-The script contains small explicit geometry and camera lists so later datasets can add entries without changing the nesting model:
+The script will contain small explicit geometry and camera lists so later datasets can add entries without changing the nesting model:
 
 ```python
 GEOMETRIES = [("sculpted_rubber_toy", "/GEO/material_hero")]
 CAMERAS = [("cam_0000", "/cameras/camera")]
 ```
 
-It:
+The final minimal renderer is expected to:
 
 1. Load the copied `neuron_library_prod.json`.
 2. Iterate geometry IDs, camera IDs, and sorted material IDs.
@@ -141,7 +141,7 @@ It:
 5. Set the output path to `{geometry_id}/{camera_id}/{material_id}/render.exr`.
 6. Render the frame.
 
-The default invocation renders the eight-material stress set. `--all` explicitly selects all 1,806 records, `--materials` selects named records, and `--dry-run` prints renders/skips without loading Houdini or writing files. The implementation has no job database, manifest, retry manager, checksum generation, or automatic image validation.
+Exact commands and selection options are not yet specified. The implementation will remain minimal: no job database, manifest, retry manager, checksum generation, or automatic image validation.
 
 ## Resume after interruption
 
@@ -193,7 +193,7 @@ Train/validation/test splits are created and stored by the training implementati
 
 Before the full v0 batch:
 
-- Render the eight-material stress set through `datarender.py`.
+- After `datarender.py` is implemented, render the eight-material stress set through it.
 - Open representative EXRs and confirm 1024 × 1024 Beauty RGBA, `P`, `Nb`, and `V`.
 - Confirm `Nb` is unbumped and `C.A` Coverage is identical for opaque and transmissive stress materials.
 - Confirm DOF is absent.

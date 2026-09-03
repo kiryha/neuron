@@ -1,12 +1,12 @@
 # Current project status
 
 - Last verified: 2026-09-03
-- Repository baseline inspected: `main` at `7e268d7`
+- Repository baseline inspected: `main` at `eecc83e`
 - Current phase: **Phase 1 — finish and validate Houdini data generation**
 
 ## Current objective
 
-Disable DOF in scene 006, then run the implemented `datagen/datarender.py` renderer as an eight-material, one-hero, one-camera pilot.
+Specify and implement `datagen/datarender.py` in user-directed stages, then run an eight-material, one-hero, one-camera pilot. Depth of field is already disabled in scene 006.
 
 The accepted learning sequence is: train on one fixed view; test Three.js orbit, zoom, and alternate-mesh inputs as deliberately unsupported cases; add multi-view Houdini data and retrain; then add multi-geometry data and retrain. Improvement between versions is an experiment to measure, not an assumed capability.
 
@@ -15,7 +15,7 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 ### Repository
 
 - `datagen/materials.py` is the current material and label generator.
-- `datagen/datarender.py` is the implemented sequential hython renderer. It defaults to the stress set, supports explicit `--all`/`--materials` selection and `--dry-run`, snapshots the production JSON once, skips existing material folders, and never saves the HIP file.
+- `datagen/datarender.py` is planned but not implemented. Its functionality and CLI will be defined by the user in stages; the accepted design remains sequential hython rendering with no HIP save operation.
 - The generator defines 56 bases, 5 finishes, 4 conditions, 10 colors, and 4 categories.
 - Compatibility filtering produces **1,806** material records.
 - Current bump-type distribution is 1,143 stochastic, 396 directional, and 267 cellular records.
@@ -54,7 +54,7 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - Current path-traced samples: 128
 - Denoiser: off
 - The active `/Render/rendersettings` prim resolves to 1024 × 1024. `/Render/Products/renderproduct` reports 2048 × 1080 only as an unauthored USD fallback, so it does not override the active resolution.
-- DOF is accepted as disabled for dataset v0, but read-only inspection of scene 006 still finds camera f-stop `1.2` and Render Settings `disableDepthOfField = false`.
+- DOF is disabled in scene 006. The visible `Enable Depth of Field` parameter and its underlying `enabledof` value are both off (`0`). Camera f-stop `1.2` remains authored but has no effect while the master toggle is off; the internal `disableDepthOfField = false` value is not a reliable inverse-status check for this Karma node.
 
 ### Material system
 
@@ -74,7 +74,7 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 **Current selected material:**
 
 - The saved scene currently has `material_id = iron_brushed_scratched`.
-- Interactive selections are transient; `datarender.py` overrides `dataset_path` and `material_id` in memory for every batch item.
+- Interactive selections are transient; the planned batch renderer will override `dataset_path` and `material_id` in memory for every batch item.
 
 ## Current incomplete or incorrect state
 
@@ -147,30 +147,29 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 - Copy `neuron_library_prod.json` unchanged into the dataset root; no checksum or renamed copy is required.
 - One multilayer EXR is stored at `{geometry_id}/{camera_id}/{material_id}/render.exr`.
 - The JSON snapshot and folder names are the dataset index; no manifest or camera/geometry/dataset records are required.
-- Implemented automation: sequential `datagen/datarender.py` with explicit geometry and camera lists.
+- Planned automation: sequential `datagen/datarender.py` with explicit geometry and camera lists; implementation will proceed in user-defined stages.
 - Resume behavior: skip when the material folder exists; delete the folder manually to request a rerender.
-- Verified without rendering: syntax and CLI parsing; two-material dry-run; existing-folder skip behavior; required Houdini nodes and USD geometry/camera prims; Indie license detection.
 
 ## Blockers before a full render
 
 | Priority | Blocker | Required resolution |
 | --- | --- | --- |
-| P0 | Automated pilot not yet run | Disable DOF, then run `datagen/datarender.py` on the eight-material fixed-camera stress set |
+| P0 | Render automation not implemented | User defines the first `datarender` stage, then implement and verify it before the automated pilot |
 | P1 | Unresolved transmission-scatter policy | Verify or explicitly classify `transmission_scatter` behavior |
-| P1 | DOF remains enabled in scene 006 | User disables DOF before the automated pilot; Codex must not edit or save the HIP file |
 | P1 | Karma XPU reported one critical error and used only Embree CPU | Inspect Houdini's Log Viewer and decide whether GPU rendering must be restored before the full 1,806-material run |
 
 ## Next exact actions
 
-1. User disables DOF in scene 006 and refreshes the repository scene snapshot after the final user-operated save; Codex must never edit or save the HIP file.
-2. Run `datagen/datarender.py --dry-run`, then run the default eight-material pilot.
-3. Inspect the Karma critical error and CPU-only XPU device state before estimating the full render.
-4. Manually inspect the pilot, including an opaque-versus-glass `C.A` comparison and restart/skip test.
-5. Resolve or explicitly classify `transmission_scatter` behavior before the full batch.
-6. Run `datagen/datarender.py --all` only after the pilot is approved.
-7. Reproduce the Houdini training camera and hero buffers in Three.js and compare `P`, `N`, `V`, Coverage, silhouette, and projection.
-8. Train the first model and record exact-view, orbit/zoom, and alternate-mesh results.
-9. Only after the fixed-view baseline is understood, build a camera-dome pilot for the next dataset version.
+1. User describes the first required `datarender` stage.
+2. Implement and verify that stage without editing or saving the HIP file.
+3. Continue the user-defined stages until the minimal renderer is ready for an eight-material pilot.
+4. Inspect the Karma critical error and CPU-only XPU device state before estimating the full render.
+5. Manually inspect the pilot, including an opaque-versus-glass `C.A` comparison and restart/skip test.
+6. Resolve or explicitly classify `transmission_scatter` behavior before the full batch.
+7. Run the full material batch only after the pilot is approved.
+8. Reproduce the Houdini training camera and hero buffers in Three.js and compare `P`, `N`, `V`, Coverage, silhouette, and projection.
+9. Train the first model and record exact-view, orbit/zoom, and alternate-mesh results.
+10. Only after the fixed-view baseline is understood, build a camera-dome pilot for the next dataset version.
 
 ## Phase 1 exit criteria
 

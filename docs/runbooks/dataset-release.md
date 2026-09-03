@@ -27,21 +27,11 @@ Before rendering, confirm:
 - no `Pz`, variation, dirt, wear, bump, BaseColor, Roughness, or other debug AOVs;
 - the active Indie `.hiplc` scene and `.otllc` HDA produce no watermark.
 
-## 3. Run the eight-material pilot
+## 3. Implement and run the eight-material pilot
 
-Preview the default stress-set plan without loading Houdini or writing files:
+`datagen/datarender.py` is not implemented yet. Define and implement its functionality in the user-directed stages before adding concrete commands to this runbook. The tool must use Houdini's `hython`, render sequentially, and never edit or save the HIP file.
 
-```powershell
-& 'E:\Programs\Houdini22.0.368\bin\hython.exe' datagen\datarender.py --dry-run
-```
-
-After DOF is disabled and scene preflight passes, run the default eight-material pilot:
-
-```powershell
-& 'E:\Programs\Houdini22.0.368\bin\hython.exe' datagen\datarender.py
-```
-
-Use `--materials ID [ID ...]` for a named subset. Do not pass `--all` until the pilot is approved.
+After the tool is implemented and scene preflight passes, run the eight-material pilot using the documented command. Do not run the complete 1,806-material batch until the pilot is approved.
 
 Expected path example:
 
@@ -60,7 +50,7 @@ Use the pilot to estimate approximate time per material and total disk usage for
 ## 5. Run the complete dataset
 
 - Use the copied `neuron_library_prod.json`.
-- Run the complete sequential batch with `datagen/datarender.py --all`.
+- Run the complete sequential batch with the command established during staged `datarender.py` implementation.
 - Existing `{geometry_id}/{camera_id}/{material_id}` folders are skipped.
 - To rerender a material, delete its folder manually and rerun the script.
 - Do not change the scene, HDA, JSON snapshot, camera, lighting, render settings, or output channels during the run.

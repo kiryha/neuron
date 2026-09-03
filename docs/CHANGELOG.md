@@ -94,3 +94,9 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Confirmed by read-only scene inspection that DOF is still enabled (`fStop = 1.2`, `disableDepthOfField = off`) and must be disabled by the user before the automated pilot.
 - Implemented the minimal sequential `datagen/datarender.py` hython renderer with explicit geometry/camera lists, stress-set default, opt-in full render, production-library snapshotting, material-folder skipping, and no HIP save operation.
 - Verified CLI parsing, dry-run planning, existing-folder skip behavior, Indie-license detection, required Houdini nodes, and the current geometry/camera USD prim paths without launching a render.
+
+### DOF and render-automation correction
+
+- Verified that scene 006 already has the user-facing `Enable Depth of Field` control disabled; read-only inspection reports its underlying `enabledof` parameter as `0`.
+- Corrected the earlier inference from camera f-stop and the confusing internal `disableDepthOfField` value. An authored f-stop does not turn DOF on while the master checkbox is off.
+- Removed the premature untracked `datagen/datarender.py` draft. Render automation is again planned and will be implemented in stages from the user's forthcoming functionality description.
