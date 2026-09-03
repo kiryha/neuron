@@ -9,18 +9,17 @@ from datagen.ui import ui_datarender
 
 
 CAMERA_APERTURE_MM = 20.955
-FRAME_MARGIN = 1.1
 STAGE_PATH = "/stage"
 
 
 def _camera_positions(camera_count, distance):
-    """Return evenly distributed positions on an upper hemisphere."""
+    """Return evenly distributed positions on a full sphere."""
 
     golden_angle = math.pi * (3.0 - math.sqrt(5.0))
     positions = []
 
     for index in range(camera_count):
-        y = (index + 0.5) / camera_count
+        y = 1.0 - 2.0 * (index + 0.5) / camera_count
         ring_radius = math.sqrt(1.0 - y * y)
         angle = index * golden_angle
         positions.append(
@@ -34,7 +33,7 @@ def _camera_positions(camera_count, distance):
     return positions
 
 
-def create_camera_dome(camera_count, focal_length, object_size):
+def create_camera_dome(camera_count, focal_length, object_size, frame_margin):
     """Create a Solaris camera-dome subnet."""
 
     stage = hou.node(STAGE_PATH)
@@ -44,7 +43,7 @@ def create_camera_dome(camera_count, focal_length, object_size):
     camera_dome = stage.createNode("subnet", "camera_dome")
 
     half_fov = math.atan(CAMERA_APERTURE_MM / (2.0 * focal_length))
-    distance = object_size * 0.5 / math.sin(half_fov) * FRAME_MARGIN
+    distance = object_size * 0.5 / math.sin(half_fov) * frame_margin
     previous = camera_dome.indirectInputs()[0]
 
     for index, position in enumerate(_camera_positions(camera_count, distance)):
@@ -84,18 +83,26 @@ class Datarender(QtWidgets.QDialog, ui_datarender.Ui_Datarender):
             camera_count = int(self.linNumCameras.text())
             focal_length = float(self.linFocalLen.text())
             object_size = float(self.linObjectSize.text())
+            frame_margin = float(self.linMargin.text())
 
-            if camera_count < 1 or focal_length <= 0 or object_size <= 0:
+            if (
+                camera_count < 1
+                or focal_length <= 0
+                or object_size <= 0
+                or frame_margin < 1.0
+            ):
                 raise ValueError
 
             camera_dome, distance = create_camera_dome(
                 camera_count,
                 focal_length,
                 object_size,
+                frame_margin,
             )
         except ValueError:
             hou.ui.displayMessage(
-                "Camera count, focal length, and object size must be positive numbers.",
+                "Camera count, focal length, and object size must be positive. "
+                "Frame margin must be 1.0 or greater.",
                 severity=hou.severityType.Error,
             )
             return

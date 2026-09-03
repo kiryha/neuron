@@ -17,7 +17,7 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 ### Repository
 
 - `datagen/materials.py` is the current material and label generator.
-- `datagen/datarender.py` now implements the first UI stage: it creates an unconnected Solaris camera-dome subnet from camera count, focal length, and approximate object size. Dataset rendering is not implemented yet.
+- `datagen/datarender.py` now implements the first UI stage: it creates an unconnected Solaris camera-dome subnet from camera count, focal length, approximate object size, and frame margin. Dataset rendering is not implemented yet.
 - `datagen/ui/ui_datarender.py` is generated from the user-authored `ui_datarender.ui`.
 - The generator defines 56 bases, 5 finishes, 4 conditions, 10 colors, and 4 categories.
 - Compatibility filtering produces **1,806** material records.
@@ -153,7 +153,7 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 - One multilayer EXR is stored at `{geometry_id}/{camera_id}/{material_id}/render.exr`.
 - The JSON snapshot and folder names are the dataset index; no manifest or camera/geometry/dataset records are required.
 - Implemented camera stage: `datarender.py` creates an unconnected `/stage/camera_dome` subnet containing sequential Camera LOPs that author `/cameras/cam_####` prims. The user connects the subnet manually.
-- Camera positions use an upper-hemisphere Fibonacci distribution, look at world origin, and share a distance derived from the UI focal length and approximate object size; no geometry bounds are read.
+- Camera positions use a full-sphere Fibonacci distribution, look at world origin, and share a distance derived from the UI focal length, approximate object size, and margin multiplier; no geometry bounds are read.
 - Planned render stage: sequential material/camera rendering will be implemented in later user-defined stages.
 - Resume behavior: skip when the material folder exists; delete the folder manually to request a rerender.
 
@@ -168,7 +168,7 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 
 ## Next exact actions
 
-1. Run the `datarender` UI in Houdini and create a camera dome using the intended camera count, focal length, and object size.
+1. Run the `datarender` UI in Houdini and create a camera dome using the intended camera count, focal length, object size, and frame margin.
 2. Manually connect the new subnet into the Solaris chain before Karma Render Settings.
 3. Look through representative generated cameras and confirm that the hero fits in frame; adjust the UI object size if more framing margin is needed.
 4. User defines the next `datarender` stage.

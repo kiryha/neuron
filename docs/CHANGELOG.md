@@ -124,3 +124,5 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Implemented `datagen/datarender.py` camera-dome creation using an upper-hemisphere Fibonacci distribution, world-origin look-at, and simple size/focal-length framing.
 - Kept the created `/stage/camera_dome` subnet unconnected for manual Solaris wiring; the tool does not inspect geometry bounds, find existing cameras, change Karma Render Settings, or render images.
 - Verified the implementation in a fresh unsaved Houdini scene with eight 28 mm cameras and a 2 m object-size input.
+- Extended the UI with a frame-margin multiplier, changed camera placement from an upper hemisphere to a full Fibonacci sphere, and used the margin directly in the camera-distance calculation.
+- Verified eight 28 mm cameras with a 2 m object and margin `1.25`; the resulting common camera distance is approximately `3.567 m`, with cameras present above and below the object.

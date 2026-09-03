@@ -33,30 +33,40 @@ class Ui_Datarender(object):
 
         self.gridLayout.addWidget(self.linObjectSize, 1, 2, 1, 1)
 
-        self.linNumCameras = QLineEdit(Datarender)
-        self.linNumCameras.setObjectName(u"linNumCameras")
+        self.label_2 = QLabel(Datarender)
+        self.label_2.setObjectName(u"label_2")
 
-        self.gridLayout.addWidget(self.linNumCameras, 1, 0, 1, 1)
-
-        self.linFocalLen = QLineEdit(Datarender)
-        self.linFocalLen.setObjectName(u"linFocalLen")
-
-        self.gridLayout.addWidget(self.linFocalLen, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.label_2, 0, 1, 1, 1)
 
         self.label = QLabel(Datarender)
         self.label.setObjectName(u"label")
 
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
 
+        self.linNumCameras = QLineEdit(Datarender)
+        self.linNumCameras.setObjectName(u"linNumCameras")
+
+        self.gridLayout.addWidget(self.linNumCameras, 1, 0, 1, 1)
+
         self.label_3 = QLabel(Datarender)
         self.label_3.setObjectName(u"label_3")
 
         self.gridLayout.addWidget(self.label_3, 0, 2, 1, 1)
 
-        self.label_2 = QLabel(Datarender)
-        self.label_2.setObjectName(u"label_2")
+        self.linFocalLen = QLineEdit(Datarender)
+        self.linFocalLen.setObjectName(u"linFocalLen")
 
-        self.gridLayout.addWidget(self.label_2, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.linFocalLen, 1, 1, 1, 1)
+
+        self.linMargin = QLineEdit(Datarender)
+        self.linMargin.setObjectName(u"linMargin")
+
+        self.gridLayout.addWidget(self.linMargin, 1, 3, 1, 1)
+
+        self.label_4 = QLabel(Datarender)
+        self.label_4.setObjectName(u"label_4")
+
+        self.gridLayout.addWidget(self.label_4, 0, 3, 1, 1)
 
 
         self.verticalLayout.addLayout(self.gridLayout)
@@ -80,11 +90,13 @@ class Ui_Datarender(object):
     def retranslateUi(self, Datarender):
         Datarender.setWindowTitle(QCoreApplication.translate("Datarender", u"D A T A R E N D E R", None))
         self.linObjectSize.setText(QCoreApplication.translate("Datarender", u"2", None))
-        self.linNumCameras.setText(QCoreApplication.translate("Datarender", u"8", None))
-        self.linFocalLen.setText(QCoreApplication.translate("Datarender", u"28", None))
-        self.label.setText(QCoreApplication.translate("Datarender", u"Number of Cameras", None))
-        self.label_3.setText(QCoreApplication.translate("Datarender", u"Object Size", None))
         self.label_2.setText(QCoreApplication.translate("Datarender", u"Focal Length", None))
+        self.label.setText(QCoreApplication.translate("Datarender", u"Num of Cams", None))
+        self.linNumCameras.setText(QCoreApplication.translate("Datarender", u"8", None))
+        self.label_3.setText(QCoreApplication.translate("Datarender", u"Object Size", None))
+        self.linFocalLen.setText(QCoreApplication.translate("Datarender", u"28", None))
+        self.linMargin.setText(QCoreApplication.translate("Datarender", u"1.25", None))
+        self.label_4.setText(QCoreApplication.translate("Datarender", u"Frame Margin", None))
         self.btnCameraDome.setText(QCoreApplication.translate("Datarender", u"Create Camera Dome", None))
     # retranslateUi
 

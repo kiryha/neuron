@@ -127,11 +127,11 @@ The implementation is being built in user-directed stages in `datagen/datarender
 
 ### Camera-dome stage
 
-The user-authored `datagen/ui/ui_datarender.ui` provides camera count, focal length in millimeters, and approximate object size in meters. Its **Create Camera Dome** button creates an unconnected Camera Dome subnet in `/stage`; the user connects the subnet manually.
+The user-authored `datagen/ui/ui_datarender.ui` provides camera count, focal length in millimeters, approximate object size in meters, and a frame-margin multiplier. Its **Create Camera Dome** button creates an unconnected Camera Dome subnet in `/stage`; the user connects the subnet manually.
 
-Inside the subnet, Camera LOPs are connected sequentially between the subnet input and output. They author `/cameras/cam_0000`, `/cameras/cam_0001`, and so on. Positions are distributed evenly over the upper hemisphere, every camera looks at world origin, and every camera uses the requested focal length.
+Inside the subnet, Camera LOPs are connected sequentially between the subnet input and output. They author `/cameras/cam_0000`, `/cameras/cam_0001`, and so on. Positions use a full-sphere Fibonacci distribution, every camera looks at world origin, and every camera uses the requested focal length.
 
-Object size is a simple framing input, not measured geometry. Camera distance uses the fixed 20.955 mm aperture and a 10% margin. The tool does not inspect geometry bounds, find or update existing cameras, connect itself to the root network, change Karma Render Settings, or render images.
+Object size is a simple framing input, not measured geometry. Camera distance uses the fixed 20.955 mm aperture and is multiplied by the UI frame margin: `1.0` adds no extra space and the default `1.25` moves cameras 25% farther away. Values below `1.0` are rejected. The tool does not inspect geometry bounds, find or update existing cameras, connect itself to the root network, change Karma Render Settings, or render images.
 
 ### Planned render stage
 

@@ -23,24 +23,24 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLineEdit" name="linNumCameras">
+     <item row="0" column="1">
+      <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>8</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="linFocalLen">
-       <property name="text">
-        <string>28</string>
+        <string>Focal Length</string>
        </property>
       </widget>
      </item>
      <item row="0" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Number of Cameras</string>
+        <string>Num of Cams</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLineEdit" name="linNumCameras">
+       <property name="text">
+        <string>8</string>
        </property>
       </widget>
      </item>
@@ -51,10 +51,24 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="label_2">
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="linFocalLen">
        <property name="text">
-        <string>Focal Length</string>
+        <string>28</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QLineEdit" name="linMargin">
+       <property name="text">
+        <string>1.25</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Frame Margin</string>
        </property>
       </widget>
      </item>
