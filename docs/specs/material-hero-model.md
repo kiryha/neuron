@@ -51,7 +51,7 @@ The exact network may operate per surface sample or on rasterized image buffers.
 - World-space view direction `V`
 - Material-independent foreground Coverage, stored as Beauty alpha `C.A`
 
-Houdini provides the training buffers. The application is planned to rasterize corresponding buffers from supplied Three.js meshes and cameras. At the exact training geometry and camera, those buffers must be calibrated against Houdini before model behavior is judged. Orbit, zoom, and alternate meshes remain out of distribution until represented in a later training release.
+Houdini provides the training buffers. The application rasterizes corresponding buffers from the reduced hero mesh at `public/models/material_hero/sculpted-rubber-toy.glb` and from later supplied Three.js meshes and cameras. The Houdini export is accepted for downstream use without a separate geometry metadata file or formal pixel-precise cross-renderer calibration. Orbit, zoom, and alternate meshes remain out of distribution until represented in a later training release.
 
 ### Prompt inputs
 
@@ -80,7 +80,7 @@ Begin with the smallest model that can prove the data path:
 3. Use positional/Fourier features only where a simple MLP cannot reproduce spatial detail.
 4. Predict linear foreground RGB.
 5. Composite with Coverage/background for display.
-6. Reproduce the fixed training buffers in Three.js and compare inference against the Houdini-buffer baseline.
+6. Run inference from buffers rasterized from the exported hero GLB at the training-camera reference pose.
 
 This baseline is preferred over starting with a diffusion model because it is easier to implement, debug, overfit intentionally, and relate back to the known geometry. A diffusion or image-space refinement stage can be evaluated later if the baseline cannot represent the required detail.
 
@@ -95,7 +95,7 @@ This baseline is preferred over starting with a diffusion model because it is ea
 
 ### Runtime v0 — out-of-distribution observation
 
-- Recreate the training geometry and camera in Three.js as the calibration case
+- Load the exported reduced hero GLB and begin at the training-camera reference pose
 - Orbit and zoom the hero without claiming novel-view support
 - Supply several additional meshes and observe failure or partial transfer without claiming geometry support
 - Save comparable outputs for the same prompts, cameras, and meshes
@@ -114,7 +114,7 @@ This baseline is preferred over starting with a diffusion model because it is ea
 
 ### Controlled comparison rules
 
-- Preserve the same material splits, evaluation prompts, calibration camera, and named test meshes across versions.
+- Preserve the same material splits, evaluation prompts, training-camera reference, and named test meshes across versions.
 - Keep architecture, training budget, resolution, and random seeds unchanged where practical; record every intentional difference.
 - Compare v0, multi-view, and multi-geometry checkpoints on the same exact-view, orbit/zoom, and geometry-switch test grid.
 - Archive model, dataset, application, and geometry-buffer versions with every result.
@@ -141,7 +141,7 @@ Exact losses, feature encodings, model width, and optimizer settings remain expe
 Minimum evaluation should include:
 
 - Reconstruction error at the exact v0 training geometry and camera
-- Houdini-buffer versus Three.js-buffer output at the matched training pose
+- Reference-pose inference from the exported Three.js hero mesh
 - Unsupported orbit, zoom, and alternate-geometry results for v0, clearly labeled as out of distribution
 - Novel-view performance after multi-view training
 - Seen- and held-out-geometry performance after multi-geometry training
@@ -166,7 +166,7 @@ Qualitative grids should hold camera constant while changing prompt, and hold pr
 
 - It intentionally overfits a tiny dataset, proving the training path is correct.
 - Different supported prompts produce visibly appropriate appearances.
-- The exact training geometry and camera reproduce documented validation renders using calibrated Three.js buffers.
+- The exported hero GLB produces the required Three.js buffers and a renderable inference result at the training-camera reference pose.
 - Orbit, zoom, and alternate-mesh outputs can be generated and recorded, but are not required to be correct for v0.
 - Results outperform prompt-agnostic and nearest-material baselines.
 - A saved checkpoint can reproduce documented validation renders from a clean process.

@@ -6,7 +6,7 @@ Last reviewed: 2026-09-03
 
 ## Objective
 
-Provide a small web application where a user enters a supported material prompt and receives directly generated RGB from Three.js-rasterized surface context. The exact v0 training geometry and camera are the supported calibration case; orbit, zoom, and alternate supplied meshes are intentionally exposed as out-of-distribution experiments.
+Provide a small web application where a user enters a supported material prompt and receives directly generated RGB from Three.js-rasterized surface context. The exported Sculpted Rubber Toy at the training-camera reference pose is the v0 reference case; orbit, zoom, and alternate supplied meshes are intentionally exposed as out-of-distribution experiments.
 
 ## Current implementation
 
@@ -14,29 +14,30 @@ Provide a small web application where a user enters a supported material prompt 
 - Backend: FastAPI
 - Deployment target: Docker-based Hugging Face Space on port `7860`
 - Current viewport: cyan emissive sphere with orbit controls and grid
+- Web geometry: `public/models/material_hero/sculpted-rubber-toy.glb`, a verified 12,253,888-byte binary glTF exported from Houdini; it is present but not yet loaded by the viewport
 - Current API: `/api/status`
 - Training/model inference: not implemented
 
 ## Intended user flow
 
-1. The application loads the neural model, the training-hero proxy, and several additional test meshes.
+1. The application loads the neural model and `sculpted-rubber-toy.glb`; additional test meshes may be added for out-of-distribution experiments.
 2. The user enters a compact prompt such as `gold brushed dirty`.
 3. The application validates or normalizes the prompt against the supported vocabulary.
 4. Three.js rasterizes `P`, smooth unbumped `N`, and material-independent Coverage for the active supplied mesh and camera, then derives `V` from position and camera state. Its Coverage convention must match Houdini Beauty alpha (`C.A`).
 5. The backend or client inference path generates final RGB.
 6. The generated image is displayed from the requested camera.
-7. Prompt, camera, or mesh changes request a new image; v0 results outside the exact training pose are labeled experimental and may be broken.
+7. Prompt, camera, or mesh changes request a new image; v0 results outside the training-camera reference pose are labeled experimental and may be broken.
 
 ## Display behavior
 
-The application uses explicit meshes to generate geometry buffers and a responsive proxy view. The neural model supplies final pixels; it does not create a Three.js PBR material. The first checkpoint is trained on only the Sculpted Rubber Toy at one camera, so the UI must not imply that orbit, zoom, or mesh switching is supported merely because an image is returned.
+The application uses the single exported hero GLB to generate geometry buffers and display a responsive mesh preview. The neural model supplies final pixels; it does not create a Three.js PBR material. The first checkpoint is trained on only the Sculpted Rubber Toy at one camera, so the UI must not imply that orbit, zoom, or mesh switching is supported merely because an image is returned.
 
 A practical interaction pattern is:
 
-- show a lightweight proxy while the camera is moving;
+- show the Three.js mesh preview while the camera is moving;
 - request or evaluate neural output when movement pauses;
 - keep the last valid neural frame visible while a new result is pending;
-- identify the exact training geometry/camera calibration pose;
+- identify the training-camera reference pose;
 - label other views and meshes as out of distribution for the loaded checkpoint;
 - show clear loading, unsupported-prompt, and inference-error states.
 
@@ -93,7 +94,7 @@ The deployed model artifact should include:
 - architecture/configuration;
 - prompt vocabulary and aliases;
 - normalization constants and positional encoding settings;
-- training geometry/proxy reference and hash plus compatible experimental test meshes;
+- the web hero mesh path plus any compatible experimental test meshes;
 - camera convention;
 - expected color space and output transform;
 - dataset release/version;
@@ -116,7 +117,7 @@ This package can later inform the first `.neuron` asset format, but a general ne
 - The app loads one documented Material Hero checkpoint.
 - Supported prompts produce visibly different, appropriate appearances.
 - The same prompt, geometry buffers, and camera are reproducible.
-- Three.js reproduces the Houdini v0 geometry buffers and output at the accepted calibration pose within documented tolerances.
+- Three.js loads the exported hero GLB and produces `P`, smooth unbumped `N`, `V`, and Coverage at the training-camera reference pose; formal pixel-precise comparison against Houdini is not required for v0.
 - Orbit, zoom, and alternate-mesh controls produce recordable results and clearly identify when the request is out of distribution.
 - Unsupported prompts fail clearly or normalize through documented aliases.
 - The UI never claims to generate arbitrary geometry, maps, or relighting.

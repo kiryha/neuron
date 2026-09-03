@@ -42,7 +42,7 @@ Deliverables:
 - Fixed linear color and OCIO setup in the versioned HIP scene
 - Minimal `{geometry_id}/{camera_id}/{material_id}/render.exr` naming contract
 - Unchanged `neuron_library_prod.json` snapshot beside the renders
-- Houdini-to-Three.js `P`/`N`/`V`/Coverage convention and calibration plan, with Houdini Coverage read from `C.A`
+- Shared Houdini/Three.js `P`/`N`/`V`/Coverage convention, with Houdini Coverage read from `C.A`
 - Render/storage/time estimate
 
 Exit gate:
@@ -97,19 +97,19 @@ Exit gate:
 
 Status: **Planned**
 
-Goal: reproduce the v0 training pose from Three.js, then observe what the fixed-view model does under unsupported camera and supplied-mesh changes.
+Goal: run the v0 model from the exported hero GLB at the training-camera reference pose, then observe what the fixed-view model does under unsupported camera and supplied-mesh changes.
 
 Deliverables:
 
 - Three.js float-buffer rendering for `P`, smooth unbumped `N`, and Coverage plus deterministic `V` derivation
-- Exact hero/camera calibration against Houdini
+- Load `public/models/material_hero/sculpted-rubber-toy.glb` as the single v0 web geometry
 - Prompt inference and generated-RGB display
 - Orbit, zoom, and alternate-mesh controls marked out of distribution
 - Repeatable evaluation scenes, prompts, captures, and measurements
 
 Exit gate:
 
-- The exact training pose agrees with the Houdini-buffer inference baseline within documented tolerances.
+- The exported hero mesh produces the required geometry buffers and an inference result at the training-camera reference pose.
 - Unsupported-view and unsupported-geometry failures can be reproduced and compared with later checkpoints.
 
 ## Phase 2C — Multi-view extension
@@ -167,7 +167,7 @@ Deliverables:
 Exit gate:
 
 - A clean checkout can load the published model and serve the demo.
-- A user can render supported prompts, identify the loaded training scope, and distinguish calibrated from out-of-distribution requests.
+- A user can render supported prompts, identify the loaded training scope, and distinguish the training-camera reference pose from out-of-distribution requests.
 
 ## Later research — persistent neural assets
 

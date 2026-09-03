@@ -90,7 +90,7 @@ The training implementation has not been built yet. It begins after the Houdini 
 
 The intended application accepts a material prompt and sends Three.js-generated `P`, `N`, `V`, and Coverage buffers to the neural renderer. It starts at the Houdini training pose, then permits orbit, zoom, and mesh switching so failures of each dataset/model version can be observed directly.
 
-The current React application is only a visual scaffold with a placeholder sphere. The FastAPI backend currently exposes a status endpoint and serves the built frontend; neural inference is not connected yet.
+The current React application is only a visual scaffold with a placeholder sphere. A reduced Houdini export is available at `public/models/material_hero/sculpted-rubber-toy.glb` as the single web hero geometry; it is not yet connected to the viewport. The FastAPI backend currently exposes a status endpoint and serves the built frontend; neural inference is not connected yet.
 
 ## Current status
 
@@ -142,6 +142,7 @@ datagen/       Material definitions and Houdini data-generation tools
 train/         Training package scaffold
 neuron/        Future neural-engine package
 src/           React and React Three Fiber frontend
+public/models/ Deployable web geometry
 main.py        FastAPI application and static frontend server
 docs/          Canonical project documentation
 docs/sources/  Historical briefs, exported chats, and source material

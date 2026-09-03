@@ -25,6 +25,8 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - `train/train_hero.py` and `train/loss.py` are empty.
 - `neuron/` contains only a package scaffold.
 - The React app displays a cyan emissive placeholder sphere.
+- `public/models/material_hero/sculpted-rubber-toy.glb` is the accepted single web geometry. It is a valid 12,253,888-byte binary glTF exported from Houdini and is not yet loaded by the React app.
+- No geometry metadata file, separate proxy/calibration LODs, geometry hash, or formal pixel-precise Houdini-to-Three.js calibration is required for v0.
 - `main.py` serves the built frontend and exposes only `/api/status`.
 
 ### External Houdini project
@@ -167,7 +169,7 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 5. Manually inspect the pilot, including an opaque-versus-glass `C.A` comparison and restart/skip test.
 6. Resolve or explicitly classify `transmission_scatter` behavior before the full batch.
 7. Run the full material batch only after the pilot is approved.
-8. Reproduce the Houdini training camera and hero buffers in Three.js and compare `P`, `N`, `V`, Coverage, silhouette, and projection.
+8. Load the exported hero GLB in Three.js, implement `P`, smooth unbumped `N`, `V`, and Coverage generation, and use the training-camera pose as the reference case.
 9. Train the first model and record exact-view, orbit/zoom, and alternate-mesh results.
 10. Only after the fixed-view baseline is understood, build a camera-dome pilot for the next dataset version.
 

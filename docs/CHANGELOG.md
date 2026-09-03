@@ -100,3 +100,9 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Verified that scene 006 already has the user-facing `Enable Depth of Field` control disabled; read-only inspection reports its underlying `enabledof` parameter as `0`.
 - Corrected the earlier inference from camera f-stop and the confusing internal `disableDepthOfField` value. An authored f-stop does not turn DOF on while the master checkbox is off.
 - Removed the premature untracked `datagen/datarender.py` draft. Render automation is again planned and will be implemented in stages from the user's forthcoming functionality description.
+
+### Web geometry simplification
+
+- Verified the user-exported `public/models/material_hero/sculpted-rubber-toy.glb` as a 12,253,888-byte binary glTF and accepted it as the single Material Hero web geometry.
+- Dropped the proposed geometry metadata file, separate proxy/calibration LODs, geometry hash requirement, and formal pixel-precise Houdini-to-Three.js calibration gate for v0.
+- Retained the application contract to rasterize `P`, smooth unbumped `N`, Coverage, and derived `V` from the exported mesh, with the training-camera pose used as a practical reference rather than a numerical cross-renderer acceptance test.

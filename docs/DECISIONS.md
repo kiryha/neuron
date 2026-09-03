@@ -26,6 +26,7 @@ This file records accepted choices that should survive individual chats. Impleme
 | D-020 | Accepted | 2026-09-02 | Use the copied `neuron_library_prod.json` plus `{geometry_id}/{camera_id}/{material_id}/render.exr` folders as the complete dataset index. | No hashes, renamed JSON, dataset/entity records, manifest, schema record, progress log, or validation report are required for v0. |
 | D-021 | Accepted | 2026-09-02 | Implement render automation as a sequential `datagen/datarender.py` script rather than TOPs/PDG. | Explicit geometry and camera lists preserve future extension; an existing material folder is skipped, and manual folder deletion requests a rerender. |
 | D-022 | Accepted | 2026-09-03 | Use Beauty alpha (`C.A`) as material-independent Coverage for Material Hero v0. | The material library drives transmission but not opacity, so opaque and glass materials retain the same geometry alpha; no separate Coverage RenderVar or EXR subimage is required. |
+| D-023 | Accepted | 2026-09-03 | Use the single reduced hero export at `public/models/material_hero/sculpted-rubber-toy.glb` as the web application's Material Hero geometry. | Do not add a geometry metadata file, separate proxy/calibration LODs, a geometry hash requirement, or a formal pixel-precise Houdini-to-Three.js calibration gate for v0. The app still produces the required `P`, `N`, `V`, and Coverage inputs from this mesh. |
 
 ## Open decisions
 
