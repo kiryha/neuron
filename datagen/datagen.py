@@ -9,12 +9,11 @@ from datagen.ui import ui_datagen
 
 from importlib import reload
 from datagen import materials
-from datagen import tools
+from datagen.config import HDA_NAME
 
 reload(materials)
-reload(tools)
 reload(ui_datagen)
-   
+
 
 class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
     def __init__(self):
@@ -78,7 +77,13 @@ class Datagen(QtWidgets.QDialog, ui_datagen.Ui_Datagen):
     def apply_material(self):
 
         material_id = self.listMaterials.currentItem().text()
-        tools.set_material(material_id)
+        self.set_material(material_id)
+
+    def set_material(self, material_id):
+        """Set the material on the neuromat HDA."""
+
+        neuromat = hou.node(f"/stage/{HDA_NAME}")
+        neuromat.parm("material_id").set(material_id)
         
 
 

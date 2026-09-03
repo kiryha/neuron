@@ -76,3 +76,9 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Accepted `{geometry_id}/{camera_id}/{material_id}/render.exr` and folder-existence skipping, with manual folder deletion used to request a rerender.
 - Selected a sequential `datagen/datarender.py` script instead of TOPs/PDG; the implementation remains pending.
 - Verified that scene 005 already resolves to 1024 × 1024, while DOF is still active and must be disabled during the next Houdini implementation step.
+
+### Datagen helper cleanup
+
+- Moved the active `set_material()` helper onto the `Datagen` class in `datagen/datagen.py` and updated the UI callback to call it directly.
+- Deleted the obsolete `datagen/tools.py`, including its unused partial `apply_material()` implementation.
+- Recorded the standing constraint that Codex must never edit or save HIP files; required scene edits remain user-operated.

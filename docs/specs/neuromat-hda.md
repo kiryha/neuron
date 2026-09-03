@@ -77,12 +77,12 @@ Repository files under `datagen/hips/` are older references, not the active defi
 
 The generator validates these records before writing JSON. Material application is intentionally cook-driven:
 
-1. The Houdini UI calls `datagen/tools.py::set_material`, changing the HDA `material_id`.
+1. The Houdini UI calls `datagen/datagen.py::Datagen.set_material`, changing the HDA `material_id`.
 2. Internal Python Script LOP `read_JSON_data` reads the HDA `dataset_path`, resolves that ID, and writes the record’s values onto the HDA.
 3. Internal Python Script LOP `set_bump_type` converts none, stochastic, directional, and cellular strings to integer modes; unknown strings currently default to stochastic mode `1`.
 4. Internal Python Script LOP `set_bump_cap` calculates the safety cap from finish and condition.
 
-This path is verified working interactively and is intentionally compatible with future batching: a work item can set one material ID and cook the HDA. `datagen/tools.py::apply_material` is an older partial alternative and is not the active UI path.
+This path is verified working interactively and is intentionally compatible with future batching: a work item can set one material ID and cook the HDA. The obsolete partial `datagen/tools.py::apply_material` alternative has been removed.
 
 ## Mask behavior
 

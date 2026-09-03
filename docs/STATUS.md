@@ -1,7 +1,7 @@
 # Current project status
 
 - Last verified: 2026-09-02
-- Repository baseline inspected: `main` at `b7d51dd`
+- Repository baseline inspected: `main` at `be2f76b`
 - Current phase: **Phase 1 — finish and validate Houdini data generation**
 
 ## Current objective
@@ -97,7 +97,7 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - `/stage/neuromat/set_bump_type` maps none, stochastic, directional, and cellular to integer modes; an unknown value currently defaults to stochastic mode `1`.
 - `/stage/neuromat/set_bump_cap` derives the internal safety cap from finish and condition.
 - This design is working interactively and is suitable for future batching by changing one material ID per work item.
-- `datagen/tools.py::apply_material()` is an older partial alternative and is not the active UI path; it should be removed or clearly marked legacy later to prevent confusion.
+- The UI helper `Datagen.set_material()` now lives directly on the `Datagen` class in `datagen/datagen.py`; the obsolete partial `datagen/tools.py` module has been removed.
 
 ### Current bump construction
 
@@ -172,7 +172,7 @@ Accepted dataset-v0 outputs, not yet applied to the scene:
 
 ## Next exact actions
 
-1. Update scene 005 to disable DOF and output only Beauty, world `P`, smooth unbumped world `N`, world `V`, and material-independent Coverage at 1024 × 1024.
+1. User updates scene 005 to disable DOF and output only Beauty, world `P`, smooth unbumped world `N`, world `V`, and material-independent Coverage at 1024 × 1024. Codex must never edit or save the HIP file.
 2. Resolve or explicitly classify `transmission_scatter` behavior.
 3. Implement the minimal sequential `datagen/datarender.py` renderer and folder-existence skip behavior.
 4. Convert or rebuild the scene and HDA for Indie, then prove that the exact batch path writes an unwatermarked output.

@@ -52,11 +52,11 @@ Keep `docs/STATUS.md` concise. It should describe the present, not accumulate hi
 The active Houdini project is outside this Git repository:
 
 - Project: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D`
-- Active scene: `scenes\material_hero_004.hipnc`
+- Active scene: `scenes\material_hero_005.hipnc`
 - Active HDA: `hda\lop_KKO8.neuromat.1.2.hdanc`
 - Generated material JSON: `E:\Projects\neuron_data\neuron_library.json`
 
-Treat repository copies under `datagen/hips/` as historical unless `docs/STATUS.md` says otherwise. Do not overwrite or relocate external Houdini files without explicit user authorization. Inspect exact paths and preserve backups before changing HDA definitions or scenes.
+Treat repository copies under `datagen/hips/` as historical unless `docs/STATUS.md` says otherwise. Never edit or save HIP files; required scene changes must be performed by the user. Do not overwrite or relocate other external Houdini files without explicit user authorization. Inspect exact paths and preserve backups before changing HDA definitions.
 
 ## Current scope boundaries
 

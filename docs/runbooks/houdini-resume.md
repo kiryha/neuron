@@ -75,7 +75,7 @@ After generation, build labels and validate every record. Existing labels are sk
 
 Selecting an item in the Houdini UI intentionally changes only `material_id`. Cooking the HDA runs its internal `read_JSON_data`, `set_bump_type`, and `set_bump_cap` Python Script LOPs, which update the material parameters. This is the expected interactive path and the planned basis for batching.
 
-The separate repository helper `tools.apply_material()` is an older partial path; do not use it as the batch contract unless it is deliberately brought back in sync.
+The UI helper `Datagen.set_material()` lives in `datagen/datagen.py` and only changes the HDA `material_id`. The obsolete partial `datagen/tools.py` module has been removed.
 
 ## 6. Validate the current bump implementation
 
