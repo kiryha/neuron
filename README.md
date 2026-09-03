@@ -9,7 +9,7 @@ pinned: false
 ---
 
 # Neuron
-![Data Model](images/neuromat.jpg)
+![Data Model](images/neuron_web.jpg)
 
 Neuron is a personal generative-AI research project built from the ground up to learn how text-conditioned image generation works. Its first milestone, **Material Hero**, generates the rendered appearance of one fixed 3D object from a material description.
 
@@ -22,6 +22,7 @@ Example prompts:
 The first training release is deliberately narrow: many materials, one geometry, one fixed camera, and controlled studio lighting. The same model is then exercised with unsupported Three.js camera and mesh inputs before later datasets add multiple views and multiple geometries. This makes generalization something the project measures rather than assumes.
 
 ## Material Hero
+![Data Model](images/neuromat.jpg)
 
 Material Hero begins with a **Sculpted Rubber Toy** and one fixed training camera. Houdini procedurally renders that view with many combinations of material base, finish, condition, and color. Each image is linked to a canonical text description and aligned camera and geometry data.
 
