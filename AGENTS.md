@@ -52,17 +52,17 @@ Keep `docs/STATUS.md` concise. It should describe the present, not accumulate hi
 The active Houdini project is outside this Git repository:
 
 - Project: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D`
-- Active scene: `scenes\material_hero_005.hipnc`
-- Active HDA: `hda\lop_KKO8.neuromat.1.2.hdanc`
+- Active scene: `scenes\material_hero_006.hiplc`
+- Active HDA: `hda\lop_KKO8.neuromat.1.2.otllc`
 - Generated material JSON: `E:\Projects\neuron_data\neuron_library.json`
 
-Treat repository copies under `datagen/hips/` as historical unless `docs/STATUS.md` says otherwise. Never edit or save HIP files; required scene changes must be performed by the user. Do not overwrite or relocate other external Houdini files without explicit user authorization. Inspect exact paths and preserve backups before changing HDA definitions.
+Treat repository copies under `datagen/hips/` as snapshots unless `docs/STATUS.md` says they are the active artifact. The external Houdini project is authoritative when its copy is newer. Never edit or save HIP files; required scene changes must be performed by the user. Do not overwrite or relocate other external Houdini files without explicit user authorization. Inspect exact paths and preserve backups before changing HDA definitions.
 
 ## Current scope boundaries
 
 - Generate final RGB appearance, not PBR maps or shader parameters.
 - Use one fixed Sculpted Rubber Toy geometry for Material Hero v1.
 - Keep lighting controlled and fixed for the first model.
-- Preserve self-contained `P`, unbumped `N`, `V`, and Coverage buffers; separate camera and geometry metadata is not required for dataset v0.
+- Preserve self-contained `P`, unbumped `Nb`, and `V` buffers; use Beauty alpha (`C.A`) as material-independent Coverage. Separate camera and geometry metadata is not required for dataset v0.
 - Do not begin the general neural-asset engine while Material Hero is incomplete.
 - Keep implementation minimal and understandable for a solo learning project.

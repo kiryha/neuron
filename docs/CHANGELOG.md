@@ -82,3 +82,15 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Moved the active `set_material()` helper onto the `Datagen` class in `datagen/datagen.py` and updated the UI callback to call it directly.
 - Deleted the obsolete `datagen/tools.py`, including its unused partial `apply_material()` implementation.
 - Recorded the standing constraint that Codex must never edit or save HIP files; required scene edits remain user-operated.
+
+## 2026-09-03
+
+### Indie scene and dataset-buffer validation
+
+- Replaced the active noncommercial artifacts with `material_hero_006.hiplc` and `lop_KKO8.neuromat.1.2.otllc`; retained `datagen/hips/` files as repository snapshots while the newer external scene remains authoritative.
+- Validated an unwatermarked 1024 × 1024 Indie EXR containing Beauty RGBA, world `P`, unbumped `Nb`, and world `V`, with no non-finite pixels or obsolete debug AOVs.
+- Numerically verified that `V` is unit length and matches `normalize(camera_position - P)` with the intended surface-to-camera sign.
+- Accepted Beauty alpha (`C.A`) as material-independent Coverage because the library changes transmission but does not drive opacity; removed the separate Coverage-AOV requirement.
+- Confirmed by read-only scene inspection that DOF is still enabled (`fStop = 1.2`, `disableDepthOfField = off`) and must be disabled by the user before the automated pilot.
+- Implemented the minimal sequential `datagen/datarender.py` hython renderer with explicit geometry/camera lists, stress-set default, opt-in full render, production-library snapshotting, material-folder skipping, and no HIP save operation.
+- Verified CLI parsing, dry-run planning, existing-folder skip behavior, Indie-license detection, required Houdini nodes, and the current geometry/camera USD prim paths without launching a render.

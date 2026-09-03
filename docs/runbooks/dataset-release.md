@@ -23,13 +23,25 @@ Before rendering, confirm:
 - depth of field disabled;
 - fixed Sculpted Rubber Toy geometry and studio lighting;
 - Karma XPU and the accepted sample count;
-- Beauty, world `P`, smooth unbumped world `N`, world `V`, and material-independent Coverage only;
+- Beauty RGBA, world `P`, smooth unbumped world `Nb`, and world `V` only; use `C.A` as material-independent Coverage;
 - no `Pz`, variation, dirt, wear, bump, BaseColor, Roughness, or other debug AOVs;
-- a suitable Indie `.hiplc` scene and `.hdalc` HDA produce no watermark.
+- the active Indie `.hiplc` scene and `.otllc` HDA produce no watermark.
 
 ## 3. Run the eight-material pilot
 
-Run `datagen/datarender.py` on the stress set before the full library.
+Preview the default stress-set plan without loading Houdini or writing files:
+
+```powershell
+& 'E:\Programs\Houdini22.0.368\bin\hython.exe' datagen\datarender.py --dry-run
+```
+
+After DOF is disabled and scene preflight passes, run the default eight-material pilot:
+
+```powershell
+& 'E:\Programs\Houdini22.0.368\bin\hython.exe' datagen\datarender.py
+```
+
+Use `--materials ID [ID ...]` for a named subset. Do not pass `--all` until the pilot is approved.
 
 Expected path example:
 
@@ -37,7 +49,7 @@ Expected path example:
 material_hero_v0\sculpted_rubber_toy\cam_0000\gold_polished_clean\render.exr
 ```
 
-Manually open representative EXRs and confirm resolution, channels, prompt/material agreement, unbumped normals, material-independent Coverage, absence of DOF, and absence of a watermark.
+Manually open representative EXRs and confirm resolution, channels, prompt/material agreement, unbumped `Nb`, material-independent `C.A` Coverage, absence of DOF, and absence of a watermark. Compare opaque and strongly transmissive alpha images at the same camera.
 
 Interrupt and restart the pilot once. Existing material folders should be skipped.
 
@@ -48,7 +60,7 @@ Use the pilot to estimate approximate time per material and total disk usage for
 ## 5. Run the complete dataset
 
 - Use the copied `neuron_library_prod.json`.
-- Run the sequential `datagen/datarender.py` script.
+- Run the complete sequential batch with `datagen/datarender.py --all`.
 - Existing `{geometry_id}/{camera_id}/{material_id}` folders are skipped.
 - To rerender a material, delete its folder manually and rerun the script.
 - Do not change the scene, HDA, JSON snapshot, camera, lighting, render settings, or output channels during the run.

@@ -1,12 +1,12 @@
 # Current project status
 
-- Last verified: 2026-09-02
-- Repository baseline inspected: `main` at `be2f76b`
+- Last verified: 2026-09-03
+- Repository baseline inspected: `main` at `7e268d7`
 - Current phase: **Phase 1 — finish and validate Houdini data generation**
 
 ## Current objective
 
-Apply the accepted minimal fixed-camera dataset-v0 contract and build `datagen/datarender.py`, whose first run uses one hero and one camera.
+Disable DOF in scene 006, then run the implemented `datagen/datarender.py` renderer as an eight-material, one-hero, one-camera pilot.
 
 The accepted learning sequence is: train on one fixed view; test Three.js orbit, zoom, and alternate-mesh inputs as deliberately unsupported cases; add multi-view Houdini data and retrain; then add multi-geometry data and retrain. Improvement between versions is an experiment to measure, not an assumed capability.
 
@@ -15,6 +15,7 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 ### Repository
 
 - `datagen/materials.py` is the current material and label generator.
+- `datagen/datarender.py` is the implemented sequential hython renderer. It defaults to the stress set, supports explicit `--all`/`--materials` selection and `--dry-run`, snapshots the production JSON once, skips existing material folders, and never saves the HIP file.
 - The generator defines 56 bases, 5 finishes, 4 conditions, 10 colors, and 4 categories.
 - Compatibility filtering produces **1,806** material records.
 - Current bump-type distribution is 1,143 stochastic, 396 directional, and 267 cellular records.
@@ -29,23 +30,22 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 ### External Houdini project
 
 - Project root: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D`
-- Active scene: `scenes\material_hero_005.hipnc`
-  - Modified: 2026-09-02 20:51
-  - Pre-resolution-change backup: `scenes\material_hero_005_before_512_20260902.hipnc`
-- Active HDA: `hda\lop_KKO8.neuromat.1.2.hdanc`
+- Active scene: `scenes\material_hero_006.hiplc`
+  - Modified: 2026-09-03 11:15
+- Active HDA: `hda\lop_KKO8.neuromat.1.2.otllc`
   - Type: `KKO8::neuromat::1.2`
-  - Modified: 2026-08-31 11:06
+  - Modified: 2026-09-03 10:30
 - Generated JSON: `E:\Projects\neuron_data\neuron_library.json`
   - Current content: eight-material stress subset
   - Modified: 2026-04-16 15:39
 - The external stress JSON remains useful for look-dev, but it is not the production batch source.
-- Repository Houdini files under `datagen/hips/` are older copies and are not the active assets.
+- `datagen/hips/` contains Indie snapshots of scene 006 and the HDA. The checked-in HDA matches the active external file; the external scene is newer than its repository snapshot and is authoritative.
 
 ### Geometry and scene
 
 - Geometry: Sculpted Rubber Toy
 - Final displayed geometry: 1,611,108 points and 3,239,506 primitives
-- Point attributes: `P`, `ao`, `convex_macro`, `concave_macro`, `convex_micro`, `concave_micro`
+- Point attributes include `P`, `N_base`, `ao`, `convex_macro`, `concave_macro`, `convex_micro`, and `concave_micro`.
 - Vertex attribute: `uv`
 - Camera: `/cameras/camera`, one 28 mm perspective camera at frame 1; the apparent USD `50` value was the no-time schema fallback, not the cooked lens
 - Dome light: `studio_kontrast_04_2k.hdr`, intensity `1.0`, exposure `-0.5`
@@ -54,7 +54,7 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - Current path-traced samples: 128
 - Denoiser: off
 - The active `/Render/rendersettings` prim resolves to 1024 × 1024. `/Render/Products/renderproduct` reports 2048 × 1080 only as an unauthored USD fallback, so it does not override the active resolution.
-- DOF is accepted as disabled for dataset v0, but the current scene still authors camera f-stop `1.2` and Render Settings `disableDepthOfField = false`.
+- DOF is accepted as disabled for dataset v0, but read-only inspection of scene 006 still finds camera f-stop `1.2` and Render Settings `disableDepthOfField = false`.
 
 ### Material system
 
@@ -73,11 +73,8 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 
 **Current selected material:**
 
-- `glass_polished_clean`
-- JSON bump type: stochastic
-- Bump scale: `0.002`
-- Noise scale: `1.0`
-- Bump cap: `0.006`
+- The saved scene currently has `material_id = iron_brushed_scratched`.
+- Interactive selections are transient; `datarender.py` overrides `dataset_path` and `material_id` in memory for every batch item.
 
 ## Current incomplete or incorrect state
 
@@ -121,28 +118,20 @@ These are implemented values, not yet approved final look-dev values. Judge them
 
 ### Render outputs
 
-Current RenderVars:
+**Verified in `concrete_hammered_clean.exr` rendered from scene 006 on 2026-09-03:**
 
-- Beauty (`color4f`)
-- World hit position `P`
-- Camera depth `Pz`
-- Hit normal `N`
-- Variation mask
-- Dirt mask
-- Wear mask
-- Bump debug output
-
-The current scene has no separate material-independent Coverage RenderVar. Beauty alpha is not the accepted replacement because transmissive materials must not change the geometry mask. BaseColor and Roughness are not implemented and are not required.
-
-Accepted dataset-v0 outputs, not yet applied to the scene:
-
-- Beauty RGB
+- 1024 × 1024 Beauty RGBA (`C`)
 - World position `P`
-- Smooth, unbumped world normal `N`
+- Smooth, unbumped world normal `Nb`, sourced from `N_base`
 - Normalized world view direction `V`, from surface toward camera
-- Material-independent Coverage
+- No obsolete debug AOVs and no non-finite values
+- No Houdini Apprentice watermark; the render used an Indie `.usd`
 
-`Pz`, variation, dirt, wear, bump, BaseColor, Roughness, and other diagnostic outputs are excluded from the dataset. Their underlying material effects remain visible in Beauty.
+`V` has mean length `1.0`, mean unit-length error `1.1e-7`, and mean dot product `0.9999999` against `normalize(camera_position - P)`. `Nb` and `V` should be renormalized in the data loader after pixel filtering, especially around silhouettes and internal visibility boundaries.
+
+Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is required. The library drives transmission but not Standard Surface opacity, and the user verified that glass remains alpha `1` on covered interior pixels. Keep opacity fixed at `1`; cutouts, holdouts, and alpha-changing shadow-catcher behavior are outside this contract.
+
+`Pz`, variation, dirt, wear, bump, BaseColor, Roughness, and other diagnostic outputs are excluded from the dataset. Their underlying material effects remain visible in `C.RGB`.
 
 ### Labels
 
@@ -158,28 +147,30 @@ Accepted dataset-v0 outputs, not yet applied to the scene:
 - Copy `neuron_library_prod.json` unchanged into the dataset root; no checksum or renamed copy is required.
 - One multilayer EXR is stored at `{geometry_id}/{camera_id}/{material_id}/render.exr`.
 - The JSON snapshot and folder names are the dataset index; no manifest or camera/geometry/dataset records are required.
-- Planned automation: sequential `datagen/datarender.py` with explicit geometry and camera lists.
+- Implemented automation: sequential `datagen/datarender.py` with explicit geometry and camera lists.
 - Resume behavior: skip when the material folder exists; delete the folder manually to request a rerender.
+- Verified without rendering: syntax and CLI parsing; two-material dry-run; existing-folder skip behavior; required Houdini nodes and USD geometry/camera prims; Indie license detection.
 
 ## Blockers before a full render
 
 | Priority | Blocker | Required resolution |
 | --- | --- | --- |
-| P0 | Current scene and HDA are `.hipnc`/`.hdanc` | Convert or rebuild them as Indie `.hiplc`/`.hdalc`; merely installing Indie can still downgrade when noncommercial assets are loaded. Prove the final path with an unwatermarked pilot. |
-| P0 | No dataset automation | Implement `datagen/datarender.py` and run the eight-material fixed-camera pilot |
+| P0 | Automated pilot not yet run | Disable DOF, then run `datagen/datarender.py` on the eight-material fixed-camera stress set |
 | P1 | Unresolved transmission-scatter policy | Verify or explicitly classify `transmission_scatter` behavior |
-| P1 | Scene does not yet match accepted output contract | Disable DOF; replace current debug RenderVars with Beauty, world `P`, unbumped world `N`, world `V`, and material-independent Coverage |
+| P1 | DOF remains enabled in scene 006 | User disables DOF before the automated pilot; Codex must not edit or save the HIP file |
+| P1 | Karma XPU reported one critical error and used only Embree CPU | Inspect Houdini's Log Viewer and decide whether GPU rendering must be restored before the full 1,806-material run |
 
 ## Next exact actions
 
-1. User updates scene 005 to disable DOF and output only Beauty, world `P`, smooth unbumped world `N`, world `V`, and material-independent Coverage at 1024 × 1024. Codex must never edit or save the HIP file.
-2. Resolve or explicitly classify `transmission_scatter` behavior.
-3. Implement the minimal sequential `datagen/datarender.py` renderer and folder-existence skip behavior.
-4. Convert or rebuild the scene and HDA for Indie, then prove that the exact batch path writes an unwatermarked output.
-5. Render and manually inspect the eight-material fixed-camera v0 pilot before launching all 1,806 materials.
-6. Reproduce the Houdini training camera and hero buffers in Three.js and compare `P`, `N`, `V`, Coverage, silhouette, and projection.
-7. Train the first model and record exact-view, orbit/zoom, and alternate-mesh results.
-8. Only after the fixed-view baseline is understood, build a camera-dome pilot for the next dataset version.
+1. User disables DOF in scene 006 and refreshes the repository scene snapshot after the final user-operated save; Codex must never edit or save the HIP file.
+2. Run `datagen/datarender.py --dry-run`, then run the default eight-material pilot.
+3. Inspect the Karma critical error and CPU-only XPU device state before estimating the full render.
+4. Manually inspect the pilot, including an opaque-versus-glass `C.A` comparison and restart/skip test.
+5. Resolve or explicitly classify `transmission_scatter` behavior before the full batch.
+6. Run `datagen/datarender.py --all` only after the pilot is approved.
+7. Reproduce the Houdini training camera and hero buffers in Three.js and compare `P`, `N`, `V`, Coverage, silhouette, and projection.
+8. Train the first model and record exact-view, orbit/zoom, and alternate-mesh results.
+9. Only after the fixed-view baseline is understood, build a camera-dome pilot for the next dataset version.
 
 ## Phase 1 exit criteria
 

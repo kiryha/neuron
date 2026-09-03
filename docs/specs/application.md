@@ -2,7 +2,7 @@
 
 Status: **Scaffold only**
 
-Last reviewed: 2026-09-02
+Last reviewed: 2026-09-03
 
 ## Objective
 
@@ -22,7 +22,7 @@ Provide a small web application where a user enters a supported material prompt 
 1. The application loads the neural model, the training-hero proxy, and several additional test meshes.
 2. The user enters a compact prompt such as `gold brushed dirty`.
 3. The application validates or normalizes the prompt against the supported vocabulary.
-4. Three.js rasterizes `P`, smooth unbumped `N`, and material-independent Coverage for the active supplied mesh and camera, then derives `V` from position and camera state.
+4. Three.js rasterizes `P`, smooth unbumped `N`, and material-independent Coverage for the active supplied mesh and camera, then derives `V` from position and camera state. Its Coverage convention must match Houdini Beauty alpha (`C.A`).
 5. The backend or client inference path generates final RGB.
 6. The generated image is displayed from the requested camera.
 7. Prompt, camera, or mesh changes request a new image; v0 results outside the exact training pose are labeled experimental and may be broken.

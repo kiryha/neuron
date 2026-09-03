@@ -1,8 +1,8 @@
 # Material dataset specification
 
-Status: **Minimal dataset-v0 contract accepted; Houdini outputs and automation not yet updated**
+Status: **Dataset-v0 EXR contract validated and automation implemented; stress-set pilot pending**
 
-Last reviewed: 2026-09-02
+Last reviewed: 2026-09-03
 
 ## Purpose
 
@@ -54,19 +54,19 @@ Every material render is one 1024 × 1024 multilayer EXR containing:
 
 | Output | Meaning | Use |
 | --- | --- | --- |
-| Beauty RGB | Final material appearance | Model target |
+| Beauty `C.RGB` | Final material appearance | Model target |
+| Beauty `C.A` | Material-independent object coverage/silhouette | Valid-pixel mask |
 | `P` | World-space surface position | Model geometry input |
-| `N` | Smooth, unbumped world-space surface normal | Model orientation input |
+| `Nb` | Smooth, unbumped world-space surface normal; logical model input `N` | Model orientation input |
 | `V` | Normalized world-space direction from the surface point toward the camera | Model view input |
-| Coverage | Material-independent object coverage/silhouette, ignoring transmission or opacity | Valid-pixel mask |
 
 The EXR does not include `Pz`, variation, dirt, wear, bump, BaseColor, Roughness, or other diagnostic AOVs. Variation, dirt, wear, and bump continue to affect Beauty; only their separate debug outputs are disabled.
 
-`N` should match the smooth/interpolated geometry normal that can later be reproduced in Three.js. Do not use the normal after MaterialX bump. Do not switch to faceted `Ng` unless comparison with Three.js demonstrates that it is the intended convention.
+`Nb` should match the smooth/interpolated geometry normal that can later be reproduced in Three.js. It is named `Nb` in the EXR to distinguish it from the bumped shading normal and becomes logical input `N` in the model. Do not use the normal after MaterialX bump. Do not switch to faceted `Ng` unless comparison with Three.js demonstrates that it is the intended convention.
 
-Coverage must describe geometry visibility, not the optical alpha of glass or another transmissive material.
+Coverage is read from `C.A`; there is no separate Coverage AOV. MaterialX transmission is allowed to vary, but Standard Surface opacity remains `1`, so alpha describes geometry visibility rather than optical transmission. Do not introduce opacity maps, cutouts, holdouts, shadow-catcher alpha, or another feature that changes Beauty alpha without revisiting this contract. Fractional silhouette pixels are intentional antialiased coverage.
 
-For one geometry and camera, `P`, `N`, `V`, and Coverage are identical for every material. Repeating them in every EXR is intentional: it keeps each training example self-contained and avoids a separate shared-buffer system. At 1024 × 1024, simplicity is more important than eliminating this disk duplication.
+For one geometry and camera, `P`, `Nb`, `V`, and `C.A` are identical for every material. Repeating them in every EXR is intentional: it keeps each training example self-contained and avoids a separate shared-buffer system. At 1024 × 1024, simplicity is more important than eliminating this disk duplication.
 
 Because these buffers are constant across dataset v0, the first model may learn to ignore them. They become informative when later datasets introduce camera and geometry variation.
 
@@ -78,10 +78,10 @@ Because these buffers are constant across dataset v0, the first model may learn 
 - Aspect policy: the existing square-image `expandAperture` policy.
 - Depth of field: disabled.
 - Lighting, geometry transform, camera, samples, color configuration, and background remain fixed across every material.
-- Material bump affects shading only and does not alter `N` or Coverage.
+- Material bump affects shading only and does not alter `Nb` or `C.A` Coverage.
 - Final renders must not contain the Houdini Apprentice watermark.
 
-Scene 005 already resolves to 1024 × 1024. At the latest inspection, DOF was still active through camera f-stop `1.2`; disabling it is an accepted scene change that remains to be applied before the pilot.
+Scene 006 resolves to 1024 × 1024 and its Indie pilot is unwatermarked. A read-only inspection on 2026-09-03 still found camera f-stop `1.2` and `disableDepthOfField = off`; disabling DOF remains a required user-operated scene change before the automated pilot.
 
 ## Dataset location and layout
 
@@ -123,7 +123,7 @@ The versioned HIP scene and HDA remain in the Houdini project rather than being 
 
 ## Render automation
 
-The planned implementation is `datagen/datarender.py`. It uses ordinary Python rather than TOPs/PDG.
+The implementation is `datagen/datarender.py`. It runs with Houdini's `hython` interpreter and uses ordinary sequential Python rather than TOPs/PDG. It never saves the loaded HIP file.
 
 The script contains small explicit geometry and camera lists so later datasets can add entries without changing the nesting model:
 
@@ -132,7 +132,7 @@ GEOMETRIES = [("sculpted_rubber_toy", "/GEO/material_hero")]
 CAMERAS = [("cam_0000", "/cameras/camera")]
 ```
 
-It will:
+It:
 
 1. Load the copied `neuron_library_prod.json`.
 2. Iterate geometry IDs, camera IDs, and sorted material IDs.
@@ -141,7 +141,7 @@ It will:
 5. Set the output path to `{geometry_id}/{camera_id}/{material_id}/render.exr`.
 6. Render the frame.
 
-The first implementation is sequential and has no job database, manifest, retry manager, checksum generation, or automatic image validation.
+The default invocation renders the eight-material stress set. `--all` explicitly selects all 1,806 records, `--materials` selects named records, and `--dry-run` prints renders/skips without loading Houdini or writing files. The implementation has no job database, manifest, retry manager, checksum generation, or automatic image validation.
 
 ## Resume after interruption
 
@@ -164,7 +164,7 @@ The training loader does not need a frame manifest:
 1. Scan the geometry/camera/material folders for `render.exr`.
 2. Read `material_id` from the folder name.
 3. Look up the compact prompt and semantic label in the copied `neuron_library_prod.json`.
-4. Read Beauty, `P`, `N`, `V`, and Coverage from that EXR.
+4. Read target RGB from `C.RGB`, Coverage from `C.A`, and geometry inputs from `P`, `Nb`, and `V`.
 
 Train/validation/test splits are created and stored by the training implementation, not by Houdini render automation.
 
@@ -194,8 +194,8 @@ Train/validation/test splits are created and stored by the training implementati
 Before the full v0 batch:
 
 - Render the eight-material stress set through `datarender.py`.
-- Open representative EXRs and confirm 1024 × 1024 Beauty, `P`, `N`, `V`, and Coverage.
-- Confirm `N` is unbumped and Coverage is material-independent.
+- Open representative EXRs and confirm 1024 × 1024 Beauty RGBA, `P`, `Nb`, and `V`.
+- Confirm `Nb` is unbumped and `C.A` Coverage is identical for opaque and transmissive stress materials.
 - Confirm DOF is absent.
 - Confirm the output has no watermark.
 - Interrupt and restart the pilot once to verify folder-based skipping.

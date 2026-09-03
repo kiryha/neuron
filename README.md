@@ -67,15 +67,16 @@ Neuron web viewport on Hugging Face Spaces
 
 ### 1. Data generation
 
-SideFX Houdini and Karma generate the synthetic ground-truth dataset. The material system includes procedural variation, dirt, wear, and bump signals; the fixed-camera stress renders have been approved and the minimal batch renderer is the next implementation step.
+SideFX Houdini and Karma generate the synthetic ground-truth dataset. The material system includes procedural variation, dirt, wear, and bump signals; the fixed-camera stress renders have been approved and the minimal sequential batch renderer is implemented. The eight-material automated pilot is next after DOF is disabled in the scene.
 
 Each fixed-view v0 material folder contains one 1024 × 1024 multilayer EXR with:
 
-- Beauty RGB;
+- Beauty RGBA (`C.RGB` is the target and `C.A` is material-independent Coverage);
 - world-space position `P`;
-- smooth unbumped world-space normal `N`;
+- smooth unbumped world-space normal `Nb` (the model's logical `N` input);
 - world-space view direction `V`;
-- material-independent Coverage.
+
+No separate Coverage AOV is stored. The material library changes transmission but does not drive opacity, so Beauty alpha remains geometry coverage for glass as well as opaque materials.
 
 The copied `neuron_library_prod.json` supplies material IDs and prompts. Debug AOVs and separate camera/geometry metadata are intentionally omitted from dataset v0.
 
@@ -99,17 +100,17 @@ The project is currently finishing **Phase 1: Houdini data generation**.
 - A small stress-test material set is used to validate shader behavior.
 - Variation, dirt, and wear systems are implemented in the Houdini material HDA.
 - Stochastic, directional, and cellular bump branches are implemented and approved in fixed-camera stress renders.
-- Dataset batching, final renders, training, and neural inference remain to be implemented.
+- Dataset batching is implemented but not yet exercised with a real pilot; final renders, training, and neural inference remain pending.
 - The browser UI and backend are scaffolds, not a functioning model demo.
 
-Final dataset renders must also be produced without the watermark present in the current Houdini Apprentice development renders.
+An Indie scene/HDA and an unwatermarked 1024 × 1024 pilot render are now verified. Dataset automation and the full stress-set pilot remain pending.
 
 ## Roadmap
 
 ### Phase 1 — Material dataset
 
 - Finish and validate the Houdini material HDA.
-- Confirm 1024 × 1024 Beauty, `P`, unbumped `N`, `V`, and material-independent Coverage outputs for the fixed training view.
+- Use the validated 1024 × 1024 Beauty RGBA, `P`, unbumped `Nb`, and `V` outputs for the fixed training view, with `C.A` as Coverage.
 - Render the material stress set.
 - Automate and render the complete dataset.
 

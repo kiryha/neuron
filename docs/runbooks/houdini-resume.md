@@ -7,8 +7,8 @@ Use this runbook when returning to Material Hero look-dev after a break. The cur
 Do not begin from the older files stored in the repository.
 
 - Project root: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D`
-- Active scene: `scenes\material_hero_005.hipnc`
-- Active HDA: `hda\lop_KKO8.neuromat.1.2.hdanc`
+- Active scene: `scenes\material_hero_006.hiplc`
+- Active HDA: `hda\lop_KKO8.neuromat.1.2.otllc`
 - Material JSON: `E:\Projects\neuron_data\neuron_library.json`
 
 Before editing, confirm file modification times and check [STATUS.md](../STATUS.md) for a newer version.
@@ -118,8 +118,8 @@ Use one fixed camera and lighting setup:
 For every material inspect:
 
 - beauty;
-- material-independent Coverage;
-- world `P`, smooth unbumped world `N`, and world `V`;
+- Beauty alpha `C.A` as material-independent Coverage;
+- world `P`, smooth unbumped world `Nb`, and world `V`;
 - expected branch selection;
 - prompt/visual agreement.
 
@@ -130,7 +130,7 @@ Use a contact sheet when possible so differences are judged under the same view 
 Before camera automation:
 
 - disable camera depth of field;
-- keep only Beauty, world `P`, smooth unbumped world `N`, world `V`, and material-independent Coverage;
+- keep only Beauty RGBA, world `P`, smooth unbumped world `Nb`, and world `V`; use `C.A` as Coverage instead of adding a separate AOV;
 - remove `Pz`, variation, dirt, wear, bump, BaseColor, Roughness, and other debug RenderVars from dataset output;
 - confirm the EXR channels and display interpretation manually with the eight-material pilot.
 
@@ -149,4 +149,4 @@ Before closing Houdini:
 
 ## Final-render warning
 
-Current `.hipnc`/`.hdanc` development assets and observed Apprentice renders are noncommercial/watermarked. Installing an Indie license is not sufficient by itself: loading a noncommercial scene or HDA can downgrade an Indie session. Convert or rebuild the active files as `.hiplc`/`.hdalc`, restart in Indie mode, and prove the exact batch path with an unwatermarked pilot before launching final training renders.
+The active scene and HDA are now Indie `.hiplc`/`.otllc` artifacts, and an unwatermarked manual pilot has been verified. Keep noncommercial `.hipnc`/`.hdanc` files out of the final batch path because loading one can still downgrade an Indie session. Prove the automated `datarender.py` path with another unwatermarked stress-set pilot before launching the complete dataset.

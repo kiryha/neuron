@@ -1,6 +1,6 @@
 # Start here
 
-Last reviewed: 2026-09-02
+Last reviewed: 2026-09-03
 
 Neuron is currently focused on **Material Hero**: a text-conditioned image generator that first learns the appearance of one Sculpted Rubber Toy from one fixed camera and studio-lighting setup.
 
@@ -27,7 +27,7 @@ The public overview and local run instructions are in the repository [README](..
 
 ## Project in one paragraph
 
-Houdini first generates one fixed view of the hero for every material and canonical text description, together with `P`, `N`, view, and coverage context. The first model learns prompt-conditioned RGB for that view. The Neuron application recreates the geometry buffers in Three.js and intentionally lets the user orbit, zoom, and switch supplied meshes even though those inputs are out of distribution. Later dataset versions add multiple cameras and then multiple geometries so their effect on those failures can be measured. The model does not generate shader parameters, texture maps, geometry, or editable lighting.
+Houdini first generates one fixed view of the hero for every material and canonical text description, together with `P`, unbumped `Nb`, `V`, and Beauty-alpha coverage context. The first model learns prompt-conditioned RGB for that view. The Neuron application recreates the geometry buffers in Three.js and intentionally lets the user orbit, zoom, and switch supplied meshes even though those inputs are out of distribution. Later dataset versions add multiple cameras and then multiple geometries so their effect on those failures can be measured. The model does not generate shader parameters, texture maps, geometry, or editable lighting.
 
 ## Current pipeline
 
@@ -38,7 +38,7 @@ Material definitions and labels
 JSON-driven neuromat HDA
           |
           v
-Karma 1024² Beauty + P/N/V/Coverage EXR per material
+Karma 1024² Beauty RGBA + P/Nb/V EXR per material
           |
           v
 Text-conditioned Material Hero model

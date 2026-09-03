@@ -2,7 +2,7 @@
 
 Status: **Planned; staged input/output experiment accepted, architecture open**
 
-Last reviewed: 2026-09-02
+Last reviewed: 2026-09-03
 
 ## Objective
 
@@ -47,9 +47,9 @@ The exact network may operate per surface sample or on rasterized image buffers.
 
 - Material prompt or its encoded representation
 - World-space surface position `P`
-- Smooth, unbumped world-space surface normal `N`
+- Smooth, unbumped world-space surface normal `N`, stored as EXR channel set `Nb`
 - World-space view direction `V`
-- Material-independent foreground Coverage
+- Material-independent foreground Coverage, stored as Beauty alpha `C.A`
 
 Houdini provides the training buffers. The application is planned to rasterize corresponding buffers from supplied Three.js meshes and cameras. At the exact training geometry and camera, those buffers must be calibrated against Houdini before model behavior is judged. Orbit, zoom, and alternate meshes remain out of distribution until represented in a later training release.
 
@@ -75,7 +75,7 @@ PBR parameters, BaseColor maps, Roughness maps, normal maps, shader graphs, dens
 
 Begin with the smallest model that can prove the data path:
 
-1. Load Beauty, `P`, smooth unbumped `N`, `V`, and Coverage from each 1024 × 1024 material EXR.
+1. Load target RGB from `C.RGB`, Coverage from `C.A`, and geometry inputs from `P`, smooth unbumped `Nb`, and `V` in each 1024 × 1024 material EXR.
 2. Encode controlled material tokens with a small learned embedding.
 3. Use positional/Fourier features only where a simple MLP cannot reproduce spatial detail.
 4. Predict linear foreground RGB.
@@ -89,7 +89,7 @@ This baseline is preferred over starting with a diffusion model because it is ea
 ### Dataset/model v0 — fixed-view baseline
 
 - One Sculpted Rubber Toy, one camera, and fixed lighting
-- One 1024 × 1024 multilayer EXR per material containing Beauty plus aligned `P`, `N`, `V`, and Coverage
+- One 1024 × 1024 multilayer EXR per material containing Beauty RGBA plus aligned `P`, `Nb`, and `V`; `C.A` supplies Coverage
 - Smoke-test one material, overfit a small material subset, then train the approved material library
 - Confirm prompt conditioning and exact-view reconstruction before evaluating unsupported inputs
 

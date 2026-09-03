@@ -29,20 +29,20 @@ Exit gate:
 
 ## Phase 1B — Freeze the dataset contract
 
-Status: **Planned**
+Status: **In progress**
 
 Goal: define exactly what the fixed-view v0 training release contains and prove it with a small material pilot.
 
 Deliverables:
 
 - One fixed 28 mm training camera preserved in the versioned HIP scene
-- 1024 × 1024 Beauty, world `P`, smooth unbumped world `N`, world `V`, and material-independent Coverage definitions
+- 1024 × 1024 Beauty RGBA, world `P`, smooth unbumped world `Nb`, and world `V`; `C.A` is material-independent Coverage
 - Depth of field disabled
 - Debug AOVs excluded from dataset output
 - Fixed linear color and OCIO setup in the versioned HIP scene
 - Minimal `{geometry_id}/{camera_id}/{material_id}/render.exr` naming contract
 - Unchanged `neuron_library_prod.json` snapshot beside the renders
-- Houdini-to-Three.js `P`/`N`/`V`/Coverage convention and calibration plan
+- Houdini-to-Three.js `P`/`N`/`V`/Coverage convention and calibration plan, with Houdini Coverage read from `C.A`
 - Render/storage/time estimate
 
 Exit gate:
@@ -60,8 +60,8 @@ Goal: generate the approved dataset without changing its material, lighting, cam
 
 Deliverables:
 
-- Sequential `datagen/datarender.py` fixed-camera renderer
-- Folder-existence skip behavior and manual folder-deletion rerender workflow
+- Sequential `datagen/datarender.py` fixed-camera renderer — implemented
+- Folder-existence skip behavior and manual folder-deletion rerender workflow — implemented and smoke-tested
 - Complete material folders and copied material-library snapshot
 - Manual count and representative visual checks
 

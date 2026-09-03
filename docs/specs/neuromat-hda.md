@@ -1,8 +1,8 @@
 # `neuromat` HDA specification
 
-Status: **Bump branches visually approved; full shader-contract validation pending**
+Status: **Bump branches and dataset RenderVars validated; full shader-contract validation pending**
 
-Last reviewed: 2026-09-02
+Last reviewed: 2026-09-03
 
 ## Purpose
 
@@ -12,14 +12,14 @@ It is intentionally a controlled dataset shader, not a universal material-author
 
 ## Active artifacts
 
-- Scene: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D\scenes\material_hero_005.hipnc`
-- HDA: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D\hda\lop_KKO8.neuromat.1.2.hdanc`
+- Scene: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D\scenes\material_hero_006.hiplc`
+- HDA: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D\hda\lop_KKO8.neuromat.1.2.otllc`
 - Node: `/stage/neuromat`
 - Type: `KKO8::neuromat::1.2`
 - Interactive stress JSON: `E:\Projects\neuron_data\neuron_library.json`
 - Production batch source: `datagen/data/neuron_library_prod.json`, copied into each release as a frozen snapshot
 
-Repository files under `datagen/hips/` are older references, not the active definitions.
+Repository files under `datagen/hips/` are snapshots. The checked-in HDA matches the active external HDA, but the current external scene is newer than its repository snapshot and remains authoritative.
 
 ## Architectural constraints
 
@@ -186,26 +186,18 @@ Current coverage and exclusions:
 
 Any unsupported JSON parameter must be connected, explicitly removed from the v1 schema, or documented as metadata-only. Silent no-op parameters are not acceptable in the final library.
 
-## Current RenderVars before dataset cleanup
+## Current dataset RenderVars
 
-- Beauty
-- `P`
-- `Pz`
-- `N`
-- Variation mask
-- Dirt mask
-- Wear mask
-- Bump debug signal
+- Beauty RGBA (`C.RGB` target and `C.A` Coverage)
+- world-space `P`
+- smooth, unbumped world-space `Nb` sourced from `N_base`
+- normalized world-space `V` from surface toward camera
 
-Accepted dataset-v0 replacement:
+The 2026-09-03 Indie pilot verified these four EXR subimages at 1024 × 1024 with no watermark or non-finite values. `V` numerically matches `normalize(camera_position - P)` with mean dot product `0.9999999`.
 
-- Beauty RGB;
-- world-space `P`;
-- smooth, unbumped world-space `N`;
-- normalized world-space `V` from surface toward camera;
-- material-independent Coverage.
+No separate Coverage RenderVar is required. Transmission does not drive Standard Surface opacity in the current library, so `C.A` remains geometry coverage for glass and opaque materials. Keep opacity at `1` and do not introduce cutout, holdout, or shadow-catcher alpha without revisiting this contract.
 
-Disable `Pz`, variation, dirt, wear, bump, BaseColor, Roughness, and other debug RenderVars for dataset output. The procedural effects remain active in Beauty.
+`Pz`, variation, dirt, wear, bump, BaseColor, Roughness, and other debug RenderVars are disabled for dataset output. The procedural effects remain active in Beauty.
 
 ## Stress-set expectations
 
