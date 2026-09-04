@@ -67,7 +67,8 @@ datagen/hips/       Historical repository copies of Houdini assets
 train/              Empty training scaffold
 neuron/             Empty neural-engine package scaffold
 src/                React/React Three Fiber application scaffold
-public/models/      Deployable web geometry, including the reduced Material Hero GLB
+public/geometry/    Deployable web geometry, including the reduced Material Hero GLB
+public/cameras/     Copied dataset camera records for Three.js reference views
 main.py             FastAPI status endpoint and static frontend host
 docs/               Canonical project documentation
 docs/sources/       Historical briefs and exported AI conversations

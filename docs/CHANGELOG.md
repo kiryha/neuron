@@ -167,3 +167,13 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Corrected nested Houdini progress handling: the USD Render ROP retains its indeterminate current-image bar while a second, persistent **Dataset Render** bar reports the completed/total count and resume fraction.
 - Replaced the outer native interrupt operation after live testing showed that the USD Render ROP hides it. A separate modeless Qt window titled **Render Dataset Progress** now displays stable overall percentage, completed/total, current material, and a **Cancel Render** button while Houdini retains its own current-image Interrupt window.
 - Removed the custom **Render Dataset Progress** window after live testing showed a blank, unpainted dialog while the blocking USD Render ROP owned Houdini's UI thread. Restored Houdini's reliable native **Interrupt** window while retaining sequential rendering, folder pre-scan/resume, and quiet console output.
+- Added one non-overwriting `{geometry_id}/{camera_id}/camera.json` per selected dataset camera. Datarender now records the cooked USD world position/forward target/up, millimeter lens and aperture, and cooked Render Settings resolution for Three.js reference-camera matching; documented the remaining geometry and `P`/`N`/`V` convention requirements in the application specification.
+- Added a Camera LOP fallback for camera JSON creation after the live Render Settings node returned no cooked USD stage. The fallback reads the Datarender-created look-at camera and Render Settings parameters without changing the JSON contract or overwriting existing files.
+- Renamed each dataset camera record from the generic `camera.json` to `{camera_id}.json`, for example `{geometry_id}/cam_001/cam_001.json`, so the filename remains identifiable when copied elsewhere.
+
+## 2026-09-04
+
+### Web asset layout
+
+- Renamed `public/models/` to `public/geometry/` so browser mesh assets are not confused with trained AI models, and updated the Material Hero loader path.
+- Reserved `public/cameras/material_hero/{camera_id}.json` for unchanged copies of selected dataset camera records; no placeholder camera file was added before the final dataset camera exists.

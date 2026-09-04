@@ -19,6 +19,7 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - `datagen/materials.py` is the current material and label generator.
 - `datagen/datarender.py` creates the camera dome and implements sequential dataset rendering from the DEV or PROD material library selected in its UI.
 - Dataset rendering is sequential and uses Houdini's native **Interrupt** window. Existing folders are counted before restart and reported as `RESUME completed/total`; only missing folders are queued. A separate Qt whole-dataset window was removed because the blocking USD Render ROP prevented it from repainting reliably.
+- At dataset-render start, Datarender creates a missing `{geometry_id}/{camera_id}/{camera_id}.json` from the cooked USD camera and Render Settings resolution and leaves an existing record unchanged. If Houdini does not expose a cooked stage at that moment, it falls back to the simple look-at Camera LOP and Render Settings parameters used by this project. The web app uses this small record to reconstruct the training view; it is not a model input.
 - Single-camera mode renders the named `/cameras/cam_###` prim; multi-camera mode dynamically reads Camera LOPs inside `/stage/camera_dome`.
 - Geometry switching is not implemented. The currently connected `neuromat` geometry is rendered, and the geometry-name field supplies only its dataset folder name.
 - `datagen/ui/ui_datarender.py` is generated from the user-authored `ui_datarender.ui`.
@@ -34,9 +35,10 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - `neuron/` contains only a package scaffold.
 - The React app loads the Sculpted Rubber Toy and displays its smooth world-space normal pass with OrbitControls and a dark grid.
 - `neuron_dev.bat` launches the local Vite server at `http://127.0.0.1:5173` with hot reload; `neuron.bat` continues to serve the latest production build through FastAPI.
-- `public/models/material_hero/sculpted-rubber-toy.glb` is the accepted single web geometry. The current export is a valid 12,253,276-byte binary glTF.
+- `public/geometry/material_hero/sculpted-rubber-toy.glb` is the accepted single web geometry. The current export is a valid 12,253,276-byte binary glTF.
+- The selected dataset camera record will be copied to `public/cameras/material_hero/{camera_id}.json`; no web camera file exists yet.
 - The app maintains a 1024 x 1024 half-float normal target, maps normals to RGB for display, resets to an app-authored reference camera, and provides a bottom-center prompt field that does not yet trigger inference.
-- No geometry metadata file, separate proxy/calibration LODs, geometry hash, or formal pixel-precise Houdini-to-Three.js calibration is required for v0.
+- No geometry metadata file, separate proxy/calibration LODs, geometry hash, or formal pixel-precise Houdini-to-Three.js calibration gate is required for v0. Camera matching uses the per-camera dataset JSON, while geometry transform and `P`/`N`/`V` conventions remain explicit application requirements.
 - `main.py` serves the built frontend and exposes only `/api/status`.
 
 ### External Houdini project
@@ -166,11 +168,11 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 - Dataset directory: `material_hero_v0`.
 - Copy `neuron_library_prod.json` unchanged into the dataset root; no checksum or renamed copy is required.
 - One multilayer EXR is stored at `{geometry_id}/{camera_id}/{material_id}/render.exr`.
-- The JSON snapshot and folder names are the dataset index; no manifest or camera/geometry/dataset records are required.
+- The JSON snapshot and folder names are the training-data index; no manifest or geometry/dataset records are required. One minimal camera JSON per camera folder is retained for web-view matching.
 - Implemented camera stage: `datarender.py` creates an unconnected `/stage/camera_dome` subnet containing sequential Camera LOPs that author `/cameras/cam_###` prims. The user connects the subnet manually.
 - Camera positions use a full-sphere Fibonacci distribution, look at world origin, and share a distance derived from the UI focal length, approximate object size, and margin multiplier; no geometry bounds are read.
 - Implemented render stage: for every selected camera and JSON material ID, set the Karma camera, set `neuromat.material_id`, write `render.exr`, and invoke `/stage/usdrender_rop1` at the current frame.
-- When rendering starts, Datarender sets `neuromat.dataset_path` to the selected repository JSON, renders every record in it, and copies that JSON once into the dataset root. No separate camera transform or geometry metadata is written; `P`, `Nb`, `V`, `C.A`, folder IDs, and the JSON snapshot remain the complete v0 data contract.
+- When rendering starts, Datarender sets `neuromat.dataset_path` to the selected repository JSON, renders every record in it, copies that JSON once into the dataset root, and creates any missing per-camera JSON from the cooked USD camera and resolution. `P`, `Nb`, `V`, and `C.A` remain the complete model-context contract; no geometry metadata is written.
 - Resume behavior: skip when the material folder exists; delete the folder manually to request a rerender.
 
 ## Blockers before a full render
@@ -190,7 +192,7 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 5. Inspect the Karma critical error and CPU-only XPU device state before estimating the full render.
 6. Resolve or explicitly classify `transmission_scatter` behavior.
 7. Select `neuron_library_prod` and render into a clean final dataset directory with the same camera and render settings.
-8. After the dataset is ready, train the first model and extend the verified web normal-buffer path with `P`, `V`, Coverage, and prompt-driven inference.
+8. After the dataset is ready, copy the selected camera record to `public/cameras/material_hero/{camera_id}.json`, initialize the Three.js reference camera from it, train the first model, and extend the verified web normal-buffer path with `P`, `V`, Coverage, and prompt-driven inference.
 
 ## Phase 1 exit criteria
 

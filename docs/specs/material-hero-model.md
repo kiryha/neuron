@@ -51,7 +51,7 @@ The exact network may operate per surface sample or on rasterized image buffers.
 - World-space view direction `V`
 - Material-independent foreground Coverage, stored as Beauty alpha `C.A`
 
-Houdini provides the training buffers. The application rasterizes corresponding buffers from the reduced hero mesh at `public/models/material_hero/sculpted-rubber-toy.glb` and from later supplied Three.js meshes and cameras. The Houdini export is accepted for downstream use without a separate geometry metadata file or formal pixel-precise cross-renderer calibration. Orbit, zoom, and alternate meshes remain out of distribution until represented in a later training release.
+Houdini provides the training buffers. The application rasterizes corresponding buffers from the reduced hero mesh at `public/geometry/material_hero/sculpted-rubber-toy.glb` and from later supplied Three.js meshes and cameras. The Houdini export is accepted for downstream use without a separate geometry metadata file or formal pixel-precise cross-renderer calibration. Orbit, zoom, and alternate meshes remain out of distribution until represented in a later training release.
 
 ### Prompt inputs
 

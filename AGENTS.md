@@ -63,6 +63,6 @@ Treat repository copies under `datagen/hips/` as snapshots unless `docs/STATUS.m
 - Generate final RGB appearance, not PBR maps or shader parameters.
 - Use one fixed Sculpted Rubber Toy geometry for Material Hero v1.
 - Keep lighting controlled and fixed for the first model.
-- Preserve self-contained `P`, unbumped `Nb`, and `V` buffers; use Beauty alpha (`C.A`) as material-independent Coverage. Separate camera and geometry metadata is not required for dataset v0.
+- Preserve self-contained `P`, unbumped `Nb`, and `V` buffers; use Beauty alpha (`C.A`) as material-independent Coverage. Store only the minimal per-camera JSON needed to reconstruct the training view in Three.js; no geometry metadata is required for dataset v0.
 - Do not begin the general neural-asset engine while Material Hero is incomplete.
 - Keep implementation minimal and understandable for a solo learning project.

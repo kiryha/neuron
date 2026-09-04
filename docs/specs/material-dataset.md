@@ -1,8 +1,8 @@
 # Material dataset specification
 
-Status: **Dataset-v0 EXR contract and render automation implemented; live stress-set pilot pending**
+Status: **Dataset-v0 EXR and camera-record contract implemented; live final-quality stress-set pilot pending**
 
-Last reviewed: 2026-09-03
+Last reviewed: 2026-09-04
 
 ## Purpose
 
@@ -108,6 +108,7 @@ E:\Projects\neuron_data\datasets\
     neuron_library_prod.json
     sculpted_rubber_toy\
       cam_000\
+        cam_000.json
         gold_polished_clean\
           render.exr
         iron_brushed_scratched\
@@ -126,7 +127,7 @@ Path meanings:
 - `gold_polished_clean` is a `material_id`.
 - IDs, rather than semantic labels, are used in paths.
 
-The JSON snapshot and path structure are the dataset index. Dataset v0 has no `dataset.json`, frame manifest, camera record, geometry record, light record, schema record, checksum file, or validation report.
+The material-library snapshot and path structure remain the training-data index. Dataset v0 has no `dataset.json`, frame manifest, geometry record, light record, schema record, checksum file, or validation report. Each camera folder additionally contains one small `{camera_id}.json` used to reproduce the training view in Three.js; it is not required for locating training samples.
 
 The versioned HIP scene and HDA remain in the Houdini project rather than being copied into the dataset. They must not be changed after the full render starts. If the scene, HDA, output contract, or material library changes, create a new dataset directory such as `material_hero_v0_1` instead of mixing incompatible renders.
 
@@ -146,6 +147,22 @@ Object size is a simple framing input, not measured geometry. Camera distance us
 
 The **Material Library JSON** combo offers `neuron_library_dev` and `neuron_library_prod`, with DEV selected by default. When **Render Dataset** is pressed, the tool sets `/stage/neuromat.dataset_path` to the selected repository JSON, reads every material ID from it, and copies that JSON into the selected dataset directory if a same-named snapshot is not already present.
 
+At render start, the tool checks `{geometry_id}/{camera_id}/{camera_id}.json` for every selected camera. An existing file is left unchanged. If it is missing, Datarender reads the cooked USD camera and cooked Render Settings resolution. If the Render Settings LOP does not expose a cooked stage, it falls back to the matching look-at Camera LOP's position, target, lens, and aperture plus the Render Settings resolution parameters. This fallback intentionally supports the simple cameras created by Datarender and rejects a non-look-at camera. The tool writes:
+
+```json
+{
+  "camera_id": "cam_000",
+  "position": [-1.0, 1.0, 2.0],
+  "target": [-0.6, 0.8, 1.1],
+  "up": [0.1, 0.97, -0.2],
+  "focal_length_mm": 28.0,
+  "horizontal_aperture_mm": 20.955,
+  "resolution": [1024, 1024]
+}
+```
+
+`position`, `target`, and `up` are world-space values. `target` is a point one world unit along the camera's cooked forward direction; it is suitable for Three.js `lookAt` and does not claim to preserve the original Houdini look-at control point. The lens values are converted from USD camera units to millimeters. No camera matrix, USD prim path, clipping range, schema version, or checksum is stored.
+
 When **Single Camera** is enabled, the camera-name field supplies a bare name such as `cam_001`, which resolves to `/cameras/cam_001`. When it is disabled, the tool dynamically reads and sorts every Camera LOP directly inside `/stage/camera_dome` and uses each node's authored primitive path.
 
 Multiple geometry switching is not implemented. The tool always renders whatever geometry is currently connected to `neuromat`; the geometry-name field is used only as the output folder ID, regardless of the Single Geometry checkbox.
@@ -163,7 +180,7 @@ The native window title is controlled internally by Houdini and remains **Interr
 
 The console prints `Dataset Render Started...` before iteration begins and `Dataset Render Complete!` only after every selected item has rendered or been skipped successfully. Cancellation instead prints `Dataset Render Interrupted!` and reminds the user that the last rendered material folder may need to be inspected or deleted before resuming.
 
-No separate camera transform is stored. `P`, `Nb`, `V`, and `C.A` already contain the geometry and view context required for training; folder IDs and the copied material JSON complete the minimal lookup contract. The implementation has no job database, manifest, retry manager, checksum generation, or automatic image validation.
+The camera JSON is for initializing the matching Three.js view. It is not fed to the model: `P`, `Nb`, `V`, and `C.A` already contain the geometry and view context required for training. The implementation has no job database, manifest, retry manager, checksum generation, or automatic image validation.
 
 ## Resume after interruption
 
@@ -189,6 +206,8 @@ The training loader does not need a frame manifest:
 2. Read `material_id` from the folder name.
 3. Look up the compact prompt and semantic label in the copied `neuron_library_prod.json`.
 4. Read target RGB from `C.RGB`, Coverage from `C.A`, and geometry inputs from `P`, `Nb`, and `V`.
+
+The training loader does not need `{camera_id}.json`. The web application copies the chosen camera record unchanged to `public/cameras/material_hero/{camera_id}.json` and uses it to initialize the reference Three.js camera.
 
 Train/validation/test splits are created and stored by the training implementation, not by Houdini render automation.
 
@@ -223,6 +242,7 @@ Before the full v0 batch:
 - Confirm `Nb` is unbumped and `C.A` Coverage is identical for opaque and transmissive stress materials.
 - Confirm DOF is absent.
 - Confirm the output has no watermark.
+- Confirm the selected camera folder contains a readable `{camera_id}.json` with the expected lens and resolution.
 - Interrupt and restart the pilot once to verify folder-based skipping.
 - Do not reuse low-resolution pilot material folders for the production render because folder-existence skipping will preserve them.
 

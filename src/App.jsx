@@ -4,7 +4,7 @@ import { Center, Grid, OrbitControls, useFBO, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import './App.css'
 
-const HERO_URL = '/models/material_hero/sculpted-rubber-toy.glb'
+const HERO_URL = '/geometry/material_hero/sculpted-rubber-toy.glb'
 const NORMAL_SIZE = 1024
 const REFERENCE_POSITION = [3, 2.6, 3.8]
 const REFERENCE_TARGET = [0, 0.8, 0]

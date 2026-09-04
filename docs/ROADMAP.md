@@ -103,7 +103,8 @@ The first slice was implemented before model training: a local-only, orbitable w
 
 Deliverables:
 
-- **Verified:** Local 1024 x 1024 world-space normal-pass viewer using `public/models/material_hero/sculpted-rubber-toy.glb`
+- **Verified:** Local 1024 x 1024 world-space normal-pass viewer using `public/geometry/material_hero/sculpted-rubber-toy.glb`
+- **Planned:** Load the selected dataset camera from `public/cameras/material_hero/{camera_id}.json` for the reference/reset view
 - **Verified:** Orbit controls, top-right camera reset, and bottom-center inactive prompt field
 - **Planned:** Three.js float-buffer rendering for `P` and Coverage plus deterministic `V` derivation
 - **Planned:** Prompt inference and generated-RGB display

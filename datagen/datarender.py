@@ -7,6 +7,7 @@ from pathlib import Path
 
 import hou
 from PySide6 import QtCore, QtWidgets
+from pxr import Gf, UsdGeom
 
 from datagen import config
 from datagen.ui import ui_datarender
@@ -102,6 +103,148 @@ def _camera_list(single_camera, single_camera_name):
     return sorted(cameras)
 
 
+def _camera_record(render_settings, camera_id, camera_path):
+    """Read the rendered camera and resolution from the cooked USD stage."""
+
+    render_settings.parm("camera").set(camera_path)
+    stage = render_settings.stage()
+    frame = hou.frame()
+
+    if stage is None:
+        return _camera_record_from_lop(
+            render_settings,
+            camera_id,
+            camera_path,
+        )
+
+    camera_prim = stage.GetPrimAtPath(camera_path)
+    if not camera_prim or not camera_prim.IsA(UsdGeom.Camera):
+        raise RuntimeError(f"USD camera not found: {camera_path}")
+
+    camera = UsdGeom.Camera(camera_prim)
+    if str(camera.GetProjectionAttr().Get(frame)) != "perspective":
+        raise RuntimeError(f"Camera must be perspective: {camera_path}")
+
+    camera_xform = UsdGeom.Xformable(camera_prim)
+    world_transform = camera_xform.ComputeLocalToWorldTransform(frame)
+    position = world_transform.ExtractTranslation()
+    forward = world_transform.TransformDir(
+        Gf.Vec3d(0.0, 0.0, -1.0)
+    ).GetNormalized()
+    up = world_transform.TransformDir(Gf.Vec3d(0.0, 1.0, 0.0)).GetNormalized()
+    target = position + forward
+
+    render_prim_path = render_settings.evalParm("primpath")
+    render_prim = stage.GetPrimAtPath(render_prim_path)
+    resolution = render_prim.GetAttribute("resolution").Get(frame)
+    if resolution is None:
+        raise RuntimeError(
+            f"Resolution not found on render settings: {render_prim_path}"
+        )
+
+    millimeters_per_camera_unit = UsdGeom.GetStageMetersPerUnit(stage) * 100.0
+
+    def vector_values(vector):
+        return [round(float(value), 9) for value in vector]
+
+    return {
+        "camera_id": camera_id,
+        "position": vector_values(position),
+        "target": vector_values(target),
+        "up": vector_values(up),
+        "focal_length_mm": round(
+            float(camera.GetFocalLengthAttr().Get(frame))
+            * millimeters_per_camera_unit,
+            5,
+        ),
+        "horizontal_aperture_mm": round(
+            float(camera.GetHorizontalApertureAttr().Get(frame))
+            * millimeters_per_camera_unit,
+            5,
+        ),
+        "resolution": [int(resolution[0]), int(resolution[1])],
+    }
+
+
+def _camera_record_from_lop(render_settings, camera_id, camera_path):
+    """Fall back to the simple look-at Camera LOPs created by Datarender."""
+
+    stage_network = hou.node(STAGE_PATH)
+    camera_node = None
+
+    for node in stage_network.allSubChildren():
+        if node.type().name() != "camera":
+            continue
+
+        primpath = node.parm("primpath")
+        if primpath is not None and primpath.eval() == camera_path:
+            camera_node = node
+            break
+
+    if camera_node is None:
+        raise RuntimeError(f"Camera LOP not found for USD path: {camera_path}")
+
+    look_at = camera_node.parm("lookatenable")
+    if look_at is None or not look_at.eval():
+        raise RuntimeError(
+            f"Camera JSON fallback requires Look At mode: {camera_node.path()}"
+        )
+
+    position = Gf.Vec3d(*camera_node.parmTuple("t").eval())
+    target = Gf.Vec3d(*camera_node.parmTuple("lookatposition").eval())
+    forward = (target - position).GetNormalized()
+    reference_up = Gf.Vec3d(0.0, 1.0, 0.0)
+    right = Gf.Cross(forward, reference_up)
+
+    if right.GetLength() < 1e-8:
+        reference_up = Gf.Vec3d(0.0, 0.0, 1.0)
+        right = Gf.Cross(forward, reference_up)
+
+    up = Gf.Cross(right.GetNormalized(), forward).GetNormalized()
+
+    def vector_values(vector):
+        return [round(float(value), 9) for value in vector]
+
+    return {
+        "camera_id": camera_id,
+        "position": vector_values(position),
+        "target": vector_values(target),
+        "up": vector_values(up),
+        "focal_length_mm": round(float(camera_node.evalParm("focalLength")), 5),
+        "horizontal_aperture_mm": round(
+            float(camera_node.evalParm("horizontalAperture")),
+            5,
+        ),
+        "resolution": [
+            int(render_settings.evalParm("resolutionx")),
+            int(render_settings.evalParm("resolutiony")),
+        ],
+    }
+
+
+def _create_camera_json_if_missing(
+    dataset_dir,
+    geometry_name,
+    camera_id,
+    camera_path,
+    render_settings,
+):
+    """Create one web-camera record without replacing an existing file."""
+
+    camera_dir = dataset_dir / geometry_name / camera_id
+    camera_json = camera_dir / f"{camera_id}.json"
+    if camera_json.exists():
+        return False
+
+    camera_dir.mkdir(parents=True, exist_ok=True)
+    record = _camera_record(render_settings, camera_id, camera_path)
+    with camera_json.open("w", encoding="utf-8") as file:
+        json.dump(record, file, indent=2)
+        file.write("\n")
+
+    return True
+
+
 def render_dataset(
     dataset_root,
     dataset_name,
@@ -141,6 +284,16 @@ def render_dataset(
     json_snapshot = dataset_dir / material_json.name
     if not json_snapshot.exists():
         shutil.copy2(material_json, json_snapshot)
+
+    for camera_name, camera_path in cameras:
+        if _create_camera_json_if_missing(
+            dataset_dir,
+            geometry_name,
+            camera_name,
+            camera_path,
+            render_settings,
+        ):
+            print(f"CAMERA {camera_name}/{camera_name}.json")
 
     frame = hou.intFrame()
     material_ids = sorted(materials)

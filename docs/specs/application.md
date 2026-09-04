@@ -2,7 +2,7 @@
 
 Status: **Local normal viewer implemented; model integration open**
 
-Last reviewed: 2026-09-03
+Last reviewed: 2026-09-04
 
 ## Objective
 
@@ -14,7 +14,8 @@ Provide a small web application where a user enters a supported material prompt 
 - Backend: FastAPI
 - Deployment target: Docker-based Hugging Face Space on port `7860`
 - Current viewport: exported Sculpted Rubber Toy rendered with smooth world-space normals, orbit controls, and grid
-- Web geometry: `public/models/material_hero/sculpted-rubber-toy.glb`, a verified 12,253,276-byte binary glTF exported from Houdini
+- Web geometry: `public/geometry/material_hero/sculpted-rubber-toy.glb`, a verified 12,253,276-byte binary glTF exported from Houdini
+- Planned camera asset: `public/cameras/material_hero/{camera_id}.json`, copied from the selected dataset camera folder
 - Normal capture: square 1024 x 1024 half-float target containing raw world-space normals
 - UI: `Reset Camera` at top right and an editable but non-submitting prompt field at bottom center
 - Current API: `/api/status`
@@ -24,7 +25,7 @@ Provide a small web application where a user enters a supported material prompt 
 
 Before prompt or model integration, the placeholder sphere was replaced with a local-only Three.js normal-pass viewer:
 
-- load `public/models/material_hero/sculpted-rubber-toy.glb`;
+- load `public/geometry/material_hero/sculpted-rubber-toy.glb`;
 - render the GLB's smooth normals explicitly in world space;
 - retain the normal data as floating-point components in `[-1, 1]` for later model input;
 - display that data as RGB using `display = N * 0.5 + 0.5`;
@@ -33,7 +34,7 @@ Before prompt or model integration, the placeholder sphere was replaced with a l
 - provide a reset control that restores a stable app-authored reference camera position, target, and field of view;
 - use a square 1024 x 1024 internal normal render target, independent of the responsive display size.
 
-The reference view is stored directly in application code. It does not require a geometry metadata file and is not a formal pixel-precise match to the Houdini training camera. The implementation must explicitly output world-space normals rather than relying on a generic visualization material with an implicit coordinate convention.
+The currently implemented reference view is stored directly in application code. The next calibration step replaces those authored values with a copied dataset `{camera_id}.json`; no geometry metadata file or formal pixel-precise validation gate is required. The implementation must explicitly output world-space normals rather than relying on a generic visualization material with an implicit coordinate convention.
 
 This slice runs through the local Vite development server. It includes a visual prompt field that accepts text but does not submit or affect rendering. Generated RGB, prompt processing, model inference, `P`, `V`, or Coverage rendering, FastAPI changes, and Hugging Face deployment remain deferred.
 
@@ -45,6 +46,12 @@ Verified on 2026-09-03:
 - reset restores the same reference camera position, target, and field of view;
 - the internal normal target remains 1024 x 1024 as the browser window changes;
 - `npm run build` completes successfully.
+
+## Dataset camera matching
+
+Datarender writes one `{dataset}/{geometry_id}/{camera_id}/{camera_id}.json` containing the cooked Houdini camera's world position, forward-derived target, up vector, focal length, horizontal aperture, and render resolution. Copy the selected record unchanged to `public/cameras/material_hero/{camera_id}.json` and use it to initialize the Three.js training-camera reference view. For dataset v0, the expected destination is `public/cameras/material_hero/cam_000.json`.
+
+Camera data is necessary but not sufficient for matching the model inputs. The web implementation must also keep the hero GLB's position, rotation, scale, and centering consistent with Houdini; use the JSON resolution's aspect ratio; reproduce the world-space and unit conventions of `P`; reproduce the world-axis convention of smooth unbumped `N`; and calculate normalized `V` from the surface toward the camera. For the first fixed-view experiment, keep the centered hero at an identity transform in both applications rather than adding a geometry metadata file.
 
 ## Intended user flow
 
