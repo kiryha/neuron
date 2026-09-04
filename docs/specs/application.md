@@ -13,7 +13,7 @@ Provide a small web application where a user enters a supported material prompt 
 - Frontend: React 18, Three.js, React Three Fiber, Drei, Vite
 - Backend: FastAPI
 - Deployment target: Docker-based Hugging Face Space on port `7860`
-- Current viewport: exported Sculpted Rubber Toy rendered with smooth world-space normals, orbit controls, and grid
+- Current viewport: exported Sculpted Rubber Toy rendered with smooth world-space normals and orbit controls on a grid-free black background
 - Web geometry: `public/geometry/material_hero/sculpted-rubber-toy.glb`, a verified 12,253,276-byte binary glTF exported from Houdini
 - Active camera asset: `public/cameras/material_hero/cam_001.json`, copied unchanged from the selected dataset camera folder
 - Normal capture: square 1024 x 1024 half-float target containing raw world-space normals
@@ -29,11 +29,12 @@ Before prompt or model integration, the placeholder sphere was replaced with a l
 - render the GLB's smooth normals explicitly in world space;
 - retain the normal data as floating-point components in `[-1, 1]` for later model input;
 - display that data as RGB using `display = N * 0.5 + 0.5`;
-- use a black display background;
+- use a grid-free black display background;
 - keep the camera orbitable;
 - load the dataset camera's position, target, up vector, focal length, horizontal aperture, and resolution from `cam_001.json`;
 - derive the Three.js vertical field of view from the horizontal aperture, focal length, and render aspect ratio;
 - provide a reset control that restores this dataset camera pose and projection;
+- use world origin `[0, 0, 0]` as the OrbitControls target because all Houdini dataset cameras aim at origin;
 - use the camera JSON resolution for the internal normal render target, independent of the responsive display size.
 
 The reference view is loaded from the copied dataset camera JSON. The hero GLB remains at its exported identity transform; the application does not recenter or rescale it. No geometry metadata file or formal pixel-precise validation gate is required. The implementation explicitly outputs world-space normals rather than relying on a generic visualization material with an implicit coordinate convention.
@@ -59,7 +60,7 @@ Verified on 2026-09-04:
 
 ## Dataset camera matching
 
-Datarender writes one `{dataset}/{geometry_id}/{camera_id}/{camera_id}.json` containing the cooked Houdini camera's world position, forward-derived target, up vector, focal length, horizontal aperture, and render resolution. Copy the selected record unchanged to `public/cameras/material_hero/{camera_id}.json` and use it to initialize the Three.js training-camera reference view. The active dataset v0 camera is `public/cameras/material_hero/cam_001.json`.
+Datarender writes one `{dataset}/{geometry_id}/{camera_id}/{camera_id}.json` containing the cooked Houdini camera's world position, forward-derived target, up vector, focal length, horizontal aperture, and render resolution. Copy the selected record unchanged to `public/cameras/material_hero/{camera_id}.json` and use it to initialize the Three.js training-camera reference view. The active dataset v0 camera is `public/cameras/material_hero/cam_001.json`. Its `target` records a point along the camera's forward axis, not the interaction pivot. All Houdini dataset cameras aim at world origin, so Three.js uses `[0, 0, 0]` as the orbit and reset look-at target.
 
 Camera data is necessary but not sufficient for matching the model inputs. The web implementation must also keep the hero GLB's position, rotation, scale, and centering consistent with Houdini; use the JSON resolution's aspect ratio; reproduce the world-space and unit conventions of `P`; reproduce the world-axis convention of smooth unbumped `N`; and calculate normalized `V` from the surface toward the camera. For the first fixed-view experiment, keep the centered hero at an identity transform in both applications rather than adding a geometry metadata file.
 

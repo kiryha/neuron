@@ -33,11 +33,11 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - Applying a material also sets `neuromat.dataset_path` to the selected repository JSON before setting `material_id`.
 - `train/train_hero.py` and `train/loss.py` are empty.
 - `neuron/` contains only a package scaffold.
-- The React app loads the Sculpted Rubber Toy and displays its smooth world-space normal pass with OrbitControls and a dark grid.
+- The React app loads the Sculpted Rubber Toy and displays its smooth world-space normal pass on a black background with OrbitControls and no grid.
 - `neuron_dev.bat` launches the local Vite server at `http://127.0.0.1:5173` with hot reload; `neuron.bat` continues to serve the latest production build through FastAPI.
 - `public/geometry/material_hero/sculpted-rubber-toy.glb` is the accepted single web geometry. The current export is a valid 12,253,276-byte binary glTF.
 - `public/cameras/material_hero/cam_001.json` is the active copied dataset camera record.
-- The app loads `cam_001.json`, derives vertical field of view from its lens/aperture/aspect, applies its position, target, and up vector, and resets to that dataset view. Its half-float normal target uses the JSON resolution, normals are mapped to RGB for display, and the bottom-center prompt field does not yet trigger inference.
+- The app loads `cam_001.json`, derives vertical field of view from its lens/aperture/aspect, applies its position and up vector, and resets to that dataset view. OrbitControls pivots around world origin because every Houdini dataset camera aims at origin; the JSON `target` is only a forward-axis reference point. Its half-float normal target uses the JSON resolution, normals are mapped to RGB for display, and the bottom-center prompt field does not yet trigger inference.
 - The hero GLB remains at its exported identity transform in Three.js; no application-side centering or scaling is applied.
 - No geometry metadata file, separate proxy/calibration LODs, geometry hash, or formal pixel-precise Houdini-to-Three.js calibration gate is required for v0. Camera matching uses the per-camera dataset JSON, while geometry transform and `P`/`N`/`V` conventions remain explicit application requirements.
 - `main.py` serves the built frontend and exposes only `/api/status`.

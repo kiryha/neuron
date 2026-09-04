@@ -175,6 +175,8 @@ This is a concise log of meaningful project changes. It is not a replacement for
 
 ### Dataset camera matching
 
+- Removed the decorative Three.js viewport grid and its now-unnecessary normal-capture visibility handling.
+- Set the Three.js orbit and reset look-at target to world origin, matching the invariant that every Houdini dataset camera aims at `[0, 0, 0]`; the JSON forward-reference target is no longer misused as the navigation pivot.
 - Connected the web reference/reset camera to `public/cameras/material_hero/cam_001.json`.
 - Derived Three.js vertical field of view from the dataset focal length, horizontal aperture, and resolution aspect ratio; the internal normal target now follows the JSON resolution.
 - Removed application-side GLB centering so the hero retains the exported identity transform required for Houdini view matching.

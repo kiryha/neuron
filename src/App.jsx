@@ -1,11 +1,12 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Grid, OrbitControls, useFBO, useGLTF } from '@react-three/drei'
+import { OrbitControls, useFBO, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import './App.css'
 
 const HERO_URL = '/geometry/material_hero/sculpted-rubber-toy.glb'
 const CAMERA_URL = '/cameras/material_hero/cam_001.json'
+const ORBIT_TARGET = [0, 0, 0]
 
 function createCameraConfig(data) {
   const requiredVectors = ['position', 'target', 'up', 'resolution']
@@ -81,7 +82,7 @@ function Hero({ material }) {
   return <primitive object={hero} dispose={null} />
 }
 
-function NormalBufferCapture({ cameraConfig, gridRef, material }) {
+function NormalBufferCapture({ cameraConfig, material }) {
   const { camera, gl, scene } = useThree()
   const normalTarget = useFBO(cameraConfig.resolution[0], cameraConfig.resolution[1], {
     depthBuffer: true,
@@ -102,10 +103,7 @@ function NormalBufferCapture({ cameraConfig, gridRef, material }) {
 
     const previousTarget = gl.getRenderTarget()
     const previousAspect = camera.aspect
-    const gridWasVisible = gridRef.current?.visible ?? false
-
     try {
-      if (gridRef.current) gridRef.current.visible = false
       material.uniforms.uEncodeForDisplay.value = false
       camera.aspect = cameraConfig.aspect
       camera.updateProjectionMatrix()
@@ -117,7 +115,6 @@ function NormalBufferCapture({ cameraConfig, gridRef, material }) {
       camera.aspect = previousAspect
       camera.updateProjectionMatrix()
       material.uniforms.uEncodeForDisplay.value = true
-      if (gridRef.current) gridRef.current.visible = gridWasVisible
     }
   }, -1)
 
@@ -126,7 +123,6 @@ function NormalBufferCapture({ cameraConfig, gridRef, material }) {
 
 function Scene({ cameraApi, cameraConfig }) {
   const controlsRef = useRef(null)
-  const gridRef = useRef(null)
   const { camera } = useThree()
 
   const normalMaterial = useMemo(
@@ -152,10 +148,10 @@ function Scene({ cameraApi, cameraConfig }) {
     camera.updateProjectionMatrix()
 
     if (controlsRef.current) {
-      controlsRef.current.target.set(...cameraConfig.target)
+      controlsRef.current.target.set(...ORBIT_TARGET)
       controlsRef.current.update()
     } else {
-      camera.lookAt(...cameraConfig.target)
+      camera.lookAt(...ORBIT_TARGET)
     }
   }, [camera, cameraConfig])
 
@@ -177,15 +173,6 @@ function Scene({ cameraApi, cameraConfig }) {
         <Hero material={normalMaterial} />
       </Suspense>
 
-      <Grid
-        ref={gridRef}
-        infiniteGrid
-        fadeDistance={50}
-        fadeStrength={1}
-        sectionColor="#111111"
-        cellColor="#090909"
-      />
-
       <OrbitControls
         ref={controlsRef}
         makeDefault
@@ -193,14 +180,10 @@ function Scene({ cameraApi, cameraConfig }) {
         dampingFactor={0.08}
         minDistance={0.1}
         maxDistance={12}
-        target={cameraConfig.target}
+        target={ORBIT_TARGET}
       />
 
-      <NormalBufferCapture
-        cameraConfig={cameraConfig}
-        gridRef={gridRef}
-        material={normalMaterial}
-      />
+      <NormalBufferCapture cameraConfig={cameraConfig} material={normalMaterial} />
     </>
   )
 }
