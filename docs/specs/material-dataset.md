@@ -157,7 +157,11 @@ For every selected camera and sorted material ID, the tool:
 3. Sets the output path to `{geometry_id}/{camera_id}/{material_id}/render.exr`.
 4. Invokes `/stage/usdrender_rop1` for the current frame.
 
-The console prints `Dataset Render Started...` before iteration begins and `Dataset Render Complete!` only after every selected item has rendered or been skipped successfully.
+Pressing **Render Dataset** opens a separate modeless Qt window titled **Render Dataset Progress**. It shows a stable whole-dataset bar, completed/total count, percentage, current `camera/material`, and a **Cancel Render** button. Before rendering, the tool counts existing material folders and starts the bar at that completed fraction; only missing folders enter the render queue. Cancellation is checked before and after every image, so if the active `husk` does not stop immediately, that image may finish but the next item will not start.
+
+The USD Render ROP may also show Houdini's own small **Interrupt** window with an indeterminate `Rendering Image` bar. That window belongs to the active `husk` render and is separate from the persistent dataset-progress window; its title is controlled internally by Houdini.
+
+The console prints `Dataset Render Started...` before iteration begins and `Dataset Render Complete!` only after every selected item has rendered or been skipped successfully. Cancellation instead prints `Dataset Render Interrupted!` and reminds the user that the last rendered material folder may need to be inspected or deleted before resuming.
 
 No separate camera transform is stored. `P`, `Nb`, `V`, and `C.A` already contain the geometry and view context required for training; folder IDs and the copied material JSON complete the minimal lookup contract. The implementation has no job database, manifest, retry manager, checksum generation, or automatic image validation.
 
@@ -174,6 +178,8 @@ Before rendering a material, check whether its material folder exists:
 - To rerender a material: manually delete that material folder and run the script again.
 
 This intentionally accepts the possibility that a crash leaves an incomplete folder that is skipped later. The user will inspect and correct those cases manually.
+
+On restart, Datarender scans all requested camera/material folders before opening the progress dialog. Existing folders count as completed progress and are summarized once in the console instead of printing one `SKIP` line per material.
 
 ## Training lookup
 

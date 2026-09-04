@@ -20,6 +20,35 @@ RENDER_SETTINGS_PATH = "/stage/karmarendersettings"
 RENDER_ROP_PATH = "/stage/usdrender_rop1"
 
 
+class DatasetRenderCancelled(Exception):
+    """Raised when the dataset progress window requests cancellation."""
+
+
+class DatasetProgressDialog(QtWidgets.QProgressDialog):
+    """Persistent progress window for the complete dataset render."""
+
+    def __init__(self, total_items, completed_items, parent=None):
+        super().__init__("", "Cancel Render", 0, total_items, parent)
+        self.setWindowTitle("Render Dataset Progress")
+        self.setWindowModality(QtCore.Qt.NonModal)
+        self.setMinimumDuration(0)
+        self.setMinimumWidth(500)
+        self.setAutoClose(False)
+        self.setAutoReset(False)
+        self.update_dataset_progress(completed_items)
+
+    def update_dataset_progress(self, completed_items, item_name=None):
+        total_items = self.maximum()
+        percentage = completed_items / total_items * 100.0
+        status = f"{completed_items} / {total_items} complete ({percentage:.1f}%)"
+        if item_name:
+            status += f"\nRendering {item_name}"
+        self.setLabelText(status)
+        self.setValue(completed_items)
+        self.show()
+        QtWidgets.QApplication.processEvents()
+
+
 def _camera_positions(camera_count, distance):
     """Return evenly distributed positions on a full sphere."""
 
@@ -102,7 +131,14 @@ def _camera_list(single_camera, single_camera_name):
     return sorted(cameras)
 
 
-def render_dataset(dataset_root, dataset_name, geometry_name, cameras, material_json):
+def render_dataset(
+    dataset_root,
+    dataset_name,
+    geometry_name,
+    cameras,
+    material_json,
+    progress_parent=None,
+):
     """Set the selected material library on neuromat and render every record."""
 
     neuromat = hou.node(NEUROMAT_PATH)
@@ -126,6 +162,9 @@ def render_dataset(dataset_root, dataset_name, geometry_name, cameras, material_
     with material_json.open("r", encoding="utf-8") as file:
         materials = json.load(file)
 
+    if not materials:
+        raise RuntimeError(f"Material JSON is empty: {material_json}")
+
     dataset_dir = Path(dataset_root).expanduser() / dataset_name
     dataset_dir.mkdir(parents=True, exist_ok=True)
 
@@ -133,31 +172,53 @@ def render_dataset(dataset_root, dataset_name, geometry_name, cameras, material_
     if not json_snapshot.exists():
         shutil.copy2(material_json, json_snapshot)
 
-    rendered = 0
-    skipped = 0
     frame = hou.intFrame()
-
-    print("Dataset Render Started...")
+    material_ids = sorted(materials)
+    total_items = len(cameras) * len(material_ids)
+    pending_items = []
+    skipped = 0
 
     for camera_name, camera_path in cameras:
-        render_settings.parm("camera").set(camera_path)
-
-        for material_id in sorted(materials):
+        for material_id in material_ids:
             material_dir = dataset_dir / geometry_name / camera_name / material_id
             if material_dir.exists():
                 skipped += 1
-                print(f"SKIP {camera_name}/{material_id}")
-                continue
+            else:
+                pending_items.append(
+                    (camera_name, camera_path, material_id, material_dir)
+                )
 
+    rendered = 0
+    completed_items = skipped
+
+    print("Dataset Render Started...")
+    if skipped:
+        print(f"RESUME {skipped}/{total_items} existing renders")
+
+    progress = DatasetProgressDialog(total_items, completed_items, progress_parent)
+    try:
+        for camera_name, camera_path, material_id, material_dir in pending_items:
+            item_name = f"{camera_name}/{material_id}"
+            progress.update_dataset_progress(completed_items, item_name)
+            if progress.wasCanceled():
+                raise DatasetRenderCancelled
+
+            render_settings.parm("camera").set(camera_path)
             material_dir.mkdir(parents=True)
             output_path = material_dir / "render.exr"
 
             neuromat.parm("material_id").set(material_id)
             render_settings.parm("picture").set(output_path.as_posix())
 
-            print(f"RENDER {camera_name}/{material_id}")
-            render_rop.render(frame_range=(frame, frame), verbose=True)
+            print(f"RENDER {item_name}")
+            render_rop.render(frame_range=(frame, frame))
             rendered += 1
+            completed_items += 1
+            progress.update_dataset_progress(completed_items)
+            if progress.wasCanceled():
+                raise DatasetRenderCancelled
+    finally:
+        progress.close()
 
     print("Dataset Render Complete!")
     return rendered, skipped
@@ -235,7 +296,16 @@ class Datarender(QtWidgets.QDialog, ui_datarender.Ui_Datarender):
                 geometry_name,
                 cameras,
                 material_json,
+                self,
             )
+        except (hou.OperationInterrupted, DatasetRenderCancelled):
+            print("Dataset Render Interrupted!")
+            hou.ui.displayMessage(
+                "Dataset render interrupted.\n"
+                "The last RENDER folder may be incomplete; inspect or delete it "
+                "before resuming.",
+            )
+            return
         except (RuntimeError, OSError, json.JSONDecodeError, hou.Error) as error:
             hou.ui.displayMessage(
                 str(error),

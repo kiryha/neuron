@@ -161,3 +161,8 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Confirmed consistent framing and visibly distinct material responses; glass remains too noisy for final-quality approval at the test settings.
 - Recorded that PROD must use a clean output directory after a low-resolution pilot because the simple folder-existence resume rule would otherwise retain and mix the eight test renders.
 - Added explicit `Dataset Render Started...` and successful `Dataset Render Complete!` console messages around the render loop.
+- Added a native Houdini dataset-progress dialog showing overall and current-item progress. Cancel/Escape interrupts before the next item and reports that the last render folder may require manual cleanup.
+- Replaced the resetting per-image progress with one whole-dataset bar, initialized from existing material folders so resumed renders begin at their actual completed fraction.
+- Disabled verbose `hou.RopNode.render()` output, removing the redundant timestamped `usdrender_rop1 frame 1` console lines while retaining explicit material `RENDER` messages.
+- Corrected nested Houdini progress handling: the USD Render ROP retains its indeterminate current-image bar while a second, persistent **Dataset Render** bar reports the completed/total count and resume fraction.
+- Replaced the outer native interrupt operation after live testing showed that the USD Render ROP hides it. A separate modeless Qt window titled **Render Dataset Progress** now displays stable overall percentage, completed/total, current material, and a **Cancel Render** button while Houdini retains its own current-image Interrupt window.
