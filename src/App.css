@@ -41,9 +41,19 @@ input {
 
 .brand,
 .reset-camera,
-.prompt-dock {
+.prompt-dock,
+.camera-status {
   position: absolute;
   z-index: 10;
+}
+
+.camera-status {
+  top: 50%;
+  left: 50%;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  transform: translate(-50%, -50%);
 }
 
 .brand {
@@ -81,6 +91,11 @@ input {
   border-color: rgba(255, 255, 255, 0.46);
   color: #ffffff;
   background: rgba(24, 24, 24, 0.86);
+}
+
+.reset-camera:disabled {
+  cursor: default;
+  opacity: 0.45;
 }
 
 .reset-camera:focus-visible,

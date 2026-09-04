@@ -1,14 +1,45 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Center, Grid, OrbitControls, useFBO, useGLTF } from '@react-three/drei'
+import { Grid, OrbitControls, useFBO, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import './App.css'
 
 const HERO_URL = '/geometry/material_hero/sculpted-rubber-toy.glb'
-const NORMAL_SIZE = 1024
-const REFERENCE_POSITION = [3, 2.6, 3.8]
-const REFERENCE_TARGET = [0, 0.8, 0]
-const REFERENCE_FOV = 50
+const CAMERA_URL = '/cameras/material_hero/cam_001.json'
+
+function createCameraConfig(data) {
+  const requiredVectors = ['position', 'target', 'up', 'resolution']
+  const vectorsAreValid = requiredVectors.every(
+    (key) => Array.isArray(data[key]) && data[key].length >= 2 && data[key].every(Number.isFinite),
+  )
+
+  if (
+    !vectorsAreValid ||
+    data.position.length !== 3 ||
+    data.target.length !== 3 ||
+    data.up.length !== 3 ||
+    !Number.isFinite(data.focal_length_mm) ||
+    !Number.isFinite(data.horizontal_aperture_mm) ||
+    data.focal_length_mm <= 0 ||
+    data.horizontal_aperture_mm <= 0 ||
+    data.resolution[0] <= 0 ||
+    data.resolution[1] <= 0
+  ) {
+    throw new Error('Camera JSON contains invalid or missing values.')
+  }
+
+  const aspect = data.resolution[0] / data.resolution[1]
+  const verticalAperture = data.horizontal_aperture_mm / aspect
+  const fov = THREE.MathUtils.radToDeg(
+    2 * Math.atan(verticalAperture / (2 * data.focal_length_mm)),
+  )
+
+  return {
+    ...data,
+    aspect,
+    fov,
+  }
+}
 
 const vertexShader = /* glsl */ `
   uniform mat3 uCameraWorldRotation;
@@ -47,16 +78,12 @@ function Hero({ material }) {
     return clone
   }, [material, scene])
 
-  return (
-    <Center top>
-      <primitive object={hero} dispose={null} />
-    </Center>
-  )
+  return <primitive object={hero} dispose={null} />
 }
 
-function NormalBufferCapture({ gridRef, material }) {
+function NormalBufferCapture({ cameraConfig, gridRef, material }) {
   const { camera, gl, scene } = useThree()
-  const normalTarget = useFBO(NORMAL_SIZE, NORMAL_SIZE, {
+  const normalTarget = useFBO(cameraConfig.resolution[0], cameraConfig.resolution[1], {
     depthBuffer: true,
     format: THREE.RGBAFormat,
     minFilter: THREE.NearestFilter,
@@ -80,7 +107,7 @@ function NormalBufferCapture({ gridRef, material }) {
     try {
       if (gridRef.current) gridRef.current.visible = false
       material.uniforms.uEncodeForDisplay.value = false
-      camera.aspect = 1
+      camera.aspect = cameraConfig.aspect
       camera.updateProjectionMatrix()
       gl.setRenderTarget(normalTarget)
       gl.clear()
@@ -97,7 +124,7 @@ function NormalBufferCapture({ gridRef, material }) {
   return null
 }
 
-function Scene({ cameraApi }) {
+function Scene({ cameraApi, cameraConfig }) {
   const controlsRef = useRef(null)
   const gridRef = useRef(null)
   const { camera } = useThree()
@@ -117,20 +144,20 @@ function Scene({ cameraApi }) {
   )
 
   const resetCamera = useCallback(() => {
-    camera.position.set(...REFERENCE_POSITION)
-    camera.fov = REFERENCE_FOV
+    camera.position.set(...cameraConfig.position)
+    camera.fov = cameraConfig.fov
     camera.near = 0.1
     camera.far = 100
-    camera.up.set(0, 1, 0)
+    camera.up.set(...cameraConfig.up).normalize()
     camera.updateProjectionMatrix()
 
     if (controlsRef.current) {
-      controlsRef.current.target.set(...REFERENCE_TARGET)
+      controlsRef.current.target.set(...cameraConfig.target)
       controlsRef.current.update()
     } else {
-      camera.lookAt(...REFERENCE_TARGET)
+      camera.lookAt(...cameraConfig.target)
     }
-  }, [camera])
+  }, [camera, cameraConfig])
 
   useEffect(() => {
     const api = { reset: resetCamera }
@@ -164,12 +191,16 @@ function Scene({ cameraApi }) {
         makeDefault
         enableDamping
         dampingFactor={0.08}
-        minDistance={2.25}
+        minDistance={0.1}
         maxDistance={12}
-        target={REFERENCE_TARGET}
+        target={cameraConfig.target}
       />
 
-      <NormalBufferCapture gridRef={gridRef} material={normalMaterial} />
+      <NormalBufferCapture
+        cameraConfig={cameraConfig}
+        gridRef={gridRef}
+        material={normalMaterial}
+      />
     </>
   )
 }
@@ -177,6 +208,28 @@ function Scene({ cameraApi }) {
 export default function App() {
   const cameraApi = useRef(null)
   const [prompt, setPrompt] = useState('')
+  const [cameraConfig, setCameraConfig] = useState(null)
+  const [cameraError, setCameraError] = useState('')
+
+  useEffect(() => {
+    let active = true
+
+    fetch(CAMERA_URL)
+      .then((response) => {
+        if (!response.ok) throw new Error(`Camera request failed (${response.status}).`)
+        return response.json()
+      })
+      .then((data) => {
+        if (active) setCameraConfig(createCameraConfig(data))
+      })
+      .catch((error) => {
+        if (active) setCameraError(error.message)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   return (
     <main className="app-shell">
@@ -185,6 +238,7 @@ export default function App() {
       <button
         className="reset-camera"
         type="button"
+        disabled={!cameraConfig}
         onClick={() => cameraApi.current?.reset()}
       >
         Reset Camera
@@ -202,18 +256,25 @@ export default function App() {
         />
       </div>
 
-      <Canvas
-        camera={{
-          far: 100,
-          fov: REFERENCE_FOV,
-          near: 0.1,
-          position: REFERENCE_POSITION,
-        }}
-        dpr={[1, 2]}
-        gl={{ antialias: true, toneMapping: THREE.NoToneMapping }}
-      >
-        <Scene cameraApi={cameraApi} />
-      </Canvas>
+      {cameraError && <div className="camera-status">Camera error: {cameraError}</div>}
+
+      {!cameraError && !cameraConfig && <div className="camera-status">Loading camera…</div>}
+
+      {cameraConfig && (
+        <Canvas
+          camera={{
+            far: 100,
+            fov: cameraConfig.fov,
+            near: 0.1,
+            position: cameraConfig.position,
+            up: cameraConfig.up,
+          }}
+          dpr={[1, 2]}
+          gl={{ antialias: true, toneMapping: THREE.NoToneMapping }}
+        >
+          <Scene cameraApi={cameraApi} cameraConfig={cameraConfig} />
+        </Canvas>
+      )}
     </main>
   )
 }

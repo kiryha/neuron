@@ -173,6 +173,13 @@ This is a concise log of meaningful project changes. It is not a replacement for
 
 ## 2026-09-04
 
+### Dataset camera matching
+
+- Connected the web reference/reset camera to `public/cameras/material_hero/cam_001.json`.
+- Derived Three.js vertical field of view from the dataset focal length, horizontal aperture, and resolution aspect ratio; the internal normal target now follows the JSON resolution.
+- Removed application-side GLB centering so the hero retains the exported identity transform required for Houdini view matching.
+- Added explicit camera loading/error states and verified the production Vite build.
+
 ### Web asset layout
 
 - Renamed `public/models/` to `public/geometry/` so browser mesh assets are not confused with trained AI models, and updated the Material Hero loader path.

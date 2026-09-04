@@ -36,8 +36,9 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - The React app loads the Sculpted Rubber Toy and displays its smooth world-space normal pass with OrbitControls and a dark grid.
 - `neuron_dev.bat` launches the local Vite server at `http://127.0.0.1:5173` with hot reload; `neuron.bat` continues to serve the latest production build through FastAPI.
 - `public/geometry/material_hero/sculpted-rubber-toy.glb` is the accepted single web geometry. The current export is a valid 12,253,276-byte binary glTF.
-- The selected dataset camera record will be copied to `public/cameras/material_hero/{camera_id}.json`; no web camera file exists yet.
-- The app maintains a 1024 x 1024 half-float normal target, maps normals to RGB for display, resets to an app-authored reference camera, and provides a bottom-center prompt field that does not yet trigger inference.
+- `public/cameras/material_hero/cam_001.json` is the active copied dataset camera record.
+- The app loads `cam_001.json`, derives vertical field of view from its lens/aperture/aspect, applies its position, target, and up vector, and resets to that dataset view. Its half-float normal target uses the JSON resolution, normals are mapped to RGB for display, and the bottom-center prompt field does not yet trigger inference.
+- The hero GLB remains at its exported identity transform in Three.js; no application-side centering or scaling is applied.
 - No geometry metadata file, separate proxy/calibration LODs, geometry hash, or formal pixel-precise Houdini-to-Three.js calibration gate is required for v0. Camera matching uses the per-camera dataset JSON, while geometry transform and `P`/`N`/`V` conventions remain explicit application requirements.
 - `main.py` serves the built frontend and exposes only `/api/status`.
 
@@ -192,7 +193,7 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 5. Inspect the Karma critical error and CPU-only XPU device state before estimating the full render.
 6. Resolve or explicitly classify `transmission_scatter` behavior.
 7. Select `neuron_library_prod` and render into a clean final dataset directory with the same camera and render settings.
-8. After the dataset is ready, copy the selected camera record to `public/cameras/material_hero/{camera_id}.json`, initialize the Three.js reference camera from it, train the first model, and extend the verified web normal-buffer path with `P`, `V`, Coverage, and prompt-driven inference.
+8. After the dataset is ready, train the first model and extend the camera-matched web normal-buffer path with `P`, `V`, Coverage, and prompt-driven inference.
 
 ## Phase 1 exit criteria
 
