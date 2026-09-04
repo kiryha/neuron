@@ -157,9 +157,9 @@ For every selected camera and sorted material ID, the tool:
 3. Sets the output path to `{geometry_id}/{camera_id}/{material_id}/render.exr`.
 4. Invokes `/stage/usdrender_rop1` for the current frame.
 
-Pressing **Render Dataset** opens a separate modeless Qt window titled **Render Dataset Progress**. It shows a stable whole-dataset bar, completed/total count, percentage, current `camera/material`, and a **Cancel Render** button. Before rendering, the tool counts existing material folders and starts the bar at that completed fraction; only missing folders enter the render queue. Cancellation is checked before and after every image, so if the active `husk` does not stop immediately, that image may finish but the next item will not start.
+Pressing **Render Dataset** uses Houdini's native interrupt operation. Before rendering, the tool counts existing material folders, prints `RESUME {completed}/{total}` when applicable, and queues only missing folders. During an active USD render, Houdini may replace the outer progress display with its own indeterminate `Rendering Image` bar and **Interrupt** button. The blocking Render ROP prevents a separate Qt progress window from repainting reliably, so graphical whole-dataset percentage is intentionally not provided.
 
-The USD Render ROP may also show Houdini's own small **Interrupt** window with an indeterminate `Rendering Image` bar. That window belongs to the active `husk` render and is separate from the persistent dataset-progress window; its title is controlled internally by Houdini.
+The native window title is controlled internally by Houdini and remains **Interrupt**. Pressing **Interrupt** may stop the active `husk`; if it finishes the current image first, the queued cancellation is detected before another dataset item is completed.
 
 The console prints `Dataset Render Started...` before iteration begins and `Dataset Render Complete!` only after every selected item has rendered or been skipped successfully. Cancellation instead prints `Dataset Render Interrupted!` and reminds the user that the last rendered material folder may need to be inspected or deleted before resuming.
 

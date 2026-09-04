@@ -1,6 +1,6 @@
 # Current project status
 
-- Last verified: 2026-09-03
+- Last verified: 2026-09-04
 - Repository baseline inspected: `main` at `72d903a`
 - Current phase: **Phase 1 data generation, with an accepted early Phase 2B frontend slice**
 
@@ -18,7 +18,7 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 
 - `datagen/materials.py` is the current material and label generator.
 - `datagen/datarender.py` creates the camera dome and implements sequential dataset rendering from the DEV or PROD material library selected in its UI.
-- Dataset rendering opens a separate modeless **Render Dataset Progress** window with a stable whole-dataset bar, completed/total percentage, current item, and cancellation. Existing folders initialize its fraction on restart; cancellation stops before the next material, while the active `husk` is allowed to finish if it cannot be interrupted immediately. Houdini may separately show its own indeterminate **Interrupt** window for the active USD render.
+- Dataset rendering is sequential and uses Houdini's native **Interrupt** window. Existing folders are counted before restart and reported as `RESUME completed/total`; only missing folders are queued. A separate Qt whole-dataset window was removed because the blocking USD Render ROP prevented it from repainting reliably.
 - Single-camera mode renders the named `/cameras/cam_###` prim; multi-camera mode dynamically reads Camera LOPs inside `/stage/camera_dome`.
 - Geometry switching is not implemented. The currently connected `neuromat` geometry is rendered, and the geometry-name field supplies only its dataset folder name.
 - `datagen/ui/ui_datarender.py` is generated from the user-authored `ui_datarender.ui`.
