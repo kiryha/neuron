@@ -187,3 +187,9 @@ This is a concise log of meaningful project changes. It is not a replacement for
 
 - Renamed `public/models/` to `public/geometry/` so browser mesh assets are not confused with trained AI models, and updated the Material Hero loader path.
 - Reserved `public/cameras/material_hero/{camera_id}.json` for unchanged copies of selected dataset camera records; no placeholder camera file was added before the final dataset camera exists.
+
+### Model-training tutorial
+
+- Added a comprehensive graphics-artist-oriented guide to text-conditioned image models, covering tensors, backpropagation, embeddings, latent spaces, architecture families, modern diffusion and flow approaches, evaluation, and practical PyTorch patterns.
+- Proposed—but did not accept as a project decision—a first Material Hero coordinate MLP using structured material embeddings, Fourier-encoded position, `P`/`Nb`/`V` conditioning, sampled foreground pixels, and masked linear-RGB loss.
+- Linked the tutorial from `docs/START-HERE.md` and clearly separated broad text-to-image generation from Material Hero's constrained deterministic regression problem.

@@ -23,6 +23,8 @@ When returning to the project, read:
    - [Resume Houdini work](runbooks/houdini-resume.md)
    - [Release a dataset](runbooks/dataset-release.md)
 
+For a conceptual and implementation-oriented introduction to model training, read [From words to pixels](tutorials/training-a-text-conditioned-image-model.md). It covers modern text-to-image approaches, core ML terminology and math, compact PyTorch examples, and a proposed first Material Hero architecture.
+
 The public overview and local run instructions are in the repository [README](../README.md).
 
 ## Project in one paragraph

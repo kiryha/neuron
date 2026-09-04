@@ -2,13 +2,13 @@
 
 - Last verified: 2026-09-04
 - Repository baseline inspected: `main` at `72d903a`
-- Current phase: **Phase 1 data generation, with an accepted early Phase 2B frontend slice**
+- Current phase: **Phase 1C dataset rendering, with an accepted early Phase 2B frontend slice and Phase 2A preparation**
 
 ## Current objective
 
-Run the eight-material DEV pilot once more at the intended final render settings, using a clean output directory. The first live pilot validated the render loop and EXR structure at 512 × 512 with low sampling, but it must not be mixed into the final 1024 × 1024 dataset. Depth of field is already disabled in scene 006.
+Complete the currently running `material_hero_v0` production render without changing the frozen scene, HDA, material library, camera, or render settings. The user reports that part of the material library is already rendered; the current external output count and files have not yet been independently inspected from this repository session.
 
-The accepted local Three.js normal-viewer slice is implemented and verified. The active work returns to the Houdini camera-dome stage.
+Training-pipeline development can use a frozen inventory of completed renders for loader validation and deliberate one-material or small-subset overfitting. Definitive full-library training and evaluation wait for render completion, count validation, and representative EXR QA. The accepted local Three.js normal-viewer slice remains implemented and verified.
 
 The accepted learning sequence is: train on one fixed view; test Three.js orbit, zoom, and alternate-mesh inputs as deliberately unsupported cases; add multi-view Houdini data and retrain; then add multi-geometry data and retrain. Improvement between versions is an experiment to measure, not an assumed capability.
 
@@ -32,6 +32,7 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - In Datagen, reload, material generation, prompt generation, and material application use the selected library. DEV generation writes the eight-material stress set; PROD generation writes all 1,806 records.
 - Applying a material also sets `neuromat.dataset_path` to the selected repository JSON before setting `material_id`.
 - `train/train_hero.py` and `train/loss.py` are empty.
+- `docs/tutorials/training-a-text-conditioned-image-model.md` is a comprehensive educational guide to text-conditioned image training. Its coordinate-MLP design and training plan are recommendations pending an explicit architecture decision.
 - `neuron/` contains only a package scaffold.
 - The React app loads the Sculpted Rubber Toy and lets the user inspect world-space `N`, `P`, or `V` on a black background with OrbitControls and no grid. The active selector defaults to `N`.
 - `neuron_dev.bat` launches the local Vite server at `http://127.0.0.1:5173` with hot reload; `neuron.bat` continues to serve the latest production build through FastAPI.
@@ -176,24 +177,23 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 - When rendering starts, Datarender sets `neuromat.dataset_path` to the selected repository JSON, renders every record in it, copies that JSON once into the dataset root, and creates any missing per-camera JSON from the cooked USD camera and resolution. `P`, `Nb`, `V`, and `C.A` remain the complete model-context contract; no geometry metadata is written.
 - Resume behavior: skip when the material folder exists; delete the folder manually to request a rerender.
 
-## Blockers before a full render
+## Open risks before dataset acceptance
 
 | Priority | Blocker | Required resolution |
 | --- | --- | --- |
-| P0 | Automated dataset pilot not yet run | Render a small single-camera subset, inspect its EXRs, then test multi-camera mode and restart skipping |
+| P0 | Production dataset render is incomplete | Finish the current batch, confirm 1,806 material folders, and inspect representative EXRs before definitive training |
 | P1 | Unresolved transmission-scatter policy | Verify or explicitly classify `transmission_scatter` behavior |
 | P1 | Karma XPU reported one critical error and used only Embree CPU | Inspect Houdini's Log Viewer and decide whether GPU rendering must be restored before the full 1,806-material run |
 
 ## Next exact actions
 
-1. Preserve the low-quality pilot under a test name or remove it manually; do not leave its eight material folders inside the final dataset directory.
-2. Set the intended final resolution and sampling, select `neuron_library_dev`, keep **Single Camera** enabled with `cam_001`, and render all eight materials into a clean dataset directory.
-3. Visually approve the production-quality glass, dark rubber, highlights, framing, and watermark state.
-4. Rerun once and confirm that Datarender reports eight skips, or delete one folder and confirm that only it rerenders.
-5. Inspect the Karma critical error and CPU-only XPU device state before estimating the full render.
-6. Resolve or explicitly classify `transmission_scatter` behavior.
-7. Select `neuron_library_prod` and render into a clean final dataset directory with the same camera and render settings.
-8. After the dataset is ready, train the first model and extend the camera-matched web normal-buffer path with `P`, `V`, Coverage, and prompt-driven inference.
+1. Let the current `material_hero_v0` production render finish without changing its frozen inputs or settings.
+2. In parallel, use a fixed list of completed renders to implement and validate the training loader, then intentionally overfit one material and a small subset after the first architecture is accepted.
+3. After rendering, confirm 1,806 material folders and inspect representative metal, dielectric, organic, translucent, bump, dirt, and wear outputs.
+4. Inspect the Karma critical error and CPU-only XPU device state if it continues to affect render reliability or timing.
+5. Resolve or explicitly classify `transmission_scatter` behavior.
+6. Freeze training splits and run the first reproducible full-library model experiment.
+7. Extend the camera-matched web buffer path with Coverage and prompt-driven inference.
 
 ## Phase 1 exit criteria
 
