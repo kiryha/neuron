@@ -7,6 +7,11 @@ import './App.css'
 const HERO_URL = '/geometry/material_hero/sculpted-rubber-toy.glb'
 const CAMERA_URL = '/cameras/material_hero/cam_001.json'
 const ORBIT_TARGET = [0, 0, 0]
+const PASSES = {
+  N: 0,
+  P: 1,
+  V: 2,
+}
 
 function createCameraConfig(data) {
   const requiredVectors = ['position', 'target', 'up', 'resolution']
@@ -45,23 +50,39 @@ function createCameraConfig(data) {
 const vertexShader = /* glsl */ `
   uniform mat3 uCameraWorldRotation;
   varying vec3 vWorldNormal;
+  varying vec3 vWorldPosition;
 
   void main() {
+    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
     vec3 viewNormal = normalize(normalMatrix * normal);
     vWorldNormal = normalize(uCameraWorldRotation * viewNormal);
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    vWorldPosition = worldPosition.xyz;
+    gl_Position = projectionMatrix * viewMatrix * worldPosition;
   }
 `
 
 const fragmentShader = /* glsl */ `
   uniform bool uEncodeForDisplay;
+  uniform int uPass;
   varying vec3 vWorldNormal;
+  varying vec3 vWorldPosition;
 
   void main() {
-    vec3 worldNormal = normalize(vWorldNormal);
-    vec3 outputValue = uEncodeForDisplay
-      ? worldNormal * 0.5 + 0.5
-      : worldNormal;
+    vec3 rawValue;
+
+    if (uPass == 1) {
+      rawValue = vWorldPosition;
+    } else if (uPass == 2) {
+      rawValue = normalize(cameraPosition - vWorldPosition);
+    } else {
+      rawValue = normalize(vWorldNormal);
+    }
+
+    vec3 outputValue = rawValue;
+    if (uEncodeForDisplay) {
+      outputValue = rawValue * 0.5 + 0.5;
+    }
+
     gl_FragColor = vec4(outputValue, 1.0);
   }
 `
@@ -82,9 +103,9 @@ function Hero({ material }) {
   return <primitive object={hero} dispose={null} />
 }
 
-function NormalBufferCapture({ cameraConfig, material }) {
+function GeometryBufferCapture({ cameraConfig, material, pass }) {
   const { camera, gl, scene } = useThree()
-  const normalTarget = useFBO(cameraConfig.resolution[0], cameraConfig.resolution[1], {
+  const geometryTarget = useFBO(cameraConfig.resolution[0], cameraConfig.resolution[1], {
     depthBuffer: true,
     format: THREE.RGBAFormat,
     minFilter: THREE.NearestFilter,
@@ -94,9 +115,9 @@ function NormalBufferCapture({ cameraConfig, material }) {
   })
 
   useEffect(() => {
-    normalTarget.texture.colorSpace = THREE.NoColorSpace
-    normalTarget.texture.name = 'material-hero-world-normal'
-  }, [normalTarget])
+    geometryTarget.texture.colorSpace = THREE.NoColorSpace
+    geometryTarget.texture.name = `material-hero-world-${pass.toLowerCase()}`
+  }, [geometryTarget, pass])
 
   useFrame(() => {
     material.uniforms.uCameraWorldRotation.value.setFromMatrix4(camera.matrixWorld)
@@ -107,7 +128,7 @@ function NormalBufferCapture({ cameraConfig, material }) {
       material.uniforms.uEncodeForDisplay.value = false
       camera.aspect = cameraConfig.aspect
       camera.updateProjectionMatrix()
-      gl.setRenderTarget(normalTarget)
+      gl.setRenderTarget(geometryTarget)
       gl.clear()
       gl.render(scene, camera)
     } finally {
@@ -121,7 +142,7 @@ function NormalBufferCapture({ cameraConfig, material }) {
   return null
 }
 
-function Scene({ cameraApi, cameraConfig }) {
+function Scene({ cameraApi, cameraConfig, pass }) {
   const controlsRef = useRef(null)
   const { camera } = useThree()
 
@@ -133,11 +154,16 @@ function Scene({ cameraApi, cameraConfig }) {
         uniforms: {
           uCameraWorldRotation: { value: new THREE.Matrix3() },
           uEncodeForDisplay: { value: true },
+          uPass: { value: PASSES.N },
         },
         vertexShader,
       }),
     [],
   )
+
+  useEffect(() => {
+    normalMaterial.uniforms.uPass.value = PASSES[pass]
+  }, [normalMaterial, pass])
 
   const resetCamera = useCallback(() => {
     camera.position.set(...cameraConfig.position)
@@ -183,7 +209,11 @@ function Scene({ cameraApi, cameraConfig }) {
         target={ORBIT_TARGET}
       />
 
-      <NormalBufferCapture cameraConfig={cameraConfig} material={normalMaterial} />
+      <GeometryBufferCapture
+        cameraConfig={cameraConfig}
+        material={normalMaterial}
+        pass={pass}
+      />
     </>
   )
 }
@@ -191,6 +221,7 @@ function Scene({ cameraApi, cameraConfig }) {
 export default function App() {
   const cameraApi = useRef(null)
   const [prompt, setPrompt] = useState('')
+  const [pass, setPass] = useState('N')
   const [cameraConfig, setCameraConfig] = useState(null)
   const [cameraError, setCameraError] = useState('')
 
@@ -218,14 +249,30 @@ export default function App() {
     <main className="app-shell">
       <header className="brand">NEURON // LATENT ENGINE</header>
 
-      <button
-        className="reset-camera"
-        type="button"
-        disabled={!cameraConfig}
-        onClick={() => cameraApi.current?.reset()}
-      >
-        Reset Camera
-      </button>
+      <div className="viewport-controls">
+        <div aria-label="Geometry pass" className="pass-selector" role="group">
+          {Object.keys(PASSES).map((passName) => (
+            <button
+              aria-pressed={pass === passName}
+              className={`pass-button${pass === passName ? ' active' : ''}`}
+              key={passName}
+              onClick={() => setPass(passName)}
+              type="button"
+            >
+              {passName}
+            </button>
+          ))}
+        </div>
+
+        <button
+          className="reset-camera"
+          type="button"
+          disabled={!cameraConfig}
+          onClick={() => cameraApi.current?.reset()}
+        >
+          Reset Camera
+        </button>
+      </div>
 
       <div className="prompt-dock">
         <input
@@ -255,7 +302,7 @@ export default function App() {
           dpr={[1, 2]}
           gl={{ antialias: true, toneMapping: THREE.NoToneMapping }}
         >
-          <Scene cameraApi={cameraApi} cameraConfig={cameraConfig} />
+          <Scene cameraApi={cameraApi} cameraConfig={cameraConfig} pass={pass} />
         </Canvas>
       )}
     </main>

@@ -175,6 +175,7 @@ This is a concise log of meaningful project changes. It is not a replacement for
 
 ### Dataset camera matching
 
+- Added top-right `N`, `P`, and `V` selectors. The shader now emits raw world-space position, smooth world-space normal, or normalized surface-to-camera view direction into the half-float geometry target and encodes only the visible preview.
 - Removed the decorative Three.js viewport grid and its now-unnecessary normal-capture visibility handling.
 - Set the Three.js orbit and reset look-at target to world origin, matching the invariant that every Houdini dataset camera aims at `[0, 0, 0]`; the JSON forward-reference target is no longer misused as the navigation pivot.
 - Connected the web reference/reset camera to `public/cameras/material_hero/cam_001.json`.

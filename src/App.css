@@ -40,7 +40,7 @@ input {
 }
 
 .brand,
-.reset-camera,
+.viewport-controls,
 .prompt-dock,
 .camera-status {
   position: absolute;
@@ -68,11 +68,24 @@ input {
   user-select: none;
 }
 
-.reset-camera {
+.viewport-controls {
   top: 18px;
   right: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.pass-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.pass-button,
+.reset-camera {
   min-height: 36px;
-  padding: 0 16px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
   color: rgba(255, 255, 255, 0.86);
@@ -87,10 +100,26 @@ input {
   transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
 }
 
+.pass-button {
+  min-width: 40px;
+  padding: 0 10px;
+}
+
+.reset-camera {
+  padding: 0 16px;
+}
+
+.pass-button:hover,
 .reset-camera:hover {
   border-color: rgba(255, 255, 255, 0.46);
   color: #ffffff;
   background: rgba(24, 24, 24, 0.86);
+}
+
+.pass-button.active {
+  border-color: #8ff8ff;
+  color: #050505;
+  background: #8ff8ff;
 }
 
 .reset-camera:disabled {
@@ -98,6 +127,7 @@ input {
   opacity: 0.45;
 }
 
+.pass-button:focus-visible,
 .reset-camera:focus-visible,
 .prompt-input:focus-visible {
   outline: 2px solid #8ff8ff;
@@ -141,9 +171,12 @@ input {
     line-height: 1.5;
   }
 
-  .reset-camera {
+  .viewport-controls {
     top: 14px;
     right: 14px;
+  }
+
+  .reset-camera {
     padding: 0 12px;
     font-size: 10px;
   }

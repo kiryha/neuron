@@ -13,11 +13,11 @@ Provide a small web application where a user enters a supported material prompt 
 - Frontend: React 18, Three.js, React Three Fiber, Drei, Vite
 - Backend: FastAPI
 - Deployment target: Docker-based Hugging Face Space on port `7860`
-- Current viewport: exported Sculpted Rubber Toy rendered with smooth world-space normals and orbit controls on a grid-free black background
+- Current viewport: exported Sculpted Rubber Toy with selectable world-space `N`, `P`, and `V` previews plus orbit controls on a grid-free black background
 - Web geometry: `public/geometry/material_hero/sculpted-rubber-toy.glb`, a verified 12,253,276-byte binary glTF exported from Houdini
 - Active camera asset: `public/cameras/material_hero/cam_001.json`, copied unchanged from the selected dataset camera folder
-- Normal capture: square 1024 x 1024 half-float target containing raw world-space normals
-- UI: `Reset Camera` at top right and an editable but non-submitting prompt field at bottom center
+- Geometry capture: square 1024 x 1024 half-float target containing the selected raw world-space `N`, `P`, or `V` values
+- UI: `N`/`P`/`V` pass buttons above `Reset Camera` at top right and an editable but non-submitting prompt field at bottom center
 - Current API: `/api/status`
 - Training/model inference: not implemented
 
@@ -27,8 +27,9 @@ Before prompt or model integration, the placeholder sphere was replaced with a l
 
 - load `public/geometry/material_hero/sculpted-rubber-toy.glb`;
 - render the GLB's smooth normals explicitly in world space;
-- retain the normal data as floating-point components in `[-1, 1]` for later model input;
-- display that data as RGB using `display = N * 0.5 + 0.5`;
+- calculate raw world-space position `P`, smooth world-space normal `N`, and normalized world-space view direction `V = normalize(cameraPosition - P)`;
+- retain the selected pass as floating-point components for later model input;
+- preview all three passes as RGB using `display = value * 0.5 + 0.5`, without changing the raw offscreen values;
 - use a grid-free black display background;
 - keep the camera orbitable;
 - load the dataset camera's position, target, up vector, focal length, horizontal aperture, and resolution from `cam_001.json`;
@@ -56,6 +57,7 @@ Verified on 2026-09-04:
 - the Three.js vertical field of view is derived from the dataset lens and aperture rather than hard-coded;
 - the normal target uses the JSON resolution and aspect ratio;
 - the GLB is rendered at its exported identity transform without application-side centering;
+- `N`, `P`, and `V` buttons switch the viewport preview while the offscreen geometry target remains raw half-float data;
 - `npm run build` completes successfully with both the camera JSON and GLB in the production output.
 
 ## Dataset camera matching

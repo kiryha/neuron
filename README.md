@@ -91,7 +91,7 @@ The training implementation has not been built yet. It begins after the Houdini 
 
 The intended application accepts a material prompt and sends Three.js-generated `P`, `N`, `V`, and Coverage buffers to the neural renderer. It starts at the Houdini training pose, then permits orbit, zoom, and mesh switching so failures of each dataset/model version can be observed directly.
 
-The React application now loads `public/geometry/material_hero/sculpted-rubber-toy.glb` at its exported identity transform and displays its smooth world-space normal pass. The camera can orbit and reset to the dataset view loaded from `public/cameras/material_hero/cam_001.json`; the lens projection and normal-buffer resolution are derived from that record. A bottom-center prompt field accepts text but does not trigger rendering yet. The FastAPI backend still exposes only a status endpoint; neural inference is not connected.
+The React application now loads `public/geometry/material_hero/sculpted-rubber-toy.glb` at its exported identity transform and provides selectable world-space `N`, `P`, and `V` previews. The camera can orbit and reset to the dataset view loaded from `public/cameras/material_hero/cam_001.json`; the lens projection and geometry-buffer resolution are derived from that record. A bottom-center prompt field accepts text but does not trigger rendering yet. The FastAPI backend still exposes only a status endpoint; neural inference is not connected.
 
 This frontend slice runs locally. Prompt processing, model inference, the remaining geometry passes, backend changes, and Hugging Face deployment are deferred.
 
