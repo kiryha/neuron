@@ -1,12 +1,12 @@
 # Current project status
 
-- Last verified: 2026-09-04
-- Repository baseline inspected: `main` at `72d903a`
+- Last verified: 2026-09-07
+- Repository baseline inspected: `main` at `7a09552`
 - Current phase: **Phase 1C dataset rendering, with an accepted early Phase 2B frontend slice and Phase 2A preparation**
 
 ## Current objective
 
-Complete the currently running `material_hero_v0` production render without changing the frozen scene, HDA, material library, camera, or render settings. The user reports that part of the material library is already rendered; the current external output count and files have not yet been independently inspected from this repository session.
+Complete the interrupted `material_hero_v0` production render without changing the frozen scene, HDA, material library, camera, or render settings. The user reports that part of the material library is already rendered; the current external output count and files have not yet been independently inspected from this repository session. A headless `hython` launcher is now available to resume the render without opening Houdini's GUI.
 
 Training-pipeline development can use a frozen inventory of completed renders for loader validation and deliberate one-material or small-subset overfitting. Definitive full-library training and evaluation wait for render completion, count validation, and representative EXR QA. The accepted local Three.js normal-viewer slice remains implemented and verified.
 
@@ -18,7 +18,8 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 
 - `datagen/materials.py` is the current material and label generator.
 - `datagen/datarender.py` creates the camera dome and implements sequential dataset rendering from the DEV or PROD material library selected in its UI.
-- Dataset rendering is sequential and uses Houdini's native **Interrupt** window. Existing folders are counted before restart and reported as `RESUME completed/total`; only missing folders are queued. A separate Qt whole-dataset window was removed because the blocking USD Render ROP prevented it from repainting reliably.
+- Dataset rendering checks existing folders, reports `RESUME completed/total`, and calls the blocking USD Render ROP for each missing material one at a time. The next material is not submitted until the call returns and a non-empty `render.exr` exists. There is no whole-dataset progress bar.
+- `datarender_headless.bat` loads the hardcoded production `.hiplc` and material JSON through Houdini 22's `hython.exe`, rendering without the Houdini GUI while streaming the same `Dataset Render Started`, `RESUME`, and `RENDER` reports to a console. The original in-Houdini Datarender UI remains available.
 - At dataset-render start, Datarender creates a missing `{geometry_id}/{camera_id}/{camera_id}.json` from the cooked USD camera and Render Settings resolution and leaves an existing record unchanged. If Houdini does not expose a cooked stage at that moment, it falls back to the simple look-at Camera LOP and Render Settings parameters used by this project. The web app uses this small record to reconstruct the training view; it is not a model input.
 - Single-camera mode renders the named `/cameras/cam_###` prim; multi-camera mode dynamically reads Camera LOPs inside `/stage/camera_dome`.
 - Geometry switching is not implemented. The currently connected `neuromat` geometry is rendered, and the geometry-name field supplies only its dataset folder name.
@@ -47,15 +48,15 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 
 - Project root: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D`
 - Active scene: `scenes\material_hero_006.hiplc`
-  - Modified: 2026-09-03 11:15
-- Active HDA: `hda\lop_KKO8.neuromat.1.2.otllc`
-  - Type: `KKO8::neuromat::1.2`
-  - Modified: 2026-09-03 10:30
+  - Modified: 2026-09-03 22:21
+- Active HDA resolved by scene 006: `hda\lop_KKO8--neuromat-1.3.hdalc`
+  - Type: `KKO8::neuromat::1.3`
+  - Modified: 2026-09-03 16:23
 - Generated JSON: `E:\Projects\neuron_data\neuron_library.json`
   - Current content: eight-material stress subset
   - Modified: 2026-04-16 15:39
 - The external stress JSON remains useful for look-dev, but it is not the production batch source.
-- `datagen/hips/` contains Indie snapshots of scene 006 and the HDA. The checked-in HDA matches the active external file; the external scene is newer than its repository snapshot and is authoritative.
+- `datagen/hips/` contains older scene-006 and `neuromat` 1.2 snapshots. The external scene and its resolved 1.3 HDA are authoritative.
 
 ### Geometry and scene
 
@@ -187,7 +188,7 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 
 ## Next exact actions
 
-1. Let the current `material_hero_v0` production render finish without changing its frozen inputs or settings.
+1. Run a one-material or DEV-library live Karma pilot through `datarender_headless.bat` after temporarily selecting a separate pilot dataset, then restore its hardcoded PROD/current-dataset settings and resume `material_hero_v0` without changing the frozen inputs.
 2. In parallel, use a fixed list of completed renders to implement and validate the training loader, then intentionally overfit one material and a small subset after the first architecture is accepted.
 3. After rendering, confirm 1,806 material folders and inspect representative metal, dielectric, organic, translucent, bump, dirt, and wear outputs.
 4. Inspect the Karma critical error and CPU-only XPU device state if it continues to affect render reliability or timing.

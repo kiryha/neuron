@@ -1,8 +1,8 @@
 # Material dataset specification
 
-Status: **Dataset-v0 EXR and camera-record contract implemented; live final-quality stress-set pilot pending**
+Status: **Dataset-v0 EXR, camera-record, and headless sequential-render contract implemented; live headless Karma pilot pending**
 
-Last reviewed: 2026-09-04
+Last reviewed: 2026-09-07
 
 ## Purpose
 
@@ -133,7 +133,7 @@ The versioned HIP scene and HDA remain in the Houdini project rather than being 
 
 ## Render automation
 
-The implementation is `datagen/datarender.py`. It uses ordinary sequential Python rather than TOPs/PDG and never saves the loaded HIP file. Camera-dome creation and the minimal dataset render loop are implemented.
+The shared implementation is `datagen/datarender.py`. It uses ordinary sequential Python rather than TOPs/PDG and never saves the loaded HIP file. It remains callable from the Datarender Houdini UI. `datagen/datarender_headless.py` loads a specified HIP scene through `hython.exe` and calls the same render function without opening Houdini's GUI. The repository-root `datarender_headless.bat` contains the hardcoded scene, DEV-or-PROD JSON, output, geometry, and camera settings used by the double-click workflow.
 
 ### Camera-dome stage
 
@@ -167,18 +167,17 @@ When **Single Camera** is enabled, the camera-name field supplies a bare name su
 
 Multiple geometry switching is not implemented. The tool always renders whatever geometry is currently connected to `neuromat`; the geometry-name field is used only as the output folder ID, regardless of the Single Geometry checkbox.
 
-For every selected camera and sorted material ID, the tool:
+For every selected camera and sorted material ID, the tool checks the material folder immediately before rendering. For each missing item it:
 
 1. Sets the Karma Render Settings camera.
 2. Sets `/stage/neuromat.material_id`.
 3. Sets the output path to `{geometry_id}/{camera_id}/{material_id}/render.exr`.
-4. Invokes `/stage/usdrender_rop1` for the current frame.
+4. Invokes `/stage/usdrender_rop1` synchronously for the current frame.
+5. Confirms that a non-empty `render.exr` exists before advancing to the next material.
 
-Pressing **Render Dataset** uses Houdini's native interrupt operation. Before rendering, the tool counts existing material folders, prints `RESUME {completed}/{total}` when applicable, and queues only missing folders. During an active USD render, Houdini may replace the outer progress display with its own indeterminate `Rendering Image` bar and **Interrupt** button. The blocking Render ROP prevents a separate Qt progress window from repainting reliably, so graphical whole-dataset percentage is intentionally not provided.
+There is no whole-dataset progress operation or progress bar. Before rendering, the tool counts existing material folders and prints `RESUME {completed}/{total}` when applicable. The loop then walks every material in sorted order, skips folders that exist, and calls the blocking `hou.RopNode.render()` only for missing folders. This prevents the same Datarender process from submitting another material while the previous render is active.
 
-The native window title is controlled internally by Houdini and remains **Interrupt**. Pressing **Interrupt** may stop the active `husk`; if it finishes the current image first, the queued cancellation is detected before another dataset item is completed.
-
-The console prints `Dataset Render Started...` before iteration begins and `Dataset Render Complete!` only after every selected item has rendered or been skipped successfully. Cancellation instead prints `Dataset Render Interrupted!` and reminds the user that the last rendered material folder may need to be inspected or deleted before resuming.
+When run from the UI, Houdini may still show its native current-image **Interrupt** window. In the headless console, use `Ctrl+C` to stop. The console prints `Dataset Render Started...` before iteration begins and `Dataset Render Complete!` only after every selected item has rendered or been skipped successfully. Cancellation instead prints `Dataset Render Interrupted!` and reminds the user that the last rendered material folder may need to be inspected or deleted before resuming.
 
 The camera JSON is for initializing the matching Three.js view. It is not fed to the model: `P`, `Nb`, `V`, and `C.A` already contain the geometry and view context required for training. The implementation has no job database, manifest, retry manager, checksum generation, or automatic image validation.
 
@@ -196,7 +195,7 @@ Before rendering a material, check whether its material folder exists:
 
 This intentionally accepts the possibility that a crash leaves an incomplete folder that is skipped later. The user will inspect and correct those cases manually.
 
-On restart, Datarender scans all requested camera/material folders before opening the progress dialog. Existing folders count as completed progress and are summarized once in the console instead of printing one `SKIP` line per material.
+On restart, Datarender scans all requested camera/material folders before rendering. Existing folders are summarized once in the console instead of printing one `SKIP` line per material.
 
 ## Training lookup
 

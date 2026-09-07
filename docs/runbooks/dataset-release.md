@@ -29,9 +29,11 @@ Before rendering, confirm:
 
 ## 3. Run the eight-material pilot
 
-Open the `datarender` UI in Houdini. Select `neuron_library_dev`, enter the dataset root/name and `sculpted_rubber_toy` geometry name, enable **Single Camera**, and enter one generated camera name such as `cam_001`.
+For a headless pilot, edit the settings block in repository-root `datarender_headless.bat`: select `neuron_library_dev.json`, use a separate pilot dataset name, and confirm the hardcoded scene, `sculpted_rubber_toy` geometry ID, and camera such as `cam_001`. Double-click the batch file. It opens a console, loads the scene with Houdini's `hython.exe` without opening the GUI, and keeps the console visible for reports and errors.
 
-Press **Render Dataset**. The render loop runs synchronously at the current frame and prints each render or skip to the Houdini console. Do not use all cameras or the complete 1,806-material JSON until the single-camera pilot is approved.
+The original workflow remains available: open the `datarender` UI in Houdini, select `neuron_library_dev`, enter the same dataset settings, enable **Single Camera**, and press **Render Dataset**.
+
+The render loop runs synchronously at the current frame and prints `Dataset Render Started...`, one `RESUME` summary, and each `RENDER camera/material` item. It submits only one missing material and requires a non-empty output before advancing. There is no whole-dataset progress bar. Do not use all cameras or the complete 1,806-material JSON until the single-camera pilot is approved.
 
 Expected path example:
 
@@ -50,7 +52,7 @@ Use the pilot to estimate approximate time per material and total disk usage for
 ## 5. Run the complete dataset
 
 - Confirm that the production library and pilot are approved; Datarender copies the selected JSON automatically.
-- Select `neuron_library_prod`, select the intended camera mode in the UI, and press **Render Dataset**.
+- Restore the production settings in `datarender_headless.bat` and double-click it, or select `neuron_library_prod` and the intended camera mode in the UI and press **Render Dataset**.
 - Existing `{geometry_id}/{camera_id}/{material_id}` folders are skipped.
 - To rerender a material, delete its folder manually and rerun the script.
 - Do not change the scene, HDA, JSON snapshot, camera, lighting, render settings, or output channels during the run.

@@ -193,3 +193,14 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Added a comprehensive graphics-artist-oriented guide to text-conditioned image models, covering tensors, backpropagation, embeddings, latent spaces, architecture families, modern diffusion and flow approaches, evaluation, and practical PyTorch patterns.
 - Proposed—but did not accept as a project decision—a first Material Hero coordinate MLP using structured material embeddings, Fourier-encoded position, `P`/`Nb`/`V` conditioning, sampled foreground pixels, and masked linear-RGB loss.
 - Linked the tutorial from `docs/START-HERE.md` and clearly separated broad text-to-image generation from Material Hero's constrained deterministic regression problem.
+
+## 2026-09-07
+
+### Headless sequential dataset rendering
+
+- Added `datarender_headless.bat` with hardcoded Houdini 22, scene, production material-library, dataset, geometry, and camera settings.
+- Added a `hython` command-line entry point that sets the scene project root, loads the `.hiplc` without opening Houdini's GUI, and calls the existing Datarender implementation without saving the scene.
+- Removed the unreliable whole-dataset interrupt/progress operation while preserving the in-Houdini UI and native current-image interruption behavior.
+- Changed the dataset loop to inspect every sorted material directly, synchronously render only missing folders, and require a non-empty `render.exr` before advancing.
+- Verified headless loading and an eight-of-eight DEV resume path against the active external scene without launching Karma. A separate three-material smoke test verified sorted, one-at-a-time submission, non-empty output gating, and restart skipping; a live headless Karma render remains pending.
+- Recorded that the active scene resolves `KKO8::neuromat::1.3` from the external `lop_KKO8--neuromat-1.3.hdalc`; repository `neuromat` 1.2 artifacts are older snapshots.

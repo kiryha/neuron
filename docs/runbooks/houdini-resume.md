@@ -8,7 +8,7 @@ Do not begin from the older files stored in the repository.
 
 - Project root: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D`
 - Active scene: `scenes\material_hero_006.hiplc`
-- Active HDA: `hda\lop_KKO8.neuromat.1.2.otllc`
+- Active HDA resolved by scene 006: `hda\lop_KKO8--neuromat-1.3.hdalc`
 - Material JSON: `E:\Projects\neuron_data\neuron_library.json`
 
 Before editing, confirm file modification times and check [STATUS.md](../STATUS.md) for a newer version.
@@ -37,7 +37,7 @@ Expected top-level LOP nodes include:
 
 Expected baseline:
 
-- HDA type `KKO8::neuromat::1.2` or its deliberate successor
+- HDA type `KKO8::neuromat::1.3` or its deliberate successor
 - Sculpted Rubber Toy visible
 - 28 mm test camera
 - studio HDRI at exposure `-0.5`

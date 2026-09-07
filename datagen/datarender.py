@@ -298,7 +298,6 @@ def render_dataset(
     frame = hou.intFrame()
     material_ids = sorted(materials)
     total_items = len(cameras) * len(material_ids)
-    pending_items = []
     skipped = 0
 
     for camera_name, camera_path in cameras:
@@ -306,25 +305,19 @@ def render_dataset(
             material_dir = dataset_dir / geometry_name / camera_name / material_id
             if material_dir.exists():
                 skipped += 1
-            else:
-                pending_items.append(
-                    (camera_name, camera_path, material_id, material_dir)
-                )
 
     rendered = 0
-    completed_items = skipped
 
-    print("Dataset Render Started...")
+    print("Dataset Render Started...", flush=True)
     if skipped:
-        print(f"RESUME {skipped}/{total_items} existing renders")
+        print(f"RESUME {skipped}/{total_items} existing renders", flush=True)
 
-    with hou.InterruptableOperation(
-        "Dataset Render",
-        open_interrupt_dialog=True,
-    ) as progress:
-        progress.updateProgress(completed_items / total_items)
+    for camera_name, camera_path in cameras:
+        for material_id in material_ids:
+            material_dir = dataset_dir / geometry_name / camera_name / material_id
+            if material_dir.exists():
+                continue
 
-        for camera_name, camera_path, material_id, material_dir in pending_items:
             item_name = f"{camera_name}/{material_id}"
 
             render_settings.parm("camera").set(camera_path)
@@ -334,13 +327,18 @@ def render_dataset(
             neuromat.parm("material_id").set(material_id)
             render_settings.parm("picture").set(output_path.as_posix())
 
-            print(f"RENDER {item_name}")
+            print(f"RENDER {item_name}", flush=True)
             render_rop.render(frame_range=(frame, frame))
-            rendered += 1
-            completed_items += 1
-            progress.updateProgress(completed_items / total_items)
 
-    print("Dataset Render Complete!")
+            if not output_path.is_file() or output_path.stat().st_size == 0:
+                raise RuntimeError(
+                    "Render returned without a completed output file: "
+                    f"{output_path}"
+                )
+
+            rendered += 1
+
+    print("Dataset Render Complete!", flush=True)
     return rendered, skipped
 
 

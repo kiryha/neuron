@@ -13,13 +13,13 @@ It is intentionally a controlled dataset shader, not a universal material-author
 ## Active artifacts
 
 - Scene: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D\scenes\material_hero_006.hiplc`
-- HDA: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D\hda\lop_KKO8.neuromat.1.2.otllc`
+- HDA resolved by scene 006: `C:\Users\kko8\OneDrive\projects\neuron\prod\3D\hda\lop_KKO8--neuromat-1.3.hdalc`
 - Node: `/stage/neuromat`
-- Type: `KKO8::neuromat::1.2`
+- Type: `KKO8::neuromat::1.3`
 - Interactive stress JSON: `E:\Projects\neuron_data\neuron_library.json`
 - Production batch source: `datagen/data/neuron_library_prod.json`, copied into each release as a frozen snapshot
 
-Repository files under `datagen/hips/` are snapshots. The checked-in HDA matches the active external HDA, but the current external scene is newer than its repository snapshot and remains authoritative.
+Repository files under `datagen/hips/` are older scene-006 and `neuromat` 1.2 snapshots. The external scene and its resolved 1.3 HDA are authoritative.
 
 ## Architectural constraints
 
