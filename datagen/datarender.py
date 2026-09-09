@@ -245,6 +245,15 @@ def _create_camera_json_if_missing(
     return True
 
 
+def _has_completed_render(output_path):
+    """Return whether the final render exists and contains data."""
+
+    try:
+        return output_path.is_file() and output_path.stat().st_size > 0
+    except OSError:
+        return False
+
+
 def render_dataset(
     dataset_root,
     dataset_name,
@@ -303,7 +312,8 @@ def render_dataset(
     for camera_name, camera_path in cameras:
         for material_id in material_ids:
             material_dir = dataset_dir / geometry_name / camera_name / material_id
-            if material_dir.exists():
+            output_path = material_dir / "render.exr"
+            if _has_completed_render(output_path):
                 skipped += 1
 
     rendered = 0
@@ -315,14 +325,14 @@ def render_dataset(
     for camera_name, camera_path in cameras:
         for material_id in material_ids:
             material_dir = dataset_dir / geometry_name / camera_name / material_id
-            if material_dir.exists():
+            output_path = material_dir / "render.exr"
+            if _has_completed_render(output_path):
                 continue
 
             item_name = f"{camera_name}/{material_id}"
 
             render_settings.parm("camera").set(camera_path)
-            material_dir.mkdir(parents=True)
-            output_path = material_dir / "render.exr"
+            material_dir.mkdir(parents=True, exist_ok=True)
 
             neuromat.parm("material_id").set(material_id)
             render_settings.parm("picture").set(output_path.as_posix())
@@ -330,7 +340,7 @@ def render_dataset(
             print(f"RENDER {item_name}", flush=True)
             render_rop.render(frame_range=(frame, frame))
 
-            if not output_path.is_file() or output_path.stat().st_size == 0:
+            if not _has_completed_render(output_path):
                 raise RuntimeError(
                     "Render returned without a completed output file: "
                     f"{output_path}"

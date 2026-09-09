@@ -1,6 +1,6 @@
 # Current project status
 
-- Last verified: 2026-09-07
+- Last verified: 2026-09-09
 - Repository baseline inspected: `main` at `7a09552`
 - Current phase: **Phase 1C dataset rendering, with an accepted early Phase 2B frontend slice and Phase 2A preparation**
 
@@ -55,6 +55,7 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - Generated JSON: `E:\Projects\neuron_data\neuron_library.json`
   - Current content: eight-material stress subset
   - Modified: 2026-04-16 15:39
+- Workstation NVIDIA driver: **582.78**. Verified after reboot with `nvidia-smi` and Houdini 22.0.368 `hgpuinfo`; a temporary GPU-only Karma XPU smoke render completed with one `Optix` device, 100% GPU contribution, and an empty device-error field. The former OptiX ABI failure on driver 539.19 is resolved.
 - The external stress JSON remains useful for look-dev, but it is not the production batch source.
 - `datagen/hips/` contains older scene-006 and `neuromat` 1.2 snapshots. The external scene and its resolved 1.3 HDA are authoritative.
 
@@ -176,7 +177,7 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 - Camera positions use a full-sphere Fibonacci distribution, look at world origin, and share a distance derived from the UI focal length, approximate object size, and margin multiplier; no geometry bounds are read.
 - Implemented render stage: for every selected camera and JSON material ID, set the Karma camera, set `neuromat.material_id`, write `render.exr`, and invoke `/stage/usdrender_rop1` at the current frame.
 - When rendering starts, Datarender sets `neuromat.dataset_path` to the selected repository JSON, renders every record in it, copies that JSON once into the dataset root, and creates any missing per-camera JSON from the cooked USD camera and resolution. `P`, `Nb`, `V`, and `C.A` remain the complete model-context contract; no geometry metadata is written.
-- Resume behavior: skip when the material folder exists; delete the folder manually to request a rerender.
+- Resume behavior: skip only when the material folder contains a non-empty final `render.exr`. Existing empty folders and folders containing only `render_part.exr` are reused and rerendered; deleting them manually is unnecessary.
 
 ## Open risks before dataset acceptance
 
@@ -184,17 +185,15 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 | --- | --- | --- |
 | P0 | Production dataset render is incomplete | Finish the current batch, confirm 1,806 material folders, and inspect representative EXRs before definitive training |
 | P1 | Unresolved transmission-scatter policy | Verify or explicitly classify `transmission_scatter` behavior |
-| P1 | Karma XPU reported one critical error and used only Embree CPU | Inspect Houdini's Log Viewer and decide whether GPU rendering must be restored before the full 1,806-material run |
 
 ## Next exact actions
 
 1. Run a one-material or DEV-library live Karma pilot through `datarender_headless.bat` after temporarily selecting a separate pilot dataset, then restore its hardcoded PROD/current-dataset settings and resume `material_hero_v0` without changing the frozen inputs.
 2. In parallel, use a fixed list of completed renders to implement and validate the training loader, then intentionally overfit one material and a small subset after the first architecture is accepted.
 3. After rendering, confirm 1,806 material folders and inspect representative metal, dielectric, organic, translucent, bump, dirt, and wear outputs.
-4. Inspect the Karma critical error and CPU-only XPU device state if it continues to affect render reliability or timing.
-5. Resolve or explicitly classify `transmission_scatter` behavior.
-6. Freeze training splits and run the first reproducible full-library model experiment.
-7. Extend the camera-matched web buffer path with Coverage and prompt-driven inference.
+4. Resolve or explicitly classify `transmission_scatter` behavior.
+5. Freeze training splits and run the first reproducible full-library model experiment.
+6. Extend the camera-matched web buffer path with Coverage and prompt-driven inference.
 
 ## Phase 1 exit criteria
 

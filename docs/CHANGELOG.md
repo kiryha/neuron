@@ -204,3 +204,17 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Changed the dataset loop to inspect every sorted material directly, synchronously render only missing folders, and require a non-empty `render.exr` before advancing.
 - Verified headless loading and an eight-of-eight DEV resume path against the active external scene without launching Karma. A separate three-material smoke test verified sorted, one-at-a-time submission, non-empty output gating, and restart skipping; a live headless Karma render remains pending.
 - Recorded that the active scene resolves `KKO8::neuromat::1.3` from the external `lop_KKO8--neuromat-1.3.hdalc`; repository `neuromat` 1.2 artifacts are older snapshots.
+
+## 2026-09-09
+
+### Karma XPU driver recovery
+
+- Replaced NVIDIA driver 539.19 with signed WHQL RTX Enterprise Production Branch driver 582.78 and rebooted the workstation.
+- Preserved the complete Lenovo/NVIDIA 539.19 display-driver package in `C:\Users\kko8\Downloads\NVIDIA-Driver-Backup-539.19-2026-09-09`; Windows also retains its `oem131.inf` package in the driver store.
+- Verified Houdini 22.0.368 detects the RTX A1000 6GB Laptop GPU on driver 582.78 and completed a temporary GPU-only Karma XPU render with `Optix`, 100% GPU contribution, and no device error. Removed the temporary smoke-test files afterward.
+
+### Incomplete render-folder recovery
+
+- Changed Datarender resume counting and skipping to require a non-empty final `render.exr` instead of merely an existing material folder.
+- Existing empty folders and `render_part.exr`-only folders are now reused for rendering with `mkdir(..., exist_ok=True)`.
+- Verified with a controlled three-material `hython` test that one completed EXR was skipped while an empty folder and a partial-file folder were rendered sequentially.
