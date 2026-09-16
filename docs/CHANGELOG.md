@@ -218,3 +218,14 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Changed Datarender resume counting and skipping to require a non-empty final `render.exr` instead of merely an existing material folder.
 - Existing empty folders and `render_part.exr`-only folders are now reused for rendering with `mkdir(..., exist_ok=True)`.
 - Verified with a controlled three-material `hython` test that one completed EXR was skipped while an empty folder and a partial-file folder were rendered sequentially.
+
+## 2026-09-16
+
+### First trained Material Hero baseline
+
+- Added a multipart-EXR reader and full-read dataset validator, deterministic material-level train/validation/compositional-test splits, sampled-pixel loader, coordinate-conditioned residual MLP, coverage-weighted L1 loss, trainer, checkpoint evaluator, and unit tests.
+- Audited all 1,806 production material folders. Exactly 1,800 EXRs pass complete 1024 × 1024 `C`/`P`/`V`/`Nb` decoding; recorded six corrupt EXRs that require rerendering.
+- Installed an isolated CUDA-enabled PyTorch/OpenImageIO training environment under the ignored `.venv` directory and verified the RTX A1000 6GB Laptop GPU is available.
+- Verified a 5,000-step one-material overfit with full-frame linear-RGB L1 `0.035157`.
+- Verified an eight-material prompt-conditioning run. Its best checkpoint has mean full-frame L1 `0.039920`, and all eight target/prediction comparisons show materially distinct outputs.
+- Accepted the structured-token coordinate MLP as the first baseline and added an evaluator that writes per-material metrics and target/prediction montages.

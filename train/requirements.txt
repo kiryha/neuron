@@ -1,0 +1,4 @@
+numpy
+OpenImageIO
+Pillow
+torch

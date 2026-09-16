@@ -1,0 +1,1 @@
+"""Material Hero training package."""

@@ -66,7 +66,7 @@ The historical sources explain how the project evolved, but they contain obsolet
 ```text
 datagen/            Material library, label generator, Houdini UI and helpers
 datagen/hips/       Historical repository copies of Houdini assets
-train/              Empty training scaffold
+train/              Material Hero validation, training, evaluation, and tests
 neuron/             Empty neural-engine package scaffold
 src/                React/React Three Fiber application scaffold
 public/geometry/    Deployable web geometry, including the reduced Material Hero GLB

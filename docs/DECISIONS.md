@@ -32,13 +32,12 @@ This file records accepted choices that should survive individual chats. Impleme
 | D-026 | Accepted | 2026-09-04 | Store one `{camera_id}.json` under each `{geometry_id}/{camera_id}` dataset folder for recreating the rendered camera in Three.js. | Datarender creates the file from the cooked USD camera and Render Settings resolution when available, otherwise from the project's simple look-at Camera LOP and Render Settings parameters. It never replaces an existing file and stores only camera ID, world position/target/up, focal length, horizontal aperture, and resolution. |
 | D-027 | Accepted | 2026-09-04 | Store browser geometry under `public/geometry/` and copied dataset camera records under `public/cameras/material_hero/{camera_id}.json`. | The Material Hero GLB moves to `public/geometry/material_hero/sculpted-rubber-toy.glb`, avoiding confusion with AI model artifacts. Camera JSON contents remain unchanged when copied from the selected dataset camera folder. |
 | D-028 | Accepted | 2026-09-04 | Aim every Houdini dataset camera at world origin and use `[0, 0, 0]` as the Three.js OrbitControls pivot. | Camera JSON `target` remains a forward-axis reference used to reconstruct orientation, but it is not the navigation pivot. Reset preserves the dataset position, up vector, and projection while orbiting naturally around the hero at origin. |
+| D-029 | Accepted | 2026-09-16 | Use a coordinate-conditioned residual MLP as the first Material Hero baseline, with Fourier-encoded `P`, normalized `Nb` and `V`, and learned embeddings for controlled base, color, finish, and condition tokens. | The first model remains deterministic, small, and inspectable; free-form language encoders and diffusion/refinement models are deferred until this baseline is measured. |
 
 ## Open decisions
 
 | ID | Question | Needed by |
 | --- | --- | --- |
-| O-001 | What exact neural architecture is the first baseline: per-surface MLP, image network, or staged comparison? | Before Phase 2A implementation |
-| O-002 | What text representation is used first: controlled learned tokens, pretrained encoder, or both? | Before Phase 2A implementation |
 | O-004 | What are the multi-view render resolution, camera count, and storage budget? | Before the multi-view dataset extension |
 | O-007 | Which additional geometries and position-normalization convention are used for multi-geometry training? | Before the multi-geometry dataset extension |
 

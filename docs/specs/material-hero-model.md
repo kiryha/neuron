@@ -1,8 +1,8 @@
 # Material Hero model specification
 
-Status: **Planned; staged input/output experiment accepted, architecture open**
+Status: **Implemented baseline; full-library experiment pending dataset repair**
 
-Last reviewed: 2026-09-03
+Last reviewed: 2026-09-16
 
 ## Objective
 
@@ -71,7 +71,7 @@ Training records preserve both a compact prompt such as `gold brushed dirty` and
 
 PBR parameters, BaseColor maps, Roughness maps, normal maps, shader graphs, density, and geometry are not required model outputs.
 
-## Recommended first baseline
+## Implemented first baseline
 
 Begin with the smallest model that can prove the data path:
 
@@ -82,7 +82,9 @@ Begin with the smallest model that can prove the data path:
 5. Composite with Coverage/background for display.
 6. Run inference from buffers rasterized from the exported hero GLB at the training-camera reference pose.
 
-This baseline is preferred over starting with a diffusion model because it is easier to implement, debug, overfit intentionally, and relate back to the known geometry. A diffusion or image-space refinement stage can be evaluated later if the baseline cannot represent the required detail.
+The implementation is an 822,723-parameter residual MLP. It concatenates six-band Fourier features of normalized `P`, normalized `Nb` and `V`, and 16-dimensional learned embeddings for base, color, finish, and condition; six width-256 residual blocks predict linear RGB. Training samples covered foreground pixels and minimizes coverage-weighted L1 error. A diffusion or image-space refinement stage can be evaluated later if this baseline cannot represent the required detail.
+
+The implementation has passed a one-material overfit and an eight-material prompt-conditioning stress run. The definitive full-library experiment remains pending repair of six corrupt production EXRs.
 
 ## Staged training sequence
 

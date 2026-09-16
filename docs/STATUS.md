@@ -1,14 +1,12 @@
 # Current project status
 
-- Last verified: 2026-09-09
+- Last verified: 2026-09-16
 - Repository baseline inspected: `main` at `7a09552`
-- Current phase: **Phase 1C dataset rendering, with an accepted early Phase 2B frontend slice and Phase 2A preparation**
+- Current phase: **Phase 2A learning baseline; production dataset repair pending for six EXRs**
 
 ## Current objective
 
-Complete the interrupted `material_hero_v0` production render without changing the frozen scene, HDA, material library, camera, or render settings. The user reports that part of the material library is already rendered; the current external output count and files have not yet been independently inspected from this repository session. A headless `hython` launcher is now available to resume the render without opening Houdini's GUI.
-
-Training-pipeline development can use a frozen inventory of completed renders for loader validation and deliberate one-material or small-subset overfitting. Definitive full-library training and evaluation wait for render completion, count validation, and representative EXR QA. The accepted local Three.js normal-viewer slice remains implemented and verified.
+Repair the six corrupt production EXRs, then run the first reproducible full-library coordinate-MLP experiment using the frozen material-level splits. The loader, validator, model, masked loss, trainer, checkpoint evaluator, one-material overfit, and eight-material prompt-conditioning stress run are implemented and verified.
 
 The accepted learning sequence is: train on one fixed view; test Three.js orbit, zoom, and alternate-mesh inputs as deliberately unsupported cases; add multi-view Houdini data and retrain; then add multi-geometry data and retrain. Improvement between versions is an experiment to measure, not an assumed capability.
 
@@ -32,8 +30,12 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - Both Houdini tools expose `neuron_library_dev` and `neuron_library_prod` selectors, with DEV first and selected by default.
 - In Datagen, reload, material generation, prompt generation, and material application use the selected library. DEV generation writes the eight-material stress set; PROD generation writes all 1,806 records.
 - Applying a material also sets `neuromat.dataset_path` to the selected repository JSON before setting `material_id`.
-- `train/train_hero.py` and `train/loss.py` are empty.
-- `docs/tutorials/training-a-text-conditioned-image-model.md` is a comprehensive educational guide to text-conditioned image training. Its coordinate-MLP design and training plan are recommendations pending an explicit architecture decision.
+- `train/` contains a working multipart-EXR reader, full-read validator, deterministic material splits, sampled-pixel data path, coordinate-conditioned residual MLP, coverage-weighted L1 loss, trainer, checkpoint evaluator, and unit tests.
+- The accepted v0 baseline has 822,723 parameters and conditions on Fourier-encoded `P`, normalized `Nb`/`V`, and learned categorical embeddings for base, color, finish, and condition.
+- A 5,000-step `gold_polished_clean` overfit reached full-frame linear-RGB L1 `0.035157`; its target/prediction comparison is visually close.
+- The best checkpoint from an eight-material, 5,000-step stress run reached mean full-frame L1 `0.039920`. All eight target/prediction pairs show distinct, appropriate appearances; polished glass is the hardest case at `0.127516`.
+- Four unit tests covering vocabularies, deterministic/disjoint splits, loss behavior, model shape, and gradients pass under the isolated `.venv` environment.
+- `docs/tutorials/training-a-text-conditioned-image-model.md` is a comprehensive educational guide to text-conditioned image training. Its coordinate-MLP design is now the implemented and verified first baseline.
 - `neuron/` contains only a package scaffold.
 - The React app loads the Sculpted Rubber Toy and lets the user inspect world-space `N`, `P`, or `V` on a black background with OrbitControls and no grid. The active selector defaults to `N`.
 - `neuron_dev.bat` launches the local Vite server at `http://127.0.0.1:5173` with hot reload; `neuron.bat` continues to serve the latest production build through FastAPI.
@@ -136,6 +138,12 @@ These are implemented values, not yet approved final look-dev values. Judge them
 
 ### Render outputs
 
+**Verified by a full decode audit of the production `cam_001` directory on 2026-09-16:**
+
+- All 1,806 expected material folders and non-empty `render.exr` files exist, with no unexpected folders.
+- 1,800 EXRs fully decode at 1024 × 1024 with finite `C`, `P`, `V`, and `Nb` data and the required channels.
+- Six EXRs are corrupt and must be rerendered: `car_paint_purple_brushed_clean`, `car_paint_red_satin_dusty`, `car_paint_teal_matte_clean`, `car_paint_teal_polished_clean`, `plastic_abs_black_matte_scratched`, and `plastic_abs_black_polished_clean`.
+
 **Verified in the live Datarender DEV pilot at `E:\Projects\neuron_data\datasets\material_hero_v0` on 2026-09-03:**
 
 - One `sculpted_rubber_toy/cam_001/{material_id}/render.exr` file for each of the eight DEV records, with no missing or unexpected material folders.
@@ -183,17 +191,16 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 
 | Priority | Blocker | Required resolution |
 | --- | --- | --- |
-| P0 | Production dataset render is incomplete | Finish the current batch, confirm 1,806 material folders, and inspect representative EXRs before definitive training |
+| P0 | Six of 1,806 production EXRs are corrupt | Delete only the six named material folders and resume the deterministic render, then rerun the full-read validator |
 | P1 | Unresolved transmission-scatter policy | Verify or explicitly classify `transmission_scatter` behavior |
 
 ## Next exact actions
 
-1. Run a one-material or DEV-library live Karma pilot through `datarender_headless.bat` after temporarily selecting a separate pilot dataset, then restore its hardcoded PROD/current-dataset settings and resume `material_hero_v0` without changing the frozen inputs.
-2. In parallel, use a fixed list of completed renders to implement and validate the training loader, then intentionally overfit one material and a small subset after the first architecture is accepted.
-3. After rendering, confirm 1,806 material folders and inspect representative metal, dielectric, organic, translucent, bump, dirt, and wear outputs.
+1. Rerender the six corrupt material folders and rerun `train/validate_dataset.py` across all 1,806 records.
+2. Add an I/O-efficient full-library training schedule, preserve the frozen material splits, and run the first reproducible full experiment.
+3. Evaluate train, validation, and compositional-test IDs and compare against prompt-agnostic and nearest-material baselines.
 4. Resolve or explicitly classify `transmission_scatter` behavior.
-5. Freeze training splits and run the first reproducible full-library model experiment.
-6. Extend the camera-matched web buffer path with Coverage and prompt-driven inference.
+5. Load a saved checkpoint in a clean process, then integrate prompt-driven inference with the camera-matched Three.js `P`/`N`/`V`/Coverage buffers.
 
 ## Phase 1 exit criteria
 
