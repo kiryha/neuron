@@ -73,13 +73,20 @@ class MaterialHeroMLP(nn.Module):
         embedding_dim: int = 16,
         width: int = 256,
         blocks: int = 6,
+        condition_material: bool = True,
     ):
         super().__init__()
+        self.condition_material = condition_material
         self.position = FourierPosition(bands)
-        self.material = MaterialEncoder(vocabulary_sizes, embedding_dim)
+        self.material = (
+            MaterialEncoder(vocabulary_sizes, embedding_dim)
+            if condition_material
+            else None
+        )
         geometry_dim = self.position.output_dim + 3 + 3
+        material_dim = self.material.output_dim if self.material is not None else 0
         self.input = nn.Sequential(
-            nn.Linear(geometry_dim + self.material.output_dim, width),
+            nn.Linear(geometry_dim + material_dim, width),
             nn.SiLU(),
         )
         self.blocks = nn.Sequential(*[ResidualBlock(width) for _ in range(blocks)])
@@ -95,7 +102,9 @@ class MaterialHeroMLP(nn.Module):
         geometry = torch.cat(
             [self.position(positions), normals, view_directions], dim=-1
         )
-        material = self.material(token_ids)
-        material = material[:, None, :].expand(-1, positions.shape[1], -1)
-        hidden = self.input(torch.cat([geometry, material], dim=-1))
+        if self.material is not None:
+            material = self.material(token_ids)
+            material = material[:, None, :].expand(-1, positions.shape[1], -1)
+            geometry = torch.cat([geometry, material], dim=-1)
+        hidden = self.input(geometry)
         return self.output(self.blocks(hidden))

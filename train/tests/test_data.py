@@ -3,7 +3,11 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
+import numpy as np
+
 from train.data import build_vocabularies, load_material_library, make_material_splits
+from train.evaluate_nearest import categorical_distance, nearest_training_id
+from train.train_hero import epoch_material_schedule
 
 
 class MaterialDataTests(unittest.TestCase):
@@ -50,6 +54,35 @@ class MaterialDataTests(unittest.TestCase):
             for mid in test
         }
         self.assertFalse(train_groups & test_groups)
+
+    def test_epoch_schedule_covers_every_material_and_reuses_groups(self):
+        material_ids = ["a", "b", "c", "d", "e"]
+        schedule = list(
+            epoch_material_schedule(
+                material_ids,
+                materials_per_step=2,
+                updates_per_material_batch=3,
+                epochs=2,
+                rng=np.random.default_rng(42),
+            )
+        )
+        self.assertEqual(len(schedule), 2 * 3 * 3)
+        for epoch in (1, 2):
+            epoch_groups = [group for item_epoch, _, group in schedule if item_epoch == epoch]
+            unique_groups = epoch_groups[::3]
+            self.assertEqual(sorted(sum(unique_groups, [])), material_ids)
+            for start in range(0, len(epoch_groups), 3):
+                self.assertEqual(epoch_groups[start : start + 3], [epoch_groups[start]] * 3)
+
+    def test_nearest_material_prefers_matching_base(self):
+        target = self.records["gold_polished_clean"]
+        candidates = ["silver_polished_clean", "gold_matte_clean"]
+        nearest = nearest_training_id(target, candidates, self.records)
+        self.assertEqual(nearest, "gold_matte_clean")
+        self.assertLess(
+            categorical_distance(target, self.records[nearest]),
+            categorical_distance(target, self.records["silver_polished_clean"]),
+        )
 
 
 if __name__ == "__main__":

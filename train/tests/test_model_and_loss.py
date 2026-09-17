@@ -37,6 +37,26 @@ class ModelAndLossTests(unittest.TestCase):
         coverage = torch.tensor([[[1.0], [0.0]]])
         self.assertAlmostEqual(float(masked_l1(prediction, target, coverage)), 2.0)
 
+    def test_prompt_agnostic_model_ignores_token_ids(self):
+        model = MaterialHeroMLP(
+            {"base": 3, "color": 2, "finish": 4, "condition": 2},
+            bands=2,
+            width=16,
+            blocks=1,
+            condition_material=False,
+        )
+        positions = torch.randn(2, 5, 3)
+        normals = torch.nn.functional.normalize(torch.randn(2, 5, 3), dim=-1)
+        views = torch.nn.functional.normalize(torch.randn(2, 5, 3), dim=-1)
+        tokens = {
+            "base": torch.tensor([0, 2]),
+            "color": torch.tensor([0, 1]),
+            "finish": torch.tensor([0, 3]),
+            "condition": torch.tensor([0, 1]),
+        }
+        prediction = model(positions, normals, views, tokens)
+        self.assertEqual(prediction.shape, (2, 5, 3))
+
 
 if __name__ == "__main__":
     unittest.main()

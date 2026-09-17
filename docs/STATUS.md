@@ -2,11 +2,11 @@
 
 - Last verified: 2026-09-16
 - Repository baseline inspected: `main` at `7a09552`
-- Current phase: **Phase 2A learning baseline; production dataset repair pending for six EXRs**
+- Current phase: **Phase 2A training complete; Phase 2B web inference integration next**
 
 ## Current objective
 
-Repair the six corrupt production EXRs, then run the first reproducible full-library coordinate-MLP experiment using the frozen material-level splits. The loader, validator, model, masked loss, trainer, checkpoint evaluator, one-material overfit, and eight-material prompt-conditioning stress run are implemented and verified.
+Integrate the verified Material Hero v0 checkpoint with the existing camera-matched Three.js geometry buffers. Full-dataset validation, reproducible training, held-out evaluation, compositional evaluation, baseline comparisons, qualitative review, packaging, and clean-process checkpoint reload are complete.
 
 The accepted learning sequence is: train on one fixed view; test Three.js orbit, zoom, and alternate-mesh inputs as deliberately unsupported cases; add multi-view Houdini data and retrain; then add multi-geometry data and retrain. Improvement between versions is an experiment to measure, not an assumed capability.
 
@@ -34,7 +34,10 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - The accepted v0 baseline has 822,723 parameters and conditions on Fourier-encoded `P`, normalized `Nb`/`V`, and learned categorical embeddings for base, color, finish, and condition.
 - A 5,000-step `gold_polished_clean` overfit reached full-frame linear-RGB L1 `0.035157`; its target/prediction comparison is visually close.
 - The best checkpoint from an eight-material, 5,000-step stress run reached mean full-frame L1 `0.039920`. All eight target/prediction pairs show distinct, appropriate appearances; polished glass is the hardest case at `0.127516`.
-- Four unit tests covering vocabularies, deterministic/disjoint splits, loss behavior, model shape, and gradients pass under the isolated `.venv` environment.
+- The final full-library checkpoint completed 18,100 steps over 1,448 training materials. It reaches validation mean L1 `0.058676` and compositional-test mean L1 `0.055050`, outperforming nearest-material and prompt-agnostic baselines on mean and P90 error.
+- The stable ignored package is `train/outputs/material-hero-v0-final/`; `material_hero_v0.pt` has SHA-256 `d2a1c9e9640e360444efd591bcee19d1e95b890780ad313e6cb60648d3065934`.
+- Seven unit tests cover vocabularies, deterministic/disjoint splits, epoch scheduling, nearest-material selection, loss behavior, model gradients, and prompt-agnostic construction.
+- `docs/reports/material-hero-v0-training.md` records the complete experiment, metrics, baselines, limitations, and verification evidence.
 - `docs/tutorials/training-a-text-conditioned-image-model.md` is a comprehensive educational guide to text-conditioned image training. Its coordinate-MLP design is now the implemented and verified first baseline.
 - `neuron/` contains only a package scaffold.
 - The React app loads the Sculpted Rubber Toy and lets the user inspect world-space `N`, `P`, or `V` on a black background with OrbitControls and no grid. The active selector defaults to `N`.
@@ -138,11 +141,11 @@ These are implemented values, not yet approved final look-dev values. Judge them
 
 ### Render outputs
 
-**Verified by a full decode audit of the production `cam_001` directory on 2026-09-16:**
+**Verified by a full decode audit of the production `cam_001` directory after rerender on 2026-09-16:**
 
 - All 1,806 expected material folders and non-empty `render.exr` files exist, with no unexpected folders.
-- 1,800 EXRs fully decode at 1024 × 1024 with finite `C`, `P`, `V`, and `Nb` data and the required channels.
-- Six EXRs are corrupt and must be rerendered: `car_paint_purple_brushed_clean`, `car_paint_red_satin_dusty`, `car_paint_teal_matte_clean`, `car_paint_teal_polished_clean`, `plastic_abs_black_matte_scratched`, and `plastic_abs_black_polished_clean`.
+- All 1,806 EXRs fully decode at 1024 × 1024 with finite `C`, `P`, `V`, and `Nb` data and the required channels.
+- The six formerly corrupt EXRs were rerendered and independently decoded before the complete audit.
 
 **Verified in the live Datarender DEV pilot at `E:\Projects\neuron_data\datasets\material_hero_v0` on 2026-09-03:**
 
@@ -191,16 +194,14 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 
 | Priority | Blocker | Required resolution |
 | --- | --- | --- |
-| P0 | Six of 1,806 production EXRs are corrupt | Delete only the six named material folders and resume the deterministic render, then rerun the full-read validator |
 | P1 | Unresolved transmission-scatter policy | Verify or explicitly classify `transmission_scatter` behavior |
 
 ## Next exact actions
 
-1. Rerender the six corrupt material folders and rerun `train/validate_dataset.py` across all 1,806 records.
-2. Add an I/O-efficient full-library training schedule, preserve the frozen material splits, and run the first reproducible full experiment.
-3. Evaluate train, validation, and compositional-test IDs and compare against prompt-agnostic and nearest-material baselines.
-4. Resolve or explicitly classify `transmission_scatter` behavior.
-5. Load a saved checkpoint in a clean process, then integrate prompt-driven inference with the camera-matched Three.js `P`/`N`/`V`/Coverage buffers.
+1. Integrate prompt-driven inference from `material_hero_v0.pt` with the camera-matched Three.js `P`/`N`/`V`/Coverage buffers.
+2. Map supported UI descriptions to the frozen base/color/finish/condition vocabularies and reject unsupported tokens clearly.
+3. Compare browser reference-pose inference with the packaged qualitative and numeric results.
+4. Resolve or explicitly classify `transmission_scatter` behavior before changing the dataset or shader contract.
 
 ## Phase 1 exit criteria
 

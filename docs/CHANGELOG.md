@@ -229,3 +229,13 @@ This is a concise log of meaningful project changes. It is not a replacement for
 - Verified a 5,000-step one-material overfit with full-frame linear-RGB L1 `0.035157`.
 - Verified an eight-material prompt-conditioning run. Its best checkpoint has mean full-frame L1 `0.039920`, and all eight target/prediction comparisons show materially distinct outputs.
 - Accepted the structured-token coordinate MLP as the first baseline and added an evaluator that writes per-material metrics and target/prediction montages.
+
+### Final Material Hero v0 training checkpoint
+
+- Verified the six replacement renders, then completed a full decode audit with 1,806/1,806 valid production EXRs.
+- Added deterministic shuffled epoch scheduling with material-group reuse, multi-material held-out checkpoint selection, split-wide metrics-only evaluation, a prompt-agnostic model ablation, a nearest-material baseline, model packaging, and seven passing unit tests.
+- Trained the conditioned model for ten epochs and 18,100 optimizer steps over 1,448 training materials; the final epoch produced the selected checkpoint.
+- Evaluated all 186 validation materials and all 172 compositional-test materials in clean processes. Mean L1 is `0.058676` and `0.055050`, respectively.
+- Verified the conditioned model outperforms nearest-material lookup on mean and P90 error and reduces mean error by roughly two-thirds versus the prompt-agnostic MLP.
+- Packaged the checkpoint, exact configuration, metadata, history, metrics, baselines, qualitative grid, and manifest under `train/outputs/material-hero-v0-final/` and verified the packaged checkpoint reloads and reproduces inference.
+- Added `docs/reports/material-hero-v0-training.md` as the canonical training report and moved the next project action to web inference integration.

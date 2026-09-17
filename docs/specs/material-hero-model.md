@@ -1,6 +1,6 @@
 # Material Hero model specification
 
-Status: **Implemented baseline; full-library experiment pending dataset repair**
+Status: **Final v0 training checkpoint verified; web integration pending**
 
 Last reviewed: 2026-09-16
 
@@ -84,7 +84,7 @@ Begin with the smallest model that can prove the data path:
 
 The implementation is an 822,723-parameter residual MLP. It concatenates six-band Fourier features of normalized `P`, normalized `Nb` and `V`, and 16-dimensional learned embeddings for base, color, finish, and condition; six width-256 residual blocks predict linear RGB. Training samples covered foreground pixels and minimizes coverage-weighted L1 error. A diffusion or image-space refinement stage can be evaluated later if this baseline cannot represent the required detail.
 
-The implementation has passed a one-material overfit and an eight-material prompt-conditioning stress run. The definitive full-library experiment remains pending repair of six corrupt production EXRs.
+The implementation has passed a one-material overfit, an eight-material prompt-conditioning stress run, and the complete 1,448-material training experiment. The selected step-18,100 checkpoint scores mean full-frame L1 `0.05868` over 186 held-out validation IDs and `0.05505` over 172 compositional-test IDs. It outperforms both prompt-agnostic and nearest-material baselines; see `docs/reports/material-hero-v0-training.md`.
 
 ## Staged training sequence
 

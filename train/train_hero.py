@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import random
 import time
 from dataclasses import asdict
@@ -55,12 +56,31 @@ def parse_args() -> argparse.Namespace:
         help="Train on the canonical eight-material stress set.",
     )
     parser.add_argument("--steps", type=int, default=10_000)
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        help=(
+            "Use deterministic shuffled full-pass scheduling for this many epochs. "
+            "When set, the trainer derives the step count and ignores --steps."
+        ),
+    )
+    parser.add_argument(
+        "--updates-per-material-batch",
+        type=int,
+        default=1,
+        help="Gradient updates to reuse each loaded material group before advancing.",
+    )
     parser.add_argument("--materials-per-step", type=int, default=4)
     parser.add_argument("--pixels-per-material", type=int, default=4_096)
     parser.add_argument("--width", type=int, default=256)
     parser.add_argument("--blocks", type=int, default=6)
     parser.add_argument("--bands", type=int, default=6)
     parser.add_argument("--embedding-dim", type=int, default=16)
+    parser.add_argument(
+        "--prompt-agnostic",
+        action="store_true",
+        help="Train the geometry-only baseline without material embeddings.",
+    )
     parser.add_argument("--learning-rate", type=float, default=1e-3)
     parser.add_argument("--weight-decay", type=float, default=1e-6)
     parser.add_argument("--seed", type=int, default=42)
@@ -70,6 +90,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--checkpoint-every", type=int, default=500)
     parser.add_argument("--inference-chunk", type=int, default=65_536)
     parser.add_argument("--reference-material", default="gold_polished_clean")
+    parser.add_argument(
+        "--preview-material-id",
+        action="append",
+        help=(
+            "Material used for full-frame model selection; repeat for a mean over "
+            "several materials. Defaults to the first training material."
+        ),
+    )
     parser.add_argument("--device", default="auto", choices=("auto", "cuda", "cpu"))
     parser.add_argument("--no-amp", action="store_true")
     parser.add_argument("--run-name")
@@ -92,6 +120,23 @@ def seed_everything(seed: int) -> None:
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
+
+
+def epoch_material_schedule(
+    material_ids: list[str],
+    materials_per_step: int,
+    updates_per_material_batch: int,
+    epochs: int,
+    rng: np.random.Generator,
+):
+    """Yield every material once per epoch, amortizing EXR decoding over updates."""
+
+    for epoch in range(1, epochs + 1):
+        shuffled = rng.permutation(material_ids).tolist()
+        for start in range(0, len(shuffled), materials_per_step):
+            chosen = shuffled[start : start + materials_per_step]
+            for update in range(1, updates_per_material_batch + 1):
+                yield epoch, update, chosen
 
 
 def to_torch_batch(
@@ -204,8 +249,16 @@ def save_checkpoint(
 
 def main() -> int:
     args = parse_args()
-    if args.steps <= 0 or args.pixels_per_material <= 0 or args.materials_per_step <= 0:
-        raise ValueError("steps, pixels-per-material, and materials-per-step must be positive")
+    positive_values = (
+        args.steps,
+        args.pixels_per_material,
+        args.materials_per_step,
+        args.updates_per_material_batch,
+    )
+    if any(value <= 0 for value in positive_values):
+        raise ValueError("training counts and batch sizes must be positive")
+    if args.epochs is not None and args.epochs <= 0:
+        raise ValueError("epochs must be positive")
 
     seed_everything(args.seed)
     camera_root = args.camera_root.resolve()
@@ -258,6 +311,7 @@ def main() -> int:
         "embedding_dim": args.embedding_dim,
         "width": args.width,
         "blocks": args.blocks,
+        "condition_material": not args.prompt_agnostic,
     }
     model = MaterialHeroMLP(vocabulary_sizes, **model_config).to(device)
     optimizer = torch.optim.AdamW(
@@ -274,7 +328,10 @@ def main() -> int:
         cache_items=args.cache_items,
     )
 
-    preview_material = training_ids[0]
+    preview_materials = args.preview_material_id or [training_ids[0]]
+    unknown_previews = sorted(set(preview_materials) - records.keys())
+    if unknown_previews:
+        raise ValueError(f"Unknown preview material IDs: {unknown_previews}")
     metadata: dict[str, object] = {
         "camera_root": str(camera_root),
         "library_path": str(library_path),
@@ -300,7 +357,7 @@ def main() -> int:
         print(f"gpu={torch.cuda.get_device_name(device)}")
     print(f"parameters={parameter_count}")
     print(f"training_materials={len(training_ids)}")
-    print(f"preview_material={preview_material}")
+    print(f"preview_materials={preview_materials}")
     print(f"position_normalization={asdict(position_normalization)}")
 
     rng = np.random.default_rng(args.seed)
@@ -309,12 +366,32 @@ def main() -> int:
     started = time.perf_counter()
     model.train()
 
-    for step in range(1, args.steps + 1):
-        chosen = rng.choice(
+    if args.epochs is not None:
+        groups_per_epoch = math.ceil(len(training_ids) / args.materials_per_step)
+        total_steps = groups_per_epoch * args.updates_per_material_batch * args.epochs
+        schedule = epoch_material_schedule(
             training_ids,
-            size=args.materials_per_step,
-            replace=len(training_ids) < args.materials_per_step,
-        ).tolist()
+            args.materials_per_step,
+            args.updates_per_material_batch,
+            args.epochs,
+            rng,
+        )
+    else:
+        total_steps = args.steps
+        schedule = (
+            (
+                0,
+                1,
+                rng.choice(
+                    training_ids,
+                    size=args.materials_per_step,
+                    replace=len(training_ids) < args.materials_per_step,
+                ).tolist(),
+            )
+            for _ in range(total_steps)
+        )
+
+    for step, (epoch, batch_update, chosen) in enumerate(schedule, start=1):
         numpy_batch = source.sample_batch(chosen, args.pixels_per_material, rng)
         batch = to_torch_batch(numpy_batch, device)
 
@@ -332,34 +409,51 @@ def main() -> int:
         scaler.update()
 
         loss_value = float(loss.detach().cpu())
-        history.append({"step": step, "train_loss": loss_value})
+        history.append(
+            {
+                "step": step,
+                "epoch": epoch,
+                "material_batch_update": batch_update,
+                "train_loss": loss_value,
+            }
+        )
         if step == 1 or step % args.log_every == 0:
             elapsed = time.perf_counter() - started
             print(
-                f"step={step}/{args.steps} train_l1={loss_value:.6f} "
+                f"step={step}/{total_steps} train_l1={loss_value:.6f} "
                 f"elapsed_seconds={elapsed:.1f}",
                 flush=True,
             )
 
-        if step == 1 or step % args.preview_every == 0 or step == args.steps:
-            preview_loss, target, preview, coverage = render_full_frame(
-                model,
-                source,
-                preview_material,
-                device,
-                use_amp,
-                args.inference_chunk,
+        if step == 1 or step % args.preview_every == 0 or step == total_steps:
+            preview_losses: dict[str, float] = {}
+            for preview_material in preview_materials:
+                preview_loss, target, preview, coverage = render_full_frame(
+                    model,
+                    source,
+                    preview_material,
+                    device,
+                    use_amp,
+                    args.inference_chunk,
+                )
+                preview_losses[preview_material] = preview_loss
+                suffix = "" if len(preview_materials) == 1 else f"_{preview_material}"
+                save_preview(
+                    output_dir / f"preview_{step:06d}{suffix}.png",
+                    target,
+                    preview,
+                    coverage,
+                )
+            mean_preview_loss = sum(preview_losses.values()) / len(preview_losses)
+            history[-1]["preview_l1"] = mean_preview_loss
+            history[-1]["preview_material_l1"] = preview_losses
+            print(
+                f"step={step} preview_l1={mean_preview_loss:.6f} "
+                f"materials={len(preview_materials)}",
+                flush=True,
             )
-            history[-1]["preview_l1"] = preview_loss
-            save_preview(
-                output_dir / f"preview_{step:06d}.png",
-                target,
-                preview,
-                coverage,
-            )
-            print(f"step={step} preview_l1={preview_loss:.6f}", flush=True)
-            if preview_loss < best_preview_loss:
-                best_preview_loss = preview_loss
+            if mean_preview_loss < best_preview_loss:
+                best_preview_loss = mean_preview_loss
                 save_checkpoint(
                     output_dir / "best.pt",
                     model,
@@ -370,7 +464,7 @@ def main() -> int:
                     metadata,
                 )
 
-        if step % args.checkpoint_every == 0 or step == args.steps:
+        if step % args.checkpoint_every == 0 or step == total_steps:
             save_checkpoint(
                 output_dir / "latest.pt",
                 model,

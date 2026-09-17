@@ -6,6 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
+import numpy as np
 import torch
 from PIL import Image, ImageDraw
 
@@ -21,6 +22,16 @@ def parse_args() -> argparse.Namespace:
         "--material-id",
         action="append",
         help="Evaluate this material ID; repeat as needed. Defaults to training IDs.",
+    )
+    parser.add_argument(
+        "--split",
+        choices=("train", "validation", "test"),
+        help="Evaluate a frozen split stored in the checkpoint metadata.",
+    )
+    parser.add_argument(
+        "--metrics-only",
+        action="store_true",
+        help="Compute metrics without writing one PNG per material or a montage.",
     )
     parser.add_argument("--device", default="auto", choices=("auto", "cuda", "cpu"))
     parser.add_argument("--no-amp", action="store_true")
@@ -52,7 +63,13 @@ def main() -> int:
         center=tuple(normalization_json["center"]),
         scale=float(normalization_json["scale"]),
     )
-    material_ids = args.material_id or metadata["training_ids"]
+    if args.material_id and args.split:
+        raise ValueError("Use either --material-id or --split, not both")
+    material_ids = (
+        args.material_id
+        or (metadata["splits"][args.split] if args.split else None)
+        or metadata["training_ids"]
+    )
     source = MaterialBatchSource(
         camera_root,
         records,
@@ -61,10 +78,13 @@ def main() -> int:
         cache_items=max(1, min(len(material_ids), 8)),
     )
 
+    evaluation_name = f"evaluation-step-{checkpoint['step']:06d}"
+    if args.split:
+        evaluation_name += f"-{args.split}"
     output_dir = (
         args.output_dir.resolve()
         if args.output_dir
-        else checkpoint_path.parent / f"evaluation-step-{checkpoint['step']:06d}"
+        else checkpoint_path.parent / evaluation_name
     )
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -80,38 +100,43 @@ def main() -> int:
             args.inference_chunk,
         )
         metrics[material_id] = loss
-        comparison_path = output_dir / f"{material_id}.png"
-        save_preview(comparison_path, target, prediction, coverage)
-        comparison = Image.open(comparison_path).convert("RGB")
-        height = round(comparison.height * args.montage_width / comparison.width)
-        comparison = comparison.resize(
-            (args.montage_width, height), Image.Resampling.LANCZOS
-        )
-        rows.append((material_id, comparison))
+        if not args.metrics_only:
+            comparison_path = output_dir / f"{material_id}.png"
+            save_preview(comparison_path, target, prediction, coverage)
+            comparison = Image.open(comparison_path).convert("RGB")
+            height = round(comparison.height * args.montage_width / comparison.width)
+            comparison = comparison.resize(
+                (args.montage_width, height), Image.Resampling.LANCZOS
+            )
+            rows.append((material_id, comparison))
         print(f"material={material_id} full_frame_l1={loss:.6f}", flush=True)
 
-    label_height = 24
-    montage = Image.new(
-        "RGB",
-        (
-            args.montage_width,
-            sum(image.height + label_height for _, image in rows),
-        ),
-        "black",
-    )
-    draw = ImageDraw.Draw(montage)
-    y = 0
-    for material_id, comparison in rows:
-        draw.text((8, y + 4), f"{material_id} — target | prediction", fill="white")
-        y += label_height
-        montage.paste(comparison, (0, y))
-        y += comparison.height
-    montage.save(output_dir / "montage.png")
+    if rows:
+        label_height = 24
+        montage = Image.new(
+            "RGB",
+            (
+                args.montage_width,
+                sum(image.height + label_height for _, image in rows),
+            ),
+            "black",
+        )
+        draw = ImageDraw.Draw(montage)
+        y = 0
+        for material_id, comparison in rows:
+            draw.text((8, y + 4), f"{material_id} — target | prediction", fill="white")
+            y += label_height
+            montage.paste(comparison, (0, y))
+            y += comparison.height
+        montage.save(output_dir / "montage.png")
 
+    loss_values = np.asarray(list(metrics.values()), dtype=np.float64)
     result = {
         "checkpoint": str(checkpoint_path),
         "step": checkpoint["step"],
-        "mean_full_frame_l1": sum(metrics.values()) / len(metrics),
+        "mean_full_frame_l1": float(loss_values.mean()),
+        "median_full_frame_l1": float(np.median(loss_values)),
+        "p90_full_frame_l1": float(np.percentile(loss_values, 90)),
         "materials": metrics,
     }
     with (output_dir / "metrics.json").open("w", encoding="utf-8") as handle:
