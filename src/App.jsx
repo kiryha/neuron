@@ -12,6 +12,7 @@ const PASSES = {
   P: 1,
   V: 2,
 }
+const COVERAGE_PASS = 3
 
 function createCameraConfig(data) {
   const requiredVectors = ['position', 'target', 'up', 'resolution']
@@ -70,7 +71,9 @@ const fragmentShader = /* glsl */ `
   void main() {
     vec3 rawValue;
 
-    if (uPass == 1) {
+    if (uPass == 3) {
+      rawValue = vec3(1.0);
+    } else if (uPass == 1) {
       rawValue = vWorldPosition;
     } else if (uPass == 2) {
       rawValue = normalize(cameraPosition - vWorldPosition);
@@ -103,46 +106,99 @@ function Hero({ material }) {
   return <primitive object={hero} dispose={null} />
 }
 
-function GeometryBufferCapture({ cameraConfig, material, pass }) {
+function packReadback(source, width, height, channels) {
+  const packed = new Float32Array(width * height * channels)
+  for (let y = 0; y < height; y += 1) {
+    const sourceY = height - 1 - y
+    for (let x = 0; x < width; x += 1) {
+      const sourceOffset = (sourceY * width + x) * 4
+      const targetOffset = (y * width + x) * channels
+      for (let channel = 0; channel < channels; channel += 1) {
+        packed[targetOffset + channel] = source[sourceOffset + channel]
+      }
+    }
+  }
+  return packed
+}
+
+function GeometryBufferCapture({ bufferApi, cameraConfig, material }) {
   const { camera, gl, scene } = useThree()
   const geometryTarget = useFBO(cameraConfig.resolution[0], cameraConfig.resolution[1], {
     depthBuffer: true,
     format: THREE.RGBAFormat,
     minFilter: THREE.NearestFilter,
     magFilter: THREE.NearestFilter,
+    samples: 4,
     stencilBuffer: false,
-    type: THREE.HalfFloatType,
+    type: THREE.FloatType,
   })
 
   useEffect(() => {
     geometryTarget.texture.colorSpace = THREE.NoColorSpace
-    geometryTarget.texture.name = `material-hero-world-${pass.toLowerCase()}`
-  }, [geometryTarget, pass])
+    geometryTarget.texture.name = 'material-hero-geometry-capture'
+  }, [geometryTarget])
 
   useFrame(() => {
     material.uniforms.uCameraWorldRotation.value.setFromMatrix4(camera.matrixWorld)
-
-    const previousTarget = gl.getRenderTarget()
-    const previousAspect = camera.aspect
-    try {
-      material.uniforms.uEncodeForDisplay.value = false
-      camera.aspect = cameraConfig.aspect
-      camera.updateProjectionMatrix()
-      gl.setRenderTarget(geometryTarget)
-      gl.clear()
-      gl.render(scene, camera)
-    } finally {
-      gl.setRenderTarget(previousTarget)
-      camera.aspect = previousAspect
-      camera.updateProjectionMatrix()
-      material.uniforms.uEncodeForDisplay.value = true
-    }
   }, -1)
+
+  useEffect(() => {
+    const api = {
+      capture() {
+        const width = cameraConfig.resolution[0]
+        const height = cameraConfig.resolution[1]
+        const readback = new Float32Array(width * height * 4)
+        const buffers = {}
+        const previousTarget = gl.getRenderTarget()
+        const previousAspect = camera.aspect
+        const previousPass = material.uniforms.uPass.value
+        const previousDisplay = material.uniforms.uEncodeForDisplay.value
+        const previousClearColor = gl.getClearColor(new THREE.Color()).clone()
+        const previousClearAlpha = gl.getClearAlpha()
+
+        camera.aspect = cameraConfig.aspect
+        camera.updateProjectionMatrix()
+        camera.updateMatrixWorld(true)
+        material.uniforms.uCameraWorldRotation.value.setFromMatrix4(camera.matrixWorld)
+        material.uniforms.uEncodeForDisplay.value = false
+        gl.setClearColor(0x000000, 0)
+
+        try {
+          for (const [name, passValue, channels] of [
+            ['position', PASSES.P, 3],
+            ['normal', PASSES.N, 3],
+            ['view', PASSES.V, 3],
+            ['coverage', COVERAGE_PASS, 1],
+          ]) {
+            material.uniforms.uPass.value = passValue
+            gl.setRenderTarget(geometryTarget)
+            gl.clear(true, true, true)
+            gl.render(scene, camera)
+            gl.readRenderTargetPixels(geometryTarget, 0, 0, width, height, readback)
+            buffers[name] = packReadback(readback, width, height, channels)
+          }
+        } finally {
+          gl.setRenderTarget(previousTarget)
+          gl.setClearColor(previousClearColor, previousClearAlpha)
+          camera.aspect = previousAspect
+          camera.updateProjectionMatrix()
+          material.uniforms.uPass.value = previousPass
+          material.uniforms.uEncodeForDisplay.value = previousDisplay
+        }
+
+        return { ...buffers, width, height }
+      },
+    }
+    bufferApi.current = api
+    return () => {
+      if (bufferApi.current === api) bufferApi.current = null
+    }
+  }, [bufferApi, camera, cameraConfig, geometryTarget, gl, material, scene])
 
   return null
 }
 
-function Scene({ cameraApi, cameraConfig, pass }) {
+function Scene({ bufferApi, cameraApi, cameraConfig, onInteractionEnd, onInteractionStart }) {
   const controlsRef = useRef(null)
   const { camera } = useThree()
 
@@ -160,10 +216,6 @@ function Scene({ cameraApi, cameraConfig, pass }) {
       }),
     [],
   )
-
-  useEffect(() => {
-    normalMaterial.uniforms.uPass.value = PASSES[pass]
-  }, [normalMaterial, pass])
 
   const resetCamera = useCallback(() => {
     camera.position.set(...cameraConfig.position)
@@ -202,28 +254,36 @@ function Scene({ cameraApi, cameraConfig, pass }) {
       <OrbitControls
         ref={controlsRef}
         makeDefault
-        enableDamping
-        dampingFactor={0.08}
+        enableDamping={false}
         minDistance={0.1}
         maxDistance={12}
+        onEnd={onInteractionEnd}
+        onStart={onInteractionStart}
         target={ORBIT_TARGET}
       />
 
       <GeometryBufferCapture
+        bufferApi={bufferApi}
         cameraConfig={cameraConfig}
         material={normalMaterial}
-        pass={pass}
       />
     </>
   )
 }
 
 export default function App() {
+  const bufferApi = useRef(null)
   const cameraApi = useRef(null)
-  const [prompt, setPrompt] = useState('')
-  const [pass, setPass] = useState('N')
+  const renderAbort = useRef(null)
+  const resultUrl = useRef(null)
+  const [prompt, setPrompt] = useState('gold polished clean')
   const [cameraConfig, setCameraConfig] = useState(null)
   const [cameraError, setCameraError] = useState('')
+  const [interacting, setInteracting] = useState(false)
+  const [renderError, setRenderError] = useState('')
+  const [rendering, setRendering] = useState(false)
+  const [result, setResult] = useState(null)
+  const [showResult, setShowResult] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -245,50 +305,154 @@ export default function App() {
     }
   }, [])
 
+  useEffect(
+    () => () => {
+      renderAbort.current?.abort()
+      if (resultUrl.current) URL.revokeObjectURL(resultUrl.current)
+    },
+    [],
+  )
+
+  const renderMaterial = useCallback(async () => {
+      if (!bufferApi.current || !prompt.trim()) return
+
+      renderAbort.current?.abort()
+      const controller = new AbortController()
+      renderAbort.current = controller
+      setRendering(true)
+      setRenderError('')
+      setShowResult(false)
+
+      try {
+        await new Promise((resolve) => requestAnimationFrame(resolve))
+        const buffers = bufferApi.current.capture()
+        const form = new FormData()
+        form.set('prompt', prompt.trim())
+        form.set('width', String(buffers.width))
+        form.set('height', String(buffers.height))
+        for (const name of ['position', 'normal', 'view', 'coverage']) {
+          form.set(
+            name,
+            new Blob([buffers[name].buffer], { type: 'application/octet-stream' }),
+            `${name}.f32`,
+          )
+        }
+
+        const response = await fetch('/api/render', {
+          method: 'POST',
+          body: form,
+          signal: controller.signal,
+        })
+        if (!response.ok) {
+          const payload = await response.json().catch(() => null)
+          throw new Error(payload?.detail || `Render failed (${response.status}).`)
+        }
+
+        const blob = await response.blob()
+        if (resultUrl.current) URL.revokeObjectURL(resultUrl.current)
+        resultUrl.current = URL.createObjectURL(blob)
+        setResult({
+          prompt: response.headers.get('X-Normalized-Prompt') || prompt.trim(),
+          url: resultUrl.current,
+        })
+        setShowResult(true)
+      } catch (error) {
+        if (error.name !== 'AbortError') setRenderError(error.message)
+      } finally {
+        if (renderAbort.current === controller) {
+          renderAbort.current = null
+          setRendering(false)
+        }
+      }
+    }, [prompt])
+
+  const submitPrompt = useCallback(
+    (event) => {
+      event.preventDefault()
+      renderMaterial()
+    },
+    [renderMaterial],
+  )
+
+  const startCameraInteraction = useCallback(() => {
+    renderAbort.current?.abort()
+    setInteracting(true)
+    setRendering(false)
+    setShowResult(false)
+  }, [])
+
+  const endCameraInteraction = useCallback(() => {
+    setInteracting(false)
+    renderMaterial()
+  }, [renderMaterial])
+
+  const resetCamera = useCallback(() => {
+    startCameraInteraction()
+    cameraApi.current?.reset()
+    requestAnimationFrame(() => {
+      setInteracting(false)
+      renderMaterial()
+    })
+  }, [renderMaterial, startCameraInteraction])
+
   return (
     <main className="app-shell">
       <header className="brand">NEURON // LATENT ENGINE</header>
 
       <div className="viewport-controls">
-        <div aria-label="Geometry pass" className="pass-selector" role="group">
-          {Object.keys(PASSES).map((passName) => (
-            <button
-              aria-pressed={pass === passName}
-              className={`pass-button${pass === passName ? ' active' : ''}`}
-              key={passName}
-              onClick={() => setPass(passName)}
-              type="button"
-            >
-              {passName}
-            </button>
-          ))}
-        </div>
-
         <button
           className="reset-camera"
           type="button"
           disabled={!cameraConfig}
-          onClick={() => cameraApi.current?.reset()}
+          onClick={resetCamera}
         >
           Reset Camera
         </button>
       </div>
 
-      <div className="prompt-dock">
+      <form className="prompt-dock" onSubmit={submitPrompt}>
+        <p className="prompt-help">
+          Material · optional color · finish · condition
+          <span>Example: car paint red polished clean</span>
+        </p>
+        <div className="prompt-row">
         <input
           aria-label="Material prompt"
           className="prompt-input"
           onChange={(event) => setPrompt(event.target.value)}
-          placeholder="Describe a material..."
+          disabled={rendering}
+          placeholder="gold polished clean"
           spellCheck="false"
           type="text"
           value={prompt}
         />
-      </div>
+          <button
+            className="render-button"
+            disabled={rendering || !cameraConfig}
+            type="submit"
+          >
+            {rendering ? 'Rendering…' : 'Render'}
+          </button>
+        </div>
+        {renderError && <p className="render-message error">{renderError}</p>}
+        {!renderError && result && <p className="render-message">{result.prompt}</p>}
+      </form>
 
       {cameraError && <div className="camera-status">Camera error: {cameraError}</div>}
 
       {!cameraError && !cameraConfig && <div className="camera-status">Loading camera…</div>}
+
+      {showResult && result && !interacting && (
+        <div className="result-layer">
+          <img alt={`Material Hero result: ${result.prompt}`} src={result.url} />
+        </div>
+      )}
+
+      {!result && !rendering && !interacting && (
+        <div className="camera-status">Enter a supported material prompt and render.</div>
+      )}
+
+      {rendering && <div className="camera-status">Rendering Material Hero v0…</div>}
 
       {cameraConfig && (
         <Canvas
@@ -302,7 +466,13 @@ export default function App() {
           dpr={[1, 2]}
           gl={{ antialias: true, toneMapping: THREE.NoToneMapping }}
         >
-          <Scene cameraApi={cameraApi} cameraConfig={cameraConfig} pass={pass} />
+          <Scene
+            bufferApi={bufferApi}
+            cameraApi={cameraApi}
+            cameraConfig={cameraConfig}
+            onInteractionEnd={endCameraInteraction}
+            onInteractionStart={startCameraInteraction}
+          />
         </Canvas>
       )}
     </main>

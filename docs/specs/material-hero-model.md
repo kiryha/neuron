@@ -1,6 +1,6 @@
 # Material Hero model specification
 
-Status: **Final v0 training checkpoint verified; web integration pending**
+Status: **Final v0 checkpoint and fixed-view web integration verified**
 
 Last reviewed: 2026-09-16
 

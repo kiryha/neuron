@@ -1,6 +1,6 @@
 # Material Hero v0 training report
 
-Status: **Verified final training checkpoint; web integration deferred**
+Status: **Verified final training checkpoint; fixed-view web integration verified**
 
 Date: 2026-09-16
 
@@ -108,4 +108,4 @@ or unrestricted text-to-image support.
 - Seven unit tests pass for vocabularies, splits, epoch scheduling, nearest-material
   selection, model gradients, prompt-agnostic construction, and masked loss.
 
-Web inference and Three.js buffer integration are intentionally the next phase.
+The packaged checkpoint is integrated through FastAPI and the Three.js viewer. A verified browser run rasterized the fixed hero at `cam_001`, submitted raw `P`, `N`, `V`, and Coverage, and displayed a `gold polished clean` RGBA prediction. Runtime preserves the packaged position normalization, renormalizes `N` and `V`, predicts linear RGB, and uses Coverage as output alpha.

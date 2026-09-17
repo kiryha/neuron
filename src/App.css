@@ -77,13 +77,6 @@ input {
   gap: 8px;
 }
 
-.pass-selector {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-}
-
-.pass-button,
 .reset-camera {
   min-height: 36px;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -100,26 +93,14 @@ input {
   transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
 }
 
-.pass-button {
-  min-width: 40px;
-  padding: 0 10px;
-}
-
 .reset-camera {
   padding: 0 16px;
 }
 
-.pass-button:hover,
 .reset-camera:hover {
   border-color: rgba(255, 255, 255, 0.46);
   color: #ffffff;
   background: rgba(24, 24, 24, 0.86);
-}
-
-.pass-button.active {
-  border-color: #8ff8ff;
-  color: #050505;
-  background: #8ff8ff;
 }
 
 .reset-camera:disabled {
@@ -127,8 +108,8 @@ input {
   opacity: 0.45;
 }
 
-.pass-button:focus-visible,
 .reset-camera:focus-visible,
+.render-button:focus-visible,
 .prompt-input:focus-visible {
   outline: 2px solid #8ff8ff;
   outline-offset: 3px;
@@ -141,8 +122,28 @@ input {
   transform: translateX(-50%);
 }
 
+.prompt-help {
+  margin: 0 0 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.prompt-help span {
+  display: block;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.prompt-row {
+  display: flex;
+  gap: 8px;
+}
+
 .prompt-input {
-  width: 100%;
+  min-width: 0;
+  flex: 1;
   height: 48px;
   padding: 0 18px;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -152,6 +153,57 @@ input {
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32);
   backdrop-filter: blur(12px);
   caret-color: #a6fbff;
+}
+
+.render-button {
+  min-width: 104px;
+  border: 1px solid rgba(143, 248, 255, 0.65);
+  border-radius: 8px;
+  color: #050505;
+  background: #8ff8ff;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.render-button:disabled,
+.prompt-input:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.render-message {
+  min-height: 16px;
+  margin: 7px 4px 0;
+  color: rgba(143, 248, 255, 0.78);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+  text-align: center;
+}
+
+.render-message.error {
+  color: #ff9b9b;
+}
+
+.result-layer {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #050505;
+  pointer-events: none;
+}
+
+.result-layer img {
+  display: block;
+  width: min(100vw, 100vh);
+  height: min(100vw, 100vh);
+  object-fit: contain;
 }
 
 .prompt-input::placeholder {
@@ -184,5 +236,13 @@ input {
   .prompt-dock {
     bottom: 18px;
     width: calc(100vw - 28px);
+  }
+
+  .prompt-help {
+    font-size: 10px;
+  }
+
+  .render-button {
+    min-width: 88px;
   }
 }

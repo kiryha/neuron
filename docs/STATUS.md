@@ -1,12 +1,12 @@
 # Current project status
 
-- Last verified: 2026-09-16
+- Last verified: 2026-09-17
 - Repository baseline inspected: `main` at `7a09552`
-- Current phase: **Phase 2A training complete; Phase 2B web inference integration next**
+- Current phase: **Phase 2B fixed-view web inference integrated**
 
 ## Current objective
 
-Integrate the verified Material Hero v0 checkpoint with the existing camera-matched Three.js geometry buffers. Full-dataset validation, reproducible training, held-out evaluation, compositional evaluation, baseline comparisons, qualitative review, packaging, and clean-process checkpoint reload are complete.
+Evaluate the integrated fixed-view Material Hero v0 application and prepare the next controlled experiment. Full-dataset validation, reproducible training, checkpoint packaging, and the reference-scope Three.js-to-PyTorch inference path are complete.
 
 The accepted learning sequence is: train on one fixed view; test Three.js orbit, zoom, and alternate-mesh inputs as deliberately unsupported cases; add multi-view Houdini data and retrain; then add multi-geometry data and retrain. Improvement between versions is an experiment to measure, not an assumed capability.
 
@@ -39,15 +39,19 @@ The accepted learning sequence is: train on one fixed view; test Three.js orbit,
 - Seven unit tests cover vocabularies, deterministic/disjoint splits, epoch scheduling, nearest-material selection, loss behavior, model gradients, and prompt-agnostic construction.
 - `docs/reports/material-hero-v0-training.md` records the complete experiment, metrics, baselines, limitations, and verification evidence.
 - `docs/tutorials/training-a-text-conditioned-image-model.md` is a comprehensive educational guide to text-conditioned image training. Its coordinate-MLP design is now the implemented and verified first baseline.
-- `neuron/` contains only a package scaffold.
-- The React app loads the Sculpted Rubber Toy and lets the user inspect world-space `N`, `P`, or `V` on a black background with OrbitControls and no grid. The active selector defaults to `N`.
+- `neuron/` contains the model architecture plus the packaged-checkpoint inference adapter used by FastAPI.
+- The React app provides one generated-result view on a black background with OrbitControls and no grid. The former `C`/`N`/`P`/`V` mode selector has been removed.
 - `neuron_dev.bat` launches the local Vite server at `http://127.0.0.1:5173` with hot reload; `neuron.bat` continues to serve the latest production build through FastAPI.
 - `public/geometry/material_hero/sculpted-rubber-toy.glb` is the accepted single web geometry. The current export is a valid 12,253,276-byte binary glTF.
 - `public/cameras/material_hero/cam_001.json` is the active copied dataset camera record.
-- The app loads `cam_001.json`, derives vertical field of view from its lens/aperture/aspect, applies its position and up vector, and resets to that dataset view. OrbitControls pivots around world origin because every Houdini dataset camera aims at origin; the JSON `target` is only a forward-axis reference point. Its half-float geometry target uses the JSON resolution and retains the selected raw `N`, `P`, or `V` values; display encoding is applied only to the viewport preview. The bottom-center prompt field does not yet trigger inference.
+- The app loads `cam_001.json`, derives vertical field of view from its lens/aperture/aspect, applies its position and up vector, and resets to that dataset view. OrbitControls pivots around world origin because every Houdini dataset camera aims at origin.
+- Submitting a compact controlled prompt rasterizes the current camera's raw float32 world `P`, smooth world `N`, normalized surface-to-camera `V`, and antialiased Coverage, then posts them to `/api/render`.
+- While the user orbits, the stale generated image is hidden and a live normal preview provides responsive navigation. Releasing the camera automatically runs inference for the new view. Reset returns to `cam_001` and regenerates the supported reference result.
+- FastAPI strictly reconstructs `material_hero_v0.pt`, applies its packaged `P` center/scale, renormalizes `N` and `V`, predicts linear foreground RGB in chunks, converts RGB to sRGB only for PNG display, and writes Coverage as PNG alpha.
+- The verified UI path ran `gold polished clean` through the real Three.js buffers and CUDA checkpoint at step 18,100, then orbited and automatically displayed a newly inferred out-of-distribution view.
 - The hero GLB remains at its exported identity transform in Three.js; no application-side centering or scaling is applied.
 - No geometry metadata file, separate proxy/calibration LODs, geometry hash, or formal pixel-precise Houdini-to-Three.js calibration gate is required for v0. Camera matching uses the per-camera dataset JSON, while geometry transform and `P`/`N`/`V` conventions remain explicit application requirements.
-- `main.py` serves the built frontend and exposes only `/api/status`.
+- `main.py` serves the built frontend and exposes model-aware `/api/status` plus multipart `/api/render` inference.
 
 ### External Houdini project
 
@@ -198,10 +202,9 @@ Coverage is now defined as Beauty alpha `C.A`; no separate Coverage subimage is 
 
 ## Next exact actions
 
-1. Integrate prompt-driven inference from `material_hero_v0.pt` with the camera-matched Three.js `P`/`N`/`V`/Coverage buffers.
-2. Map supported UI descriptions to the frozen base/color/finish/condition vocabularies and reject unsupported tokens clearly.
-3. Compare browser reference-pose inference with the packaged qualitative and numeric results.
-4. Resolve or explicitly classify `transmission_scatter` behavior before changing the dataset or shader contract.
+1. Compare several browser reference-pose prompts with their packaged qualitative or dataset targets and record any systematic Three.js/Houdini buffer mismatch.
+2. Decide the first controlled unsupported-view observation set for Material Hero v0 before beginning multi-view data work.
+3. Resolve or explicitly classify `transmission_scatter` behavior before changing the dataset or shader contract.
 
 ## Phase 1 exit criteria
 

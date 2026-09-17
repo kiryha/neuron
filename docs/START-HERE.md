@@ -1,10 +1,10 @@
 # Start here
 
-Last reviewed: 2026-09-03
+Last reviewed: 2026-09-17
 
 Neuron is currently focused on **Material Hero**: a text-conditioned image generator that first learns the appearance of one Sculpted Rubber Toy from one fixed camera and studio-lighting setup.
 
-The overall phase remains Houdini data generation. An isolated local Three.js slice is now implemented: it loads the exported hero GLB, displays its world-space normal pass, supports orbit, resets to a stable reference view, and includes an inactive prompt field. Prompt-driven model integration and deployment remain later work, as does the broader neural-asset engine.
+Material Hero v0 now has a verified dataset, packaged fixed-view checkpoint, and local web-inference path. The Three.js app loads the exported hero GLB, captures `P`, smooth `N`, `V`, and Coverage, sends them with a controlled material prompt to FastAPI, and displays the model result. The reference `cam_001` view is supported; orbiting automatically requests deliberately out-of-distribution results. Multi-view data, alternate geometry support, and deployment remain later work, as does the broader neural-asset engine.
 
 ## Reading order
 
@@ -67,7 +67,7 @@ The historical sources explain how the project evolved, but they contain obsolet
 datagen/            Material library, label generator, Houdini UI and helpers
 datagen/hips/       Historical repository copies of Houdini assets
 train/              Material Hero validation, training, evaluation, and tests
-neuron/             Empty neural-engine package scaffold
+neuron/             Model architecture and inference package
 src/                React/React Three Fiber application scaffold
 public/geometry/    Deployable web geometry, including the reduced Material Hero GLB
 public/cameras/     Copied dataset camera records for Three.js reference views

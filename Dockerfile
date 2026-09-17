@@ -19,6 +19,9 @@ RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 # FIX 1: Change 'neuron.py' or 'app.py' to 'main.py'
 COPY --chown=user main.py .
+COPY --chown=user neuron ./neuron
+COPY --chown=user train/__init__.py train/model.py ./train/
+COPY --chown=user train/outputs/material-hero-v0-final/material_hero_v0.pt ./train/outputs/material-hero-v0-final/material_hero_v0.pt
 COPY --chown=user --from=build-stage /frontend/dist ./dist
 
 # FIX 2: Change the entry point to 'main:app'

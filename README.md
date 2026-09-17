@@ -85,26 +85,26 @@ The copied `neuron_library_prod.json` supplies material IDs and prompts. Debug A
 
 The first training implementation learns prompt-conditioned appearance on one fixed hero view. Later checkpoints use multi-view and then multi-geometry datasets while preserving material-level splits and standardized comparison cases.
 
-The training implementation has not been built yet. It begins after the Houdini dataset pilot and full material-folder batch have been checked.
+The packaged Material Hero v0 checkpoint completed 18,100 steps and is integrated into the fixed-view application path. See `docs/reports/material-hero-v0-training.md` for evaluation and limitations.
 
 ### 3. Application
 
-The intended application accepts a material prompt and sends Three.js-generated `P`, `N`, `V`, and Coverage buffers to the neural renderer. It starts at the Houdini training pose, then permits orbit, zoom, and mesh switching so failures of each dataset/model version can be observed directly.
+The application accepts a material prompt and sends Three.js-generated `P`, `N`, `V`, and Coverage buffers to the neural renderer. It starts at the Houdini training pose and permits orbit and zoom so failures outside the single-camera training distribution can be observed directly. Mesh switching remains a later experiment.
 
-The React application now loads `public/geometry/material_hero/sculpted-rubber-toy.glb` at its exported identity transform and provides selectable world-space `N`, `P`, and `V` previews. The camera can orbit and reset to the dataset view loaded from `public/cameras/material_hero/cam_001.json`; the lens projection and geometry-buffer resolution are derived from that record. A bottom-center prompt field accepts text but does not trigger rendering yet. The FastAPI backend still exposes only a status endpoint; neural inference is not connected.
+The React application loads `public/geometry/material_hero/sculpted-rubber-toy.glb` at its exported identity transform and presents one generated-result viewport. A controlled prompt such as `gold polished clean` captures the current Three.js buffers and calls the packaged Material Hero v0 checkpoint. Orbiting temporarily shows a live normal preview and automatically refreshes the generated result on release; Reset returns to the supported `public/cameras/material_hero/cam_001.json` view.
 
-This frontend slice runs locally. Prompt processing, model inference, the remaining geometry passes, backend changes, and Hugging Face deployment are deferred.
+The fixed-hero, fixed-camera path runs locally through FastAPI. Novel views, alternate geometry, free-form language, and Hugging Face deployment remain deferred.
 
 ## Current status
 
-The project is currently finishing **Phase 1: Houdini data generation**.
+The project has completed the Material Hero v0 dataset, training, packaging, and fixed-view web-inference path.
 
 - The procedural material library and semantic label generator exist.
 - A small stress-test material set is used to validate shader behavior.
 - Variation, dirt, and wear systems are implemented in the Houdini material HDA.
 - Stochastic, directional, and cellular bump branches are implemented and approved in fixed-camera stress renders.
-- Dataset batching is designed but not yet implemented; final renders, training, and neural inference remain pending.
-- The browser UI loads the hero and provides an orbitable normal-pass viewer, camera reset, and inactive prompt field; the backend remains a scaffold and no model is connected.
+- The full 1,806-material dataset and the packaged step-18,100 checkpoint are verified.
+- The browser captures `P`, smooth `N`, `V`, and Coverage and displays packaged model inference in its single generated-result viewport.
 
 An Indie scene/HDA and an unwatermarked 1024 × 1024 pilot render are now verified. Dataset automation and the full stress-set pilot remain pending.
 
@@ -160,29 +160,34 @@ Files in `docs/sources/` preserve project history and rationale. They may contai
 
 ### Development launcher
 
-Double-click `neuron_dev.bat` to open the app at [http://127.0.0.1:5173](http://127.0.0.1:5173) with Vite hot reload. Install the JavaScript dependencies once with `npm ci` before using the launcher.
+Double-click `neuron_dev.bat` to start the FastAPI model backend and open the app at [http://127.0.0.1:5173](http://127.0.0.1:5173) with Vite hot reload. Install Python and JavaScript dependencies once before using the launcher:
+
+```powershell
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+npm ci
+```
 
 ### Frontend development
 
-Install the JavaScript dependencies and start the Vite development server:
+Start FastAPI in one terminal and Vite in another:
 
-```bash
-npm ci
+```powershell
+.venv\Scripts\python.exe -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173). This local frontend run loads the GLB directly from `public/geometry/` and does not require FastAPI.
+Open [http://localhost:5173](http://localhost:5173). Vite proxies `/api` to FastAPI on port `8000`.
 
 ### Production-style local run
 
 ```bash
 npm ci
 npm run build
-python -m pip install -r requirements.txt
-python -m uvicorn main:app --host 0.0.0.0 --port 7860
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe -m uvicorn main:app --host 0.0.0.0 --port 7860
 ```
 
-This serves the built frontend and the placeholder FastAPI backend on port `7860`.
+This serves the built frontend and packaged Material Hero v0 inference backend on port `7860`.
 
 ### Docker
 

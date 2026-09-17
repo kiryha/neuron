@@ -2,4 +2,6 @@ fastapi
 uvicorn
 jinja2
 python-multipart
+numpy
+Pillow
 torch

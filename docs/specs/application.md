@@ -1,8 +1,8 @@
 # Material Hero application specification
 
-Status: **Dataset camera-matched local normal viewer implemented; model integration open**
+Status: **Material Hero v0 fixed-view inference implemented and verified**
 
-Last reviewed: 2026-09-04
+Last reviewed: 2026-09-17
 
 ## Objective
 
@@ -13,13 +13,13 @@ Provide a small web application where a user enters a supported material prompt 
 - Frontend: React 18, Three.js, React Three Fiber, Drei, Vite
 - Backend: FastAPI
 - Deployment target: Docker-based Hugging Face Space on port `7860`
-- Current viewport: exported Sculpted Rubber Toy with selectable world-space `N`, `P`, and `V` previews plus orbit controls on a grid-free black background
+- Current viewport: one generated Material Hero result with orbit controls on a grid-free black background
 - Web geometry: `public/geometry/material_hero/sculpted-rubber-toy.glb`, a verified 12,253,276-byte binary glTF exported from Houdini
 - Active camera asset: `public/cameras/material_hero/cam_001.json`, copied unchanged from the selected dataset camera folder
-- Geometry capture: square 1024 x 1024 half-float target containing the selected raw world-space `N`, `P`, or `V` values
-- UI: `N`/`P`/`V` pass buttons above `Reset Camera` at top right and an editable but non-submitting prompt field at bottom center
-- Current API: `/api/status`
-- Training/model inference: not implemented
+- Geometry capture: square 1024 x 1024 float target used on demand for raw world-space `P`, smooth world-space `N`, normalized world-space `V`, and antialiased Coverage
+- UI: `Reset Camera`, a compact prompt field, format guidance, and Render action; no pass-mode selector
+- Current API: `/api/status` and `/api/render`
+- Model: packaged `train/outputs/material-hero-v0-final/material_hero_v0.pt`, step 18,100
 
 ## Implemented local normal viewer
 
@@ -40,7 +40,9 @@ Before prompt or model integration, the placeholder sphere was replaced with a l
 
 The reference view is loaded from the copied dataset camera JSON. The hero GLB remains at its exported identity transform; the application does not recenter or rescale it. No geometry metadata file or formal pixel-precise validation gate is required. The implementation explicitly outputs world-space normals rather than relying on a generic visualization material with an implicit coordinate convention.
 
-This slice runs through the local Vite development server. It includes a visual prompt field that accepts text but does not submit or affect rendering. Generated RGB, prompt processing, model inference, `P`, `V`, or Coverage rendering, FastAPI changes, and Hugging Face deployment remain deferred.
+The prompt uses the controlled `base [optional color] finish condition` structure. The explicit aliases `dirty → dusty` and `gray → grey` are accepted. Submitting captures all geometry inputs at the current camera, calls FastAPI, and displays the returned RGBA PNG. During orbit, the stale result is hidden and a live normal preview keeps navigation responsive; OrbitControls `end` automatically requests a new generated result. Reset restores `cam_001` and regenerates the supported reference view.
+
+The backend loads the packaged checkpoint strictly, preserves its stored `P` normalization, normalizes `N` and `V`, and predicts linear foreground RGB only for covered pixels. It converts linear RGB to sRGB for the PNG and stores Coverage as alpha. Model retraining, arbitrary language, novel-view support, alternate geometry support, and Hugging Face deployment remain deferred.
 
 Verified on 2026-09-03:
 
@@ -57,8 +59,12 @@ Verified on 2026-09-04:
 - the Three.js vertical field of view is derived from the dataset lens and aperture rather than hard-coded;
 - the normal target uses the JSON resolution and aspect ratio;
 - the GLB is rendered at its exported identity transform without application-side centering;
-- `N`, `P`, and `V` buttons switch the viewport preview while the offscreen geometry target remains raw half-float data;
+- the UI exposes one persistent generated-result mode; raw float32 `P`, `N`, `V`, and Coverage remain internal model inputs;
 - `npm run build` completes successfully with both the camera JSON and GLB in the production output.
+- Render and camera-release events update the packaged model result from raw float32 `P`, `N`, `V`, and Coverage;
+- orbiting hides the stale generated image, shows responsive geometry feedback, and automatically replaces it after inference completes;
+- a live browser run completed `gold polished clean` inference through the CUDA backend and displayed the RGBA result;
+- `/api/status` reports model step 18,100, CUDA device, and the fixed `sculpted_rubber_toy/cam_001` scope.
 
 ## Dataset camera matching
 
@@ -84,14 +90,12 @@ A practical interaction pattern is:
 
 - show the Three.js mesh preview while the camera is moving;
 - request or evaluate neural output when movement pauses;
-- keep the last valid neural frame visible while a new result is pending;
+- hide the stale neural frame while a new result is pending and show the live normal preview;
 - identify the training-camera reference pose;
 - label other views and meshes as out of distribution for the loaded checkpoint;
 - show clear loading, unsupported-prompt, and inference-error states.
 
-Exact real-time behavior depends on measured inference performance and remains open.
-
-For the local normal-viewer slice, the normal visualization updates continuously while the user orbits. Deferred neural-output behavior does not apply yet.
+The current implementation follows this pattern: the normal visualization updates while the user orbits, and inference starts when OrbitControls reports the interaction has ended.
 
 ## Prompt behavior
 

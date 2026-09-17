@@ -2,6 +2,17 @@
 
 This is a concise log of meaningful project changes. It is not a replacement for Git history or `STATUS.md`.
 
+## 2026-09-17
+
+### Material Hero v0 web inference
+
+- Simplified the viewport to one generated-result mode, removed the `C`/`N`/`P`/`V` selector, and enabled orbit-triggered inference. Camera interaction temporarily shows a live normal preview; release captures the current buffers and refreshes the result, while Reset regenerates `cam_001`.
+- Added strict loading and chunked inference for the packaged step-18,100 checkpoint without retraining or modifying it.
+- Added multipart `/api/render`: packaged `P` normalization, normalized `N`/`V`, linear-RGB prediction, sRGB PNG encoding, and Coverage alpha.
+- Added on-demand Three.js float32 capture for `P`, smooth `N`, surface-to-camera `V`, and antialiased Coverage at the reset `cam_001` reference view.
+- Initially connected the result as a `C` mode alongside diagnostic passes, then superseded that selector with the single generated-result viewport. Prompt submission, controlled-prompt validation/aliases, and concise in-app prompt guidance remain.
+- Updated Vite proxying, local launchers, runtime dependencies, and Docker checkpoint/code inclusion. Verified a live CUDA browser inference for `gold polished clean`.
+
 ## 2026-08-26
 
 ### Documentation baseline
